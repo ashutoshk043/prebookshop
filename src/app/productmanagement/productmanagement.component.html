@@ -1,0 +1,19 @@
+<app-sidebar #sidebar></app-sidebar>
+
+<div class="main-content" [class.sidebar-collapsed]="sidebar.isCollapsed">
+  <!-- Top Header -->
+    <app-header></app-header>
+  <!-- Content Area -->
+  <main class="content-area">
+    <div class="content-wrapper">
+      <h2>Order Management Content</h2>
+      <p>Your orders will be displayed here...</p>
+      
+      <!-- Example Content Card -->
+      <div class="content-card">
+        <h3>Recent Orders</h3>
+        <p>This is where your order data will appear.</p>
+      </div>
+    </div>
+  </main>
+</div>

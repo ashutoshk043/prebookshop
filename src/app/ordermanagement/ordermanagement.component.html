@@ -1,0 +1,195 @@
+<app-sidebar #sidebar></app-sidebar>
+
+<div class="main-content" [class.sidebar-collapsed]="sidebar.isCollapsed">
+  <!-- Top Header -->
+  <app-header></app-header>
+  
+  <!-- Content Area -->
+  <main class="content-area">
+    <div class="content-wrapper">
+      <!-- Page Title -->
+      <!-- <div class="page-header">
+        <h2>Order Management</h2>
+        <p>Manage and track all your orders in one place</p>
+      </div> -->
+
+      <!-- Stats Cards Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon purple">📦</div>
+          <div class="stat-info">
+            <h4>Total Orders</h4>
+            <p class="stat-number">1,234</p>
+            <span class="stat-change positive">↑ 12% from last month</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon blue">🚚</div>
+          <div class="stat-info">
+            <h4>In Transit</h4>
+            <p class="stat-number">89</p>
+            <span class="stat-change neutral">→ Same as yesterday</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div class="stat-info">
+            <h4>Delivered</h4>
+            <p class="stat-number">1,045</p>
+            <span class="stat-change positive">↑ 8% this week</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon orange">⏳</div>
+          <div class="stat-info">
+            <h4>Pending</h4>
+            <p class="stat-number">100</p>
+            <span class="stat-change negative">↓ 5% from last week</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Orders Section -->
+      <div class="content-card">
+        <div class="card-header">
+          <div>
+            <h3>Recent Orders</h3>
+            <p class="card-subtitle">Latest order transactions and updates</p>
+          </div>
+          <button class="btn-primary">
+            <span>+</span> New Order
+          </button>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="orders-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="order-id">#ORD-12345</span></td>
+                <td>
+                  <div class="customer-info">
+                    <div class="avatar">JD</div>
+                    <span>John Doe</span>
+                  </div>
+                </td>
+                <td>Oct 7, 2025</td>
+                <td><strong>₹5,499</strong></td>
+                <td><span class="badge delivered">Delivered</span></td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-icon" title="View">👁️</button>
+                    <button class="btn-icon" title="Edit">✏️</button>
+                    <button class="btn-icon" title="Delete">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="order-id">#ORD-12344</span></td>
+                <td>
+                  <div class="customer-info">
+                    <div class="avatar">AS</div>
+                    <span>Alice Smith</span>
+                  </div>
+                </td>
+                <td>Oct 6, 2025</td>
+                <td><strong>₹3,299</strong></td>
+                <td><span class="badge transit">In Transit</span></td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-icon" title="View">👁️</button>
+                    <button class="btn-icon" title="Edit">✏️</button>
+                    <button class="btn-icon" title="Delete">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="order-id">#ORD-12343</span></td>
+                <td>
+                  <div class="customer-info">
+                    <div class="avatar">MJ</div>
+                    <span>Mike Johnson</span>
+                  </div>
+                </td>
+                <td>Oct 6, 2025</td>
+                <td><strong>₹7,899</strong></td>
+                <td><span class="badge pending">Pending</span></td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-icon" title="View">👁️</button>
+                    <button class="btn-icon" title="Edit">✏️</button>
+                    <button class="btn-icon" title="Delete">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="order-id">#ORD-12342</span></td>
+                <td>
+                  <div class="customer-info">
+                    <div class="avatar">SK</div>
+                    <span>Sarah Khan</span>
+                  </div>
+                </td>
+                <td>Oct 5, 2025</td>
+                <td><strong>₹2,199</strong></td>
+                <td><span class="badge delivered">Delivered</span></td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-icon" title="View">👁️</button>
+                    <button class="btn-icon" title="Edit">✏️</button>
+                    <button class="btn-icon" title="Delete">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="order-id">#ORD-12341</span></td>
+                <td>
+                  <div class="customer-info">
+                    <div class="avatar">RP</div>
+                    <span>Rahul Patel</span>
+                  </div>
+                </td>
+                <td>Oct 5, 2025</td>
+                <td><strong>₹4,599</strong></td>
+                <td><span class="badge transit">In Transit</span></td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-icon" title="View">👁️</button>
+                    <button class="btn-icon" title="Edit">✏️</button>
+                    <button class="btn-icon" title="Delete">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <button class="page-btn" disabled>← Previous</button>
+          <div class="page-numbers">
+            <button class="page-num active">1</button>
+            <button class="page-num">2</button>
+            <button class="page-num">3</button>
+            <span>...</span>
+            <button class="page-num">10</button>
+          </div>
+          <button class="page-btn">Next →</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,254 @@
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fa;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* App Root */
+app-root {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Remove any default margins from Angular components */
+app-ordermanagement,
+app-productmanagement,
+app-user,
+app-home {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+
+
+/* for global expamd collpas */
+/* Main Content Container */
+.main-content {
+  margin-left: 240px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s ease;
+  background: #f5f7fa;
+  width: calc(100% - 240px);
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 70px;
+  width: calc(100% - 70px);
+}
+
+/* Top Header */
+.top-header {
+  background: #ffffff;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 15px;
+}
+
+.mobile-menu-toggle svg {
+  width: 24px;
+  height: 24px;
+  color: #2d3748;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.user-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #667eea;
+  color: #ffffff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+  line-height: 1.2;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #718096;
+  line-height: 1.2;
+}
+
+/* Content Area */
+.content-area {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.content-wrapper {
+  max-width: 100%;
+  width: 100%;
+}
+
+.content-wrapper h2 {
+  font-size: 22px;
+  color: #2d3748;
+  margin-bottom: 10px;
+}
+
+.content-wrapper p {
+  font-size: 16px;
+  color: #718096;
+  margin-bottom: 20px;
+}
+
+/* Example Content Card */
+.content-card {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
+}
+
+.content-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 12px;
+}
+
+.content-card p {
+  font-size: 14px;
+  color: #718096;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .main-content.sidebar-collapsed {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .top-header {
+    padding: 0 15px;
+    height: 60px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .user-details {
+    display: none;
+  }
+
+  .user-badge {
+    padding: 5px;
+  }
+
+  .content-area {
+    padding: 20px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 18px;
+  }
+
+  .top-header {
+    padding: 0 12px;
+  }
+
+  .content-area {
+    padding: 15px 12px;
+  }
+
+  .user-label {
+    width: 35px;
+    height: 35px;
+    font-size: 12px;
+  }
+}

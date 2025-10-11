@@ -1,0 +1,238 @@
+<app-sidebar #sidebar></app-sidebar>
+
+<div class="main-content" [class.sidebar-collapsed]="sidebar.isCollapsed">
+  <!-- Top Header -->
+  <app-header></app-header>
+
+  <!-- Content Area -->
+  <main class="content-area">
+    <!-- Stats Cards Grid -->
+    <div class="stats-grid">
+      <!-- Total Users Card -->
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3 class="stat-value">1,234</h3>
+          <p class="stat-label">Total Users</p>
+          <span class="stat-change positive">+12% from last month</span>
+        </div>
+      </div>
+
+      <!-- Total Orders Card -->
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3 class="stat-value">567</h3>
+          <p class="stat-label">Total Orders</p>
+          <span class="stat-change positive">+8% from last month</span>
+        </div>
+      </div>
+
+      <!-- Total Products Card -->
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3 class="stat-value">89</h3>
+          <p class="stat-label">Total Products</p>
+          <span class="stat-change negative">-3% from last month</span>
+        </div>
+      </div>
+
+      <!-- Revenue Card -->
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3 class="stat-value">₹45,678</h3>
+          <p class="stat-label">Total Revenue</p>
+          <span class="stat-change positive">+25% from last month</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+      <!-- Recent Orders Card -->
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h3 class="card-title">Recent Orders</h3>
+          <a href="#" class="view-all-link">View All</a>
+        </div>
+        <div class="order-list">
+          <div class="order-item">
+            <div class="order-info">
+              <span class="order-id">#ORD-001</span>
+              <span class="order-customer">John Smith</span>
+              <span class="order-time">2 hours ago</span>
+            </div>
+            <div class="order-details">
+              <span class="order-amount">₹1,250</span>
+              <span class="order-status status-completed">Completed</span>
+            </div>
+          </div>
+          <div class="order-item">
+            <div class="order-info">
+              <span class="order-id">#ORD-002</span>
+              <span class="order-customer">Sarah Johnson</span>
+              <span class="order-time">5 hours ago</span>
+            </div>
+            <div class="order-details">
+              <span class="order-amount">₹890</span>
+              <span class="order-status status-pending">Pending</span>
+            </div>
+          </div>
+          <div class="order-item">
+            <div class="order-info">
+              <span class="order-id">#ORD-003</span>
+              <span class="order-customer">Mike Wilson</span>
+              <span class="order-time">1 day ago</span>
+            </div>
+            <div class="order-details">
+              <span class="order-amount">₹2,100</span>
+              <span class="order-status status-processing">Processing</span>
+            </div>
+          </div>
+          <div class="order-item">
+            <div class="order-info">
+              <span class="order-id">#ORD-004</span>
+              <span class="order-customer">Emily Davis</span>
+              <span class="order-time">2 days ago</span>
+            </div>
+            <div class="order-details">
+              <span class="order-amount">₹670</span>
+              <span class="order-status status-completed">Completed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Products Card -->
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h3 class="card-title">Top Products</h3>
+          <a href="#" class="view-all-link">View All</a>
+        </div>
+        <div class="product-list">
+          <div class="product-item">
+            <div class="product-info">
+              <div class="product-image">
+                <img src="https://via.placeholder.com/50" alt="Product">
+              </div>
+              <div class="product-details">
+                <span class="product-name">Margherita Pizza</span>
+                <span class="product-sales">145 sales</span>
+              </div>
+            </div>
+            <span class="product-revenue">₹18,125</span>
+          </div>
+          <div class="product-item">
+            <div class="product-info">
+              <div class="product-image">
+                <img src="https://via.placeholder.com/50" alt="Product">
+              </div>
+              <div class="product-details">
+                <span class="product-name">Pepperoni Pizza</span>
+                <span class="product-sales">128 sales</span>
+              </div>
+            </div>
+            <span class="product-revenue">₹19,152</span>
+          </div>
+          <div class="product-item">
+            <div class="product-info">
+              <div class="product-image">
+                <img src="https://via.placeholder.com/50" alt="Product">
+              </div>
+              <div class="product-details">
+                <span class="product-name">Chicken Burger</span>
+                <span class="product-sales">98 sales</span>
+              </div>
+            </div>
+            <span class="product-revenue">₹9,800</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+     <div class="dashboard-card quick-actions-card">
+  <div class="card-header">
+    <h3 class="card-title">Quick Actions</h3>
+  </div>
+
+  <div class="quick-actions-grid">
+    <button 
+      class="action-btn"
+      *ngFor="let item of menuItems"
+      (click)="navigate(item.route)">
+      
+      <!-- SVG Icon (optional) -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+
+      <span>{{ item.label }}</span>
+    </button>
+  </div>
+</div>
+
+    <!-- <div class="dashboard-card quick-actions-card">
+      <div class="card-header">
+        <h3 class="card-title">Quick Actions</h3>
+      </div>
+      <div class="quick-actions-grid">
+        <button class="action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add New Order</span>
+        </button>
+        <button class="action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add New Product</span>
+        </button>
+        <button class="action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add New User</span>
+        </button>
+        <button class="action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span>Generate Report</span>
+        </button>
+      </div>
+    </div> -->
+  </main>
+</div>
