@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Apollo, gql } from 'apollo-angular';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-register',
@@ -33,9 +35,10 @@ export class RegisterComponent implements OnInit {
     }
   `;
 
-  constructor(private fb: FormBuilder, private apollo: Apollo) {}
+  constructor(private fb: FormBuilder, private apollo: Apollo , private router: Router) {}
 
   ngOnInit() {
+
     this.registerForm = this.fb.group({
       restaurantName: ['', Validators.required],
       firstName: ['', Validators.required],
@@ -106,6 +109,8 @@ export class RegisterComponent implements OnInit {
           alert('Restaurant registered successfully!');
           this.registerForm.reset();
           this.submitted = false;
+          this.router.navigate(['/login']); // Navigates to the '/home' route
+
         },
         error: (err) => {
           console.error('Error creating restaurant:', err);
