@@ -102,7 +102,9 @@ export class RegisterComponent implements OnInit {
         coverImageUrl: '',
         description: '',
         isVerified: false,
-        createdBy: 'admin'
+        createdBy: 'admin',
+        password: formValues.password,
+        confirmPassword: formValues.confirmPassword
       };
 
       this.apollo.mutate({
