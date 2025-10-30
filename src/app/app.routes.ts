@@ -27,5 +27,6 @@ export const routes: Routes = [
     path: 'reports',
     loadChildren: () => import('./productmanagement/productmanagement.module')
       .then(m => m.ProductmanagementModule)
-  }
+  },
+
 ];

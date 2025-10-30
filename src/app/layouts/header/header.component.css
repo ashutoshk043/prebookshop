@@ -1,0 +1,137 @@
+/* ========== HEADER BASE ========== */
+.top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #2b2d42, #3a0ca3);
+  color: #fff;
+  padding: 10px 25px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  flex-wrap: wrap;
+}
+
+/* ========== MOBILE MENU ICON ========== */
+.mobile-menu-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: none;
+}
+.mobile-menu-toggle svg {
+  width: 28px;
+  height: 28px;
+  stroke: #fff;
+  transition: stroke 0.3s ease;
+}
+.mobile-menu-toggle:hover svg {
+  stroke: #ffb703;
+}
+
+/* ========== HEADER CONTENT ========== */
+.header-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  flex-wrap: wrap;
+}
+
+/* Page Title (Orders & Details) */
+.page-title {
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin: 0;
+  color: #ffd60a;
+  transition: all 0.3s ease;
+}
+
+/* Restaurant Name */
+.rest-name {
+  background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: clamp(16px, 2vw, 22px);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: fadeIn 1s ease;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== USER BADGE (White Background) ========== */
+.user-badge {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff; /* ✅ White background */
+  color: #2b2d42; /* Dark text */
+  padding: 8px 14px;
+  border-radius: 25px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+.user-badge:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+}
+.user-label {
+  font-size: clamp(12px, 1.5vw, 14px);
+  font-weight: 600;
+  margin-right: 10px;
+  color: #3a0ca3;
+}
+.user-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.user-name {
+  font-size: clamp(12px, 1.5vw, 14px);
+  font-weight: 700;
+  color: #2b2d42;
+}
+.user-role {
+  font-size: clamp(10px, 1.3vw, 12px);
+  color: #ff6b6b;
+  font-weight: 500;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Hide Orders & Details title */
+  .page-title {
+    display: none;
+  }
+
+  /* Hide user details (badge) */
+  .user-badge {
+    display: none;
+  }
+
+  /* Centered Restaurant Name */
+  .rest-name {
+    font-size: clamp(18px, 4vw, 24px);
+    margin-top: 8px;
+  }
+}

@@ -1,6 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { CookieService } from 'ngx-cookie-service';
+import { ToastrService } from 'ngx-toastr';
+
+import { Apollo, gql } from 'apollo-angular';
+import { jwtDecode } from 'jwt-decode';
+
+interface CustomJwtPayload {
+  rest_id: string;
+  res_name: string;
+  iat?: number;
+  exp?: number;
+}
+
 
 @Component({
   selector: 'app-sidebar',
@@ -13,6 +26,7 @@ export class SidebarComponent {
 isCollapsed: boolean = false;
   isMobile: boolean = false;
   isMobileMenuOpen: boolean = false;
+  restId:string=''
 
   @Output() sidebarStateChange = new EventEmitter<boolean>();
 
@@ -24,7 +38,7 @@ isCollapsed: boolean = false;
     { label: 'Generate Report', icon: 'reports', route: '/reports' }
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private toster:ToastrService, private cookieservice:CookieService, private apollo:Apollo) {}
 
   ngOnInit(): void {
     this.checkScreenSize();
@@ -62,4 +76,70 @@ isCollapsed: boolean = false;
       this.closeMobileMenu();
     }
   }
-}
+
+
+logout(): void {
+    try {
+      const token = this.cookieservice.get('auth_token');
+
+      if (!token) {
+        this.toster.warning('No active session found!');
+        return;
+      }
+
+      // ✅ Decode token to get rest_id
+      const decodedToken = jwtDecode<CustomJwtPayload>(token);
+      const restId = decodedToken?.rest_id;
+
+      if (!restId) {
+        this.toster.error('Invalid token. Please login again.');
+        return;
+      }
+
+      // ✅ GraphQL logout mutation (correct structure)
+      const LOGOUT_MUTATION = gql`
+        mutation Logout($restId: String!) {
+          logoutRestaurant(restId: $restId) {
+            message
+          }
+        }
+      `;
+
+      // console.log('🚀 Sending logout request for rest_id:', restId);
+
+      // ✅ Send mutation request
+      this.apollo.mutate({
+        mutation: LOGOUT_MUTATION,
+        variables: { restId }
+      }).subscribe({
+        next: (response: any) => {
+          // console.log('✅ Logout API Response:', response);
+
+          // ✅ Clear token, storage & session
+          this.cookieservice.delete('auth_token', '/');
+          localStorage.clear();
+          sessionStorage.clear();
+
+          // ✅ Success toaster
+          this.toster.success(response.data.logoutRestaurant.message, 'Logout Successful');
+
+          // ✅ Redirect
+          setTimeout(() => {
+            this.router.navigate(['/']);
+          }, 1200);
+        },
+        error: (err) => {
+          console.error('❌ Logout API Error:', err);
+          this.toster.error('Logout failed. Please try again.');
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Error during logout:', error);
+      this.toster.error('Something went wrong during logout.');
+    }
+  }
+
+
+  }
+  

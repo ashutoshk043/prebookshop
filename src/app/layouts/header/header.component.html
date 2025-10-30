@@ -1,25 +1,24 @@
-  <header class="top-header">
-    <button class="mobile-menu-toggle" >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
-      </svg>
-    </button>
+<header class="top-header">
+  <button class="mobile-menu-toggle">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </button>
 
-    <div class="header-content">
-      <h1 class="page-title">{{ currentRoute | titlecase }}</h1>
-      <!-- <small>Full URL: {{ currentUrl }}</small> -->
-  
-      
-      <div class="header-right">
-        <div class="user-badge">
-          <span class="user-label">User</span>
-          <div class="user-details">
-            <span class="user-name">Ashutosh Kumar</span>
-            <span class="user-role">Admin</span>
-          </div>
+  <div class="header-content">
+    <h1 class="page-title">Orders</h1>
+    <h1 class="rest-name">{{ restName | titlecase }}</h1>
+
+    <div class="header-right">
+      <div class="user-badge">
+        <!-- <span class="user-label">User</span> -->
+        <div class="user-details">
+          <span class="user-name">Ashutosh Kumar</span>
+          <span class="user-role">Admin</span>
         </div>
       </div>
     </div>
-  </header>
+  </div>
+</header>

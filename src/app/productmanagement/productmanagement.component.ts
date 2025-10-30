@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SidebarComponent } from "../layouts/sidebar/sidebar.component";
 import { HeaderComponent } from "../layouts/header/header.component";
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 interface Product {
   id: string;
@@ -20,14 +21,15 @@ interface Product {
 @Component({
   selector: 'app-productmanagement',
   standalone: true,
-  imports: [SidebarComponent, HeaderComponent, CommonModule, FormsModule],
+  imports: [SidebarComponent, HeaderComponent, CommonModule, ReactiveFormsModule],
   templateUrl: './productmanagement.component.html',
   styleUrl: './productmanagement.component.css'
 })
-export class ProductmanagementComponent {
+export class ProductmanagementComponent implements OnInit {
   showModal = false;
   showImportModal = false;
   isEditMode = false;
+  productForm!: FormGroup;
   
   products: Product[] = [
     {
@@ -80,26 +82,32 @@ export class ProductmanagementComponent {
     }
   ];
 
-  currentProduct: Product = this.getEmptyProduct();
   importFile: File | null = null;
 
   categories = ['Chinese', 'Indian', 'Italian', 'Continental', 'Desserts', 'Beverages'];
   variants = ['Half', 'Full', 'Single', 'Regular', 'Large'];
   units = ['Plate', 'Piece', 'Bowl', 'Glass', 'Kg'];
 
-  getEmptyProduct(): Product {
-    return {
-      id: '',
-      productName: '',
-      category: '',
-      description: '',
-      variantType: '',
-      price: 0,
-      unit: '',
-      stock: 0,
-      ingredients: '',
-      available: true
-    };
+  constructor(private fb: FormBuilder, private toster:ToastrService) {}
+
+  ngOnInit(): void {
+    this.initializeForm();
+  }
+
+  initializeForm(): void {
+    this.productForm = this.fb.group({
+      id: [''],
+      productName: ['', [Validators.required, Validators.minLength(3)]],
+      category: ['', Validators.required],
+      description: [''],
+      variantType: [''],
+      price: [0, [Validators.required, Validators.min(0)]],
+      unit: [''],
+      stock: [0, [Validators.required, Validators.min(0)]],
+      ingredients: [''],
+      restraurentId:[''],
+      available: [true]
+    });
   }
 
   get totalProducts(): number {
@@ -118,21 +126,49 @@ export class ProductmanagementComponent {
     return this.categories.length;
   }
 
+  // Form getters for validation
+  get productName() {
+    return this.productForm.get('productName');
+  }
+
+  get category() {
+    return this.productForm.get('category');
+  }
+
+  get price() {
+    return this.productForm.get('price');
+  }
+
+  get stock() {
+    return this.productForm.get('stock');
+  }
+
   openAddModal(): void {
     this.isEditMode = false;
-    this.currentProduct = this.getEmptyProduct();
+    this.productForm.reset({
+      id: '',
+      productName: '',
+      category: '',
+      description: '',
+      variantType: '',
+      price: 0,
+      unit: '',
+      stock: 0,
+      ingredients: '',
+      available: true
+    });
     this.showModal = true;
   }
 
   openEditModal(product: Product): void {
     this.isEditMode = true;
-    this.currentProduct = { ...product };
+    this.productForm.patchValue(product);
     this.showModal = true;
   }
 
   closeModal(): void {
     this.showModal = false;
-    this.currentProduct = this.getEmptyProduct();
+    this.productForm.reset();
   }
 
   openImportModal(): void {
@@ -194,20 +230,29 @@ export class ProductmanagementComponent {
   }
 
   saveProduct(): void {
-    if (!this.currentProduct.productName || !this.currentProduct.category) {
-      alert('Please fill in required fields (Product Name and Category)');
+    if (this.productForm.invalid) {
+      this.toster.error("Please fill in all required fields correctly")
+      // alert('Please fill in all required fields correctly');
+      Object.keys(this.productForm.controls).forEach(key => {
+        const control = this.productForm.get(key);
+        if (control?.invalid) {
+          control.markAsTouched();
+        }
+      });
       return;
     }
 
+    const productData = this.productForm.value;
+
     if (this.isEditMode) {
-      const index = this.products.findIndex(p => p.id === this.currentProduct.id);
+      const index = this.products.findIndex(p => p.id === productData.id);
       if (index !== -1) {
-        this.products[index] = { ...this.currentProduct };
+        this.products[index] = productData;
         alert('Product updated successfully!');
       }
     } else {
-      this.currentProduct.id = 'PRD-' + String(this.products.length + 1).padStart(3, '0');
-      this.products.push({ ...this.currentProduct });
+      productData.id = 'PRD-' + String(this.products.length + 1).padStart(3, '0');
+      this.products.push(productData);
       alert('Product added successfully!');
     }
 

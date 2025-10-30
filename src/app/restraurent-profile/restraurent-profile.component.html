@@ -1,0 +1,268 @@
+<!-- HTML Template -->
+<div class="page-wrapper">
+  <div class="container" *ngIf="!loading; else loadingTpl">
+    <!-- Header -->
+    <div class="header">
+      <h1>🍽️ Restaurant Verification Portal</h1>
+      <p>Complete your profile and start earning today</p>
+    </div>
+
+    <div class="main-layout">
+      <!-- Section 1: Restaurant Status -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-number">1</div>
+          <div class="section-title">
+            <h2>Restaurant Status</h2>
+            <p>Current verification status and contact information</p>
+          </div>
+        </div>
+
+        <div class="status-container">
+          <div class="status-card" [ngClass]="restaurantForm.get('isVerified')?.value ? 'verified' : 'not-verified'">
+            <div class="status-badge" [ngClass]="restaurantForm.get('isVerified')?.value ? 'active' : 'pending'">
+              {{ restaurantForm.get('isVerified')?.value ? '✅ Verified' : '⚠️ Not Verified' }}
+            </div>
+            <div class="status-info">
+              <h3 *ngIf="restaurantForm.get('isVerified')?.value; else notVerified">
+                Verification Complete
+              </h3>
+              <ng-template #notVerified>
+                <h3>Verification Pending</h3>
+                <p style="color: #991b1b; font-size: 14px;">
+                  Please complete the form below to start the verification process
+                </p>
+              </ng-template>
+            </div>
+            <div class="contact-detail">
+              <span>📞</span>
+              <strong>Contact:</strong> {{ restaurantForm.get('phone')?.value || 'N/A' }}
+            </div>
+            <div class="contact-detail">
+              <span>📧</span>
+              <strong>Email:</strong> {{ restaurantForm.get('email')?.value || 'N/A' }}
+            </div>
+          </div>
+
+          <div class="status-card status-card-info">
+            <div class="status-info">
+              <h3>📊 Quick Stats</h3>
+              <div class="contact-detail">
+                <span>⏰</span>
+                <strong>Status:</strong> {{ restaurantForm.get('isVerified')?.value ? 'Active' : 'Awaiting Documents' }}
+              </div>
+              <div class="contact-detail">
+                <span>📅</span>
+                <strong>Registered:</strong> {{ restaurantForm.get('registrationDate')?.value || 'Not Completed' }}
+              </div>
+              <div class="contact-detail">
+                <span>🎯</span>
+                <strong>Next Step:</strong> {{ restaurantForm.get('isVerified')?.value ? 'Start Receiving Orders' : 'Fill Form' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Restaurant Form -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-number">2</div>
+          <div class="section-title">
+            <h2>Restaurant Profile Form</h2>
+            <p>Complete all required information to proceed</p>
+          </div>
+        </div>
+
+        <form [formGroup]="restaurantForm" (ngSubmit)="onSubmit()">
+          <!-- 📝 Basic Information -->
+          <h3 class="section-subtitle">📝 Basic Information</h3>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label class="form-label">Restaurant Name <span class="required">*</span></label>
+              <input type="text" class="form-input" formControlName="name" placeholder="Enter restaurant name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Owner Name <span class="required">*</span></label>
+              <input type="text" class="form-input" formControlName="ownerName" placeholder="Enter owner name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Restaurant Type <span class="required">*</span></label>
+              <select class="form-input" formControlName="type">
+                <option value="">Select Type</option>
+                <option value="restaurant">Restaurant</option>
+                <option value="cloud-kitchen">Cloud Kitchen</option>
+                <option value="cafe">Cafe</option>
+                <option value="food-cart">Food Cart</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number <span class="required">*</span></label>
+              <input type="tel" class="form-input" formControlName="phone" placeholder="+91 XXXXX XXXXX" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input type="email" class="form-input" formControlName="email" placeholder="restaurant@example.com" />
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" formControlName="description" placeholder="Tell us about your restaurant's specialties..."></textarea>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- 📍 Location Details -->
+          <h3 class="section-subtitle">📍 Location Details</h3>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label class="form-label">Address <span class="required">*</span></label>
+              <input type="text" class="form-input" formControlName="address" placeholder="Building name, street, area" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">City <span class="required">*</span></label>
+              <input type="text" class="form-input" formControlName="city" placeholder="Enter city" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">State <span class="required">*</span></label>
+              <input type="text" class="form-input" formControlName="state" placeholder="Enter state" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pincode <span class="required">*</span></label>
+              <input type="text" class="form-input" formControlName="pincode" placeholder="6-digit pincode" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Latitude <span class="required">*</span></label>
+              <input type="text" class="form-input" formControlName="latitude" placeholder="26.8467" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Longitude <span class="required">*</span></label>
+              <input type="text" class="form-input" formControlName="longitude" placeholder="80.9462" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- 📄 Legal Information -->
+          <h3 class="section-subtitle">📄 Legal Information</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">FSSAI License <span class="required">*</span></label>
+              <input type="text" class="form-input" formControlName="fssaiNumber" placeholder="14-digit FSSAI number" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">GST Number</label>
+              <input type="text" class="form-input" formControlName="gstNumber" placeholder="15-character GSTIN" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">PAN Number <span class="required">*</span></label>
+              <input type="text" class="form-input" formControlName="panNumber" placeholder="10-character PAN" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Registration Date <span class="required">*</span></label>
+              <input type="date" class="form-input" formControlName="registrationDate" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- ⏰ Operating Hours -->
+          <h3 class="section-subtitle">⏰ Operating Hours</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Opening Time <span class="required">*</span></label>
+              <input type="time" class="form-input" formControlName="openingTime" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Closing Time <span class="required">*</span></label>
+              <input type="time" class="form-input" formControlName="closingTime" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- 📷 Media Upload -->
+          <h3 class="section-subtitle">📷 Media & Images</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Logo <span class="required">*</span></label>
+              <div class="file-upload-wrapper">
+                <input type="file" (change)="onFileSelected($event, 'logo')" accept="image/*" />
+                <div class="upload-icon" *ngIf="!logoPreview">📸</div>
+                <div class="upload-text" *ngIf="!logoPreview">Click to upload logo<br><small>PNG, JPG up to 5MB</small></div>
+                <img *ngIf="logoPreview" [src]="logoPreview" class="preview-img" alt="Logo Preview" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cover Image <span class="required">*</span></label>
+              <div class="file-upload-wrapper">
+                <input type="file" (change)="onFileSelected($event, 'cover')" accept="image/*" />
+                <div class="upload-icon" *ngIf="!coverPreview">🖼️</div>
+                <div class="upload-text" *ngIf="!coverPreview">Click to upload cover<br><small>PNG, JPG up to 5MB</small></div>
+                <img *ngIf="coverPreview" [src]="coverPreview" class="preview-img" alt="Cover Preview" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="onCancel()">❌ Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="restaurantForm.invalid">
+              Update Restraurent →
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Section 3: Payment -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-number">3</div>
+          <div class="section-title">
+            <h2>Payment & Verification</h2>
+            <p>Complete payment to schedule verification</p>
+          </div>
+        </div>
+
+        <div class="payment-container">
+          <div class="price-card">
+            <h3 style="font-size: 24px; color: #1a1a1a; margin-bottom: 10px;">Registration Fee</h3>
+            <div class="price-amount">₹199</div>
+            <p class="price-description">One-time registration fee for verification and onboarding</p>
+          </div>
+
+          <div class="benefits-grid">
+            <div class="benefit-item">
+              <div class="benefit-icon">✓</div>
+              <span>Priority verification process</span>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">✓</div>
+              <span>Dedicated support team</span>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">✓</div>
+              <span>Premium listing features</span>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">✓</div>
+              <span>On-site verification appointment</span>
+            </div>
+          </div>
+
+          <button class="btn btn-success" (click)="processPayment()">💳 Pay ₹99 & Schedule Verification</button>
+          <div class="secure-badge">
+            <span>🔒</span>
+            <span>Secure payment powered by Razorpay</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loadingTpl>
+    <div class="loading-spinner">
+      <div class="spinner-icon">⏳</div>
+      <p>Loading restaurant profile...</p>
+    </div>
+  </ng-template>
+</div>

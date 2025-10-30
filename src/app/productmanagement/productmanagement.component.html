@@ -53,6 +53,12 @@
             <p class="card-subtitle">Manage your menu items and inventory</p>
           </div>
           <div class="header-actions">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input 
+                type="text" 
+                placeholder="Search products..." >
+            </div>
             <button class="btn-secondary" (click)="openImportModal()">
               <span>📥</span> Import Products
             </button>
@@ -132,7 +138,7 @@
   </main>
 </div>
 
-<!-- Add/Edit Product Modal -->
+<!-- Add/Edit Product Modal with Reactive Forms -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -141,31 +147,48 @@
     </div>
     
     <div class="modal-body">
-      <form>
+      <form [formGroup]="productForm">
         <div class="form-row">
           <div class="form-group">
             <label>Product Name <span class="required">*</span></label>
-            <input type="text" [(ngModel)]="currentProduct.productName" name="productName" placeholder="Enter product name" required>
+            <input 
+              type="text" 
+              formControlName="productName" 
+              placeholder="Enter product name"
+              [class.error]="productName?.invalid && productName?.touched">
+            <div class="error-message" *ngIf="productName?.invalid && productName?.touched">
+              <span *ngIf="productName?.errors?.['required']">Product name is required</span>
+              <span *ngIf="productName?.errors?.['minlength']">Product name must be at least 3 characters</span>
+            </div>
           </div>
           
           <div class="form-group">
             <label>Category <span class="required">*</span></label>
-            <select [(ngModel)]="currentProduct.category" name="category" required>
+            <select 
+              formControlName="category"
+              [class.error]="category?.invalid && category?.touched">
               <option value="">Select category</option>
               <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
             </select>
+            <div class="error-message" *ngIf="category?.invalid && category?.touched">
+              <span *ngIf="category?.errors?.['required']">Category is required</span>
+            </div>
           </div>
         </div>
 
         <div class="form-group">
           <label>Description</label>
-          <textarea [(ngModel)]="currentProduct.description" name="description" placeholder="Enter product description" rows="3"></textarea>
+          <textarea 
+            formControlName="description" 
+            placeholder="Enter product description" 
+            rows="3">
+          </textarea>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label>Variant Type</label>
-            <select [(ngModel)]="currentProduct.variantType" name="variantType">
+            <select formControlName="variantType">
               <option value="">Select variant</option>
               <option *ngFor="let variant of variants" [value]="variant">{{ variant }}</option>
             </select>
@@ -173,7 +196,7 @@
           
           <div class="form-group">
             <label>Unit</label>
-            <select [(ngModel)]="currentProduct.unit" name="unit">
+            <select formControlName="unit">
               <option value="">Select unit</option>
               <option *ngFor="let unit of units" [value]="unit">{{ unit }}</option>
             </select>
@@ -182,24 +205,45 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>Price (₹)</label>
-            <input type="number" [(ngModel)]="currentProduct.price" name="price" placeholder="0" min="0">
+            <label>Price (₹) <span class="required">*</span></label>
+            <input 
+              type="number" 
+              formControlName="price" 
+              placeholder="0" 
+              min="0"
+              [class.error]="price?.invalid && price?.touched">
+            <div class="error-message" *ngIf="price?.invalid && price?.touched">
+              <span *ngIf="price?.errors?.['required']">Price is required</span>
+              <span *ngIf="price?.errors?.['min']">Price must be greater than or equal to 0</span>
+            </div>
           </div>
           
           <div class="form-group">
-            <label>Stock</label>
-            <input type="number" [(ngModel)]="currentProduct.stock" name="stock" placeholder="0" min="0">
+            <label>Stock <span class="required">*</span></label>
+            <input 
+              type="number" 
+              formControlName="stock" 
+              placeholder="0" 
+              min="0"
+              [class.error]="stock?.invalid && stock?.touched">
+            <div class="error-message" *ngIf="stock?.invalid && stock?.touched">
+              <span *ngIf="stock?.errors?.['required']">Stock is required</span>
+              <span *ngIf="stock?.errors?.['min']">Stock must be greater than or equal to 0</span>
+            </div>
           </div>
         </div>
 
         <div class="form-group">
           <label>Ingredients (format: Item:Quantity,Item:Quantity)</label>
-          <input type="text" [(ngModel)]="currentProduct.ingredients" name="ingredients" placeholder="Rice:100,Paneer:50,Oil:10">
+          <input 
+            type="text" 
+            formControlName="ingredients" 
+            placeholder="Rice:100,Paneer:50,Oil:10">
         </div>
 
         <div class="form-group checkbox-group">
           <label class="checkbox-label">
-            <input type="checkbox" [(ngModel)]="currentProduct.available" name="available">
+            <input type="checkbox" formControlName="available">
             <span>Product is available</span>
           </label>
         </div>
@@ -208,7 +252,10 @@
     
     <div class="modal-footer">
       <button class="btn-cancel" (click)="closeModal()">Cancel</button>
-      <button class="btn-save" (click)="saveProduct()">
+      <button 
+        class="btn-save" 
+        (click)="saveProduct()"
+        [disabled]="productForm.invalid">
         {{ isEditMode ? 'Update Product' : 'Add Product' }}
       </button>
     </div>

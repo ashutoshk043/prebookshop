@@ -254,3 +254,39 @@
   border-right-color: #2d3748;
   z-index: 1001;
 }
+
+
+
+
+.logout-section {
+  margin-top: auto;
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: center;
+}
+
+.logout-btn {
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background-color: #d9363e;
+}
+
+.logout-icon {
+  width: 18px;
+  height: 18px;
+}
