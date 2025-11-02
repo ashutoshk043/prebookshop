@@ -97,11 +97,11 @@ export class LoginComponent implements OnInit {
 
             console.log(restDetails, "restDetails")
 
-            if(!restDetails.isVerified){
-                this.router.navigate(['/restaurent-profile']);
-            }else{
+            // if(!restDetails.isVerified){
+            //     this.router.navigate(['/restaurent-profile']);
+            // }else{
               this.router.navigate(['/home']);
-            }
+            // }
 
             this.toastr.success('Login successful!');
             

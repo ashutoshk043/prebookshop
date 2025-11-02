@@ -1,77 +1,75 @@
-<div class="login-container">
-  <div class="login-card">
-    <div class="login-header">
-      <div class="logo-container">
-        <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-gradient">
+  <div class="card shadow-lg p-4 p-md-5 border-0 rounded-4" style="max-width: 420px; width: 100%;">
+    <div class="text-center mb-4">
+      <div class="logo mb-3">
+        <svg width="64" height="64" fill="none" stroke="url(#grad1)" stroke-width="2" viewBox="0 0 24 24">
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+            </linearGradient>
+          </defs>
           <circle cx="12" cy="12" r="10"></circle>
           <path d="M12 6v6l4 2"></path>
         </svg>
       </div>
-      <h1 class="title">Welcome Back</h1>
-      <p class="subtitle">Please sign in to continue</p>
+      <h2 class="fw-bold text-dark mb-2">Welcome Back</h2>
+      <p class="text-muted mb-0">Please sign in to continue</p>
     </div>
 
-    <form *ngIf="loginForm" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
-
+    <form *ngIf="loginForm" [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
       <!-- Email -->
-      <div class="form-group">
-        <label for="email" class="form-label">Email Address</label>
-        <input type="email" id="email" formControlName="email" class="form-input" placeholder="Enter your email" />
-        <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="error">
+      <div class="mb-3">
+        <label for="email" class="form-label fw-semibold">Email address</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          class="form-control form-control-lg"
+          placeholder="Enter your email" />
+        <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="text-danger small mt-1">
           Enter a valid email
         </div>
       </div>
 
       <!-- Password -->
-      <div class="form-group">
-        <label for="password" class="form-label">Password</label>
-        <input type="password" id="password" formControlName="password" class="form-input"
+      <div class="mb-3">
+        <label for="password" class="form-label fw-semibold">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          class="form-control form-control-lg"
           placeholder="Enter your password" />
-        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="error">
+        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="text-danger small mt-1">
           Password is required
         </div>
       </div>
 
-      <!-- Captcha -->
-      <!-- <div class="form-group">
-        <label for="captcha" class="form-label">Captcha</label>
-        <input type="text" id="captcha" formControlName="captcha" class="form-input" placeholder="Enter captcha" />
-        <div *ngIf="loginForm.get('captcha')?.invalid && loginForm.get('captcha')?.touched" class="error">
-          Captcha is required
+      <!-- Remember Me & Forgot -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" formControlName="remember" id="remember">
+          <label class="form-check-label small text-secondary" for="remember">Remember me</label>
         </div>
-      </div> -->
-
-      <!-- Remember me -->
-      <div class="form-options">
-        <label class="checkbox-container">
-          <input type="checkbox" formControlName="remember" class="checkbox-input" />
-          <span class="checkbox-label">Remember me</span>
-        </label>
-        <a routerLink="/forgot-password" class="forgot-link">Forgot Password?</a>
+        <a routerLink="/forgot-password" class="text-decoration-none text-primary fw-semibold small">Forgot Password?</a>
       </div>
 
-      <!-- Submit button with spinner -->
-      <button type="submit" class="btn-primary" [disabled]="loading || loginForm.invalid">
+      <!-- Submit -->
+      <button type="submit" class="btn btn-primary w-100 btn-lg d-flex align-items-center justify-content-center"
+              [disabled]="loading || loginForm.invalid">
         <span *ngIf="!loading">Sign In</span>
         <span *ngIf="loading">
-          <svg class="spinner" viewBox="0 0 50 50">
-            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-          </svg>
-          Signing In...
+          <span class="spinner-border spinner-border-sm me-2"></span> Signing In...
         </span>
       </button>
-
-
     </form>
 
-    <div class="login-footer">
-      <p>Don't have an account? <a routerLink="/signup" class="signup-link">Sign up</a></p>
+    <div class="text-center mt-4 border-top pt-3">
+      <p class="small mb-0 text-secondary">
+        Don’t have an account?
+        <a routerLink="/signup" class="fw-semibold text-primary text-decoration-none">Sign up</a>
+      </p>
     </div>
-  </div>
-
-  <div class="background-shapes">
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
   </div>
 </div>

@@ -1,253 +1,104 @@
-<div class="login-container">
-  <div class="login-card register-card">
-    <div class="login-header">
-      <div class="logo-container">
-        <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 6v6l4 2"></path>
-        </svg>
-      </div>
-      <h1 class="title">Create Account</h1>
-      <p class="subtitle">Sign up to get started</p>
-    </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="login-form">
 
-      <!-- Restaurant Name -->
-      <div class="form-group">
-        <label for="restaurantName" class="form-label">Restaurant Name</label>
-        <div class="input-wrapper">
-          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <input 
-            type="text" 
-            id="restaurantName" 
-            class="form-input" 
-            placeholder="Enter restaurant name" 
-            formControlName="restaurantName"
-            [ngClass]="{
-              'valid-input': f['restaurantName'].valid && (f['restaurantName'].touched || submitted),
-              'invalid-input': f['restaurantName'].invalid && (f['restaurantName'].touched || submitted)
-            }"
-          />
-        </div>
-        <div class="error" *ngIf="submitted && f['restaurantName'].errors?.['required']">
-          Restaurant Name is required
-        </div>
-      </div>
-
-      <!-- First & Last Name -->
-      <div class="form-row">
-        <div class="form-group form-group-half">
-          <label for="firstName" class="form-label">First Name</label>
-          <div class="input-wrapper">
-            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <input 
-              type="text" 
-              id="firstName" 
-              class="form-input" 
-              placeholder="First name" 
-              formControlName="firstName"
-              [ngClass]="{
-                'valid-input': f['firstName'].valid && (f['firstName'].touched || submitted),
-                'invalid-input': f['firstName'].invalid && (f['firstName'].touched || submitted)
-              }"
-            />
-          </div>
-          <div class="error" *ngIf="submitted && f['firstName'].errors?.['required']">
-            First Name is required
-          </div>
-        </div>
-
-        <div class="form-group form-group-half">
-          <label for="lastName" class="form-label">Last Name</label>
-          <div class="input-wrapper">
-            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <input 
-              type="text" 
-              id="lastName" 
-              class="form-input" 
-              placeholder="Last name" 
-              formControlName="lastName"
-              [ngClass]="{
-                'valid-input': f['lastName'].valid && (f['lastName'].touched || submitted),
-                'invalid-input': f['lastName'].invalid && (f['lastName'].touched || submitted)
-              }"
-            />
-          </div>
-          <div class="error" *ngIf="submitted && f['lastName'].errors?.['required']">
-            Last Name is required
-          </div>
-        </div>
-      </div>
-
-      <!-- Email -->
-      <div class="form-group">
-        <label for="email" class="form-label">Email Address</label>
-        <div class="input-wrapper">
-          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-            <polyline points="22,6 12,13 2,6"></polyline>
-          </svg>
-          <input 
-            type="email" 
-            id="email" 
-            class="form-input" 
-            placeholder="Enter your email" 
-            formControlName="email"
-            [ngClass]="{
-              'valid-input': f['email'].valid && (f['email'].touched || submitted),
-              'invalid-input': f['email'].invalid && (f['email'].touched || submitted)
-            }"
-          />
-        </div>
-        <div class="error" *ngIf="submitted && f['email'].errors">
-          <span *ngIf="f['email'].errors?.['required']">Email is required</span>
-          <span *ngIf="f['email'].errors?.['email']">Invalid email format</span>
-        </div>
-      </div>
-
-      <!-- Phone -->
-      <div class="form-group">
-        <label for="phone" class="form-label">Phone Number</label>
-        <div class="input-wrapper">
-          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-          </svg>
-          <input 
-            type="tel" 
-            id="phone" 
-            class="form-input" 
-            placeholder="Enter phone number" 
-            formControlName="phone"
-            [ngClass]="{
-              'valid-input': f['phone'].valid && (f['phone'].touched || submitted),
-              'invalid-input': f['phone'].invalid && (f['phone'].touched || submitted)
-            }"
-          />
-        </div>
-        <div class="error" *ngIf="submitted && f['phone'].errors">
-          <span *ngIf="f['phone'].errors?.['required']">Phone is required</span>
-          <span *ngIf="f['phone'].errors?.['pattern']">Phone must be 10 digits</span>
-        </div>
-      </div>
-
-      <!-- Address -->
-      <div class="form-group">
-        <label for="address" class="form-label">Restaurant Address</label>
-        <div class="input-wrapper">
-          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          <input 
-            type="text" 
-            id="address" 
-            class="form-input" 
-            placeholder="Enter restaurant address" 
-            formControlName="address"
-            [ngClass]="{
-              'valid-input': f['address'].valid && (f['address'].touched || submitted),
-              'invalid-input': f['address'].invalid && (f['address'].touched || submitted)
-            }"
-          />
-        </div>
-        <div class="error" *ngIf="submitted && f['address'].errors?.['required']">
-          Address is required
-        </div>
-      </div>
-
-      <!-- Password -->
-      <div class="form-group">
-        <label for="password" class="form-label">Password</label>
-        <div class="input-wrapper">
-          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-          <input 
-            type="password" 
-            id="password" 
-            class="form-input" 
-            placeholder="Create a password" 
-            formControlName="password"
-            [ngClass]="{
-              'valid-input': f['password'].valid && (f['password'].touched || submitted),
-              'invalid-input': f['password'].invalid && (f['password'].touched || submitted)
-            }"
-          />
-        </div>
-        <div class="error" *ngIf="submitted && f['password'].errors">
-          <span *ngIf="f['password'].errors?.['required']">Password is required</span>
-          <span *ngIf="f['password'].errors?.['minlength']">Password must be at least 6 characters</span>
-        </div>
-      </div>
-
-      <!-- Confirm Password -->
-      <div class="form-group">
-        <label for="confirmPassword" class="form-label">Confirm Password</label>
-        <div class="input-wrapper">
-          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-          <input 
-            type="password" 
-            id="confirmPassword" 
-            class="form-input" 
-            placeholder="Confirm your password" 
-            formControlName="confirmPassword"
-            [ngClass]="{
-              'valid-input': f['confirmPassword'].valid && (f['confirmPassword'].touched || submitted),
-              'invalid-input': f['confirmPassword'].invalid && (f['confirmPassword'].touched || submitted)
-            }"
-          />
-        </div>
-        <div class="error" *ngIf="submitted && f['confirmPassword'].errors">
-          <span *ngIf="f['confirmPassword'].errors?.['required']">Confirm Password is required</span>
-          <span *ngIf="f['confirmPassword'].errors?.['mismatch']">Passwords do not match</span>
-        </div>
-      </div>
-
-      <!-- Terms -->
-      <div class="form-options">
-        <label class="checkbox-container">
-          <input type="checkbox" class="checkbox-input" formControlName="terms" />
-          <span class="checkbox-label">I agree to the Terms & Conditions</span>
-        </label>
-        <div class="error" *ngIf="submitted && f['terms'].errors?.['required']">
-          You must accept terms
-        </div>
-      </div>
-
-      <!-- Submit Button -->
-      <button type="submit" class="btn-primary" [disabled]="registerForm.invalid">
-        Create Account
-        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </button>
-
-    </form>
-
-    <div class="login-footer">
-      <p>Already have an account? <a href="#" class="signup-link">Sign in</a></p>
-    </div>
+<div class="container-fluid d-flex align-items-center justify-content-center min-vh-100 position-relative bg-gradient" style="background: linear-gradient(135deg, #667eea, #764ba2); overflow:hidden;">
+  
+  <!-- Background circles -->
+  <div class="position-absolute w-100 h-100 overflow-hidden">
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
   </div>
 
-  <!-- Background shapes -->
-  <div class="background-shapes">
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
+  <div class="card shadow-lg p-4 p-md-5 rounded-4 position-relative z-1" style="max-width:600px; width:100%; background:#fff;">
+    <div class="text-center mb-4">
+      <div class="text-primary mb-3">
+        <i class="bi bi-shop fs-1"></i>
+      </div>
+      <h2 class="fw-bold text-dark">Create Account</h2>
+      <p class="text-muted">Sign up to get started</p>
+    </div>
+
+    <form>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Restaurant Name</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light text-secondary"><i class="bi bi-building"></i></span>
+          <input type="text" class="form-control" placeholder="Enter restaurant name" required>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">First Name</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-secondary"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control" placeholder="First name" required>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Last Name</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-secondary"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control" placeholder="Last name" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Email Address</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light text-secondary"><i class="bi bi-envelope"></i></span>
+          <input type="email" class="form-control" placeholder="Enter your email" required>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Phone Number</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light text-secondary"><i class="bi bi-telephone"></i></span>
+          <input type="tel" class="form-control" placeholder="Enter phone number" required pattern="[0-9]{10}">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Restaurant Address</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light text-secondary"><i class="bi bi-geo-alt"></i></span>
+          <input type="text" class="form-control" placeholder="Enter restaurant address" required>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-secondary"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control" placeholder="Create password" minlength="6" required>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Confirm Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-secondary"><i class="bi bi-lock-fill"></i></span>
+            <input type="password" class="form-control" placeholder="Confirm password" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="terms" required>
+        <label class="form-check-label" for="terms">I agree to the Terms & Conditions</label>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+        Create Account <i class="bi bi-arrow-right ms-2"></i>
+      </button>
+
+      <div class="text-center mt-3">
+        <p class="text-muted mb-0">Already have an account?
+          <a href="#" class="text-primary fw-semibold text-decoration-none">Sign in</a>
+        </p>
+      </div>
+    </form>
   </div>
 </div>

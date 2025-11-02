@@ -1,87 +1,113 @@
-<aside class="sidebar" [class.collapsed]="isCollapsed" [class.mobile-open]="isMobileMenuOpen">
-  <!-- Sidebar Header -->
-  <div class="sidebar-header">
-    <div class="logo-section">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+<!-- ✅ Navbar / Header (Hidden on large screens) -->
+<nav
+  class="navbar navbar-dark px-3 d-lg-none"
+  style="background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);"
+>
+  <div class="d-flex align-items-center justify-content-between w-100">
+    <div class="d-flex align-items-center gap-2">
+      <div
+        class="logo-icon bg-white bg-opacity-25 rounded p-2 d-flex align-items-center justify-content-center"
+      >
+        <svg width="22" height="22" fill="white" viewBox="0 0 24 24">
+          <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
         </svg>
       </div>
-      <span class="logo-text" *ngIf="!isCollapsed">MyApp</span>
+      <span class="navbar-brand mb-0 text-white fw-bold">MyApp</span>
     </div>
-    <button class="collapse-btn" (click)="toggleSidebar()" *ngIf="!isMobile">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
+
+    <!-- ✅ Toggle Button (Visible only on mobile) -->
+    <button
+      class="navbar-toggler border-0"
+      type="button"
+      (click)="isMobileMenuOpen = !isMobileMenuOpen"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ✅ Sidebar -->
+<div
+  class="sidebar d-flex flex-column text-white vh-100 position-fixed top-0 start-0 shadow transition-all"
+  [ngClass]="{
+    collapsed: isCollapsed,
+    'translate-start-0': isMobileMenuOpen,
+    'translate-start-n100': !isMobileMenuOpen && isMobile
+  }"
+  style="
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    width: {{ isCollapsed ? '70px' : '240px' }};
+    z-index: 1040;
+    transition: all 0.3s ease;
+  "
+>
+  <!-- ✅ Desktop Header (Collapse Button) -->
+  <div
+    class="d-none d-lg-flex align-items-center justify-content-between px-3 py-3 border-bottom border-light-subtle"
+  >
+    <div class="d-flex align-items-center gap-2 overflow-hidden">
+      <div
+        class="logo-icon bg-white bg-opacity-25 rounded p-2 d-flex align-items-center justify-content-center"
+      >
+        <svg width="22" height="22" fill="white" viewBox="0 0 24 24">
+          <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+        </svg>
+      </div>
+      <span class="fw-bold fs-6" *ngIf="!isCollapsed">MyApp</span>
+    </div>
+
+    <button class="btn btn-light btn-sm rounded-circle" (click)="toggleSidebar()">
+      <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+        <line x1="3" y1="12" x2="21" y2="12" stroke-width="2"></line>
+        <line x1="3" y1="6" x2="21" y2="6" stroke-width="2"></line>
+        <line x1="3" y1="18" x2="21" y2="18" stroke-width="2"></line>
       </svg>
     </button>
   </div>
 
-  <!-- Navigation Menu -->
-  <nav class="sidebar-nav">
-    <a *ngFor="let item of menuItems" [routerLink]="item.route" routerLinkActive="active" class="nav-item"
-      [attr.title]="isCollapsed ? item.label : null" (click)="onNavClick()">
+  <!-- ✅ Navigation Menu -->
+  <ul class="nav flex-column mt-3 px-2">
+    <li *ngFor="let item of menuItems" class="nav-item mb-1">
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        (click)="onNavClick()"
+        [attr.title]="isCollapsed ? item.label : null"
+        class="nav-link text-white d-flex align-items-center rounded py-2 px-3"
+        style="gap: 10px; transition: all 0.3s ease;"
+      >
+        <span class="d-flex align-items-center justify-content-center">
+          <svg *ngIf="item.icon === 'home'" width="22" height="22" fill="white" viewBox="0 0 24 24">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+          </svg>
+        </span>
+        <span *ngIf="!isCollapsed" class="fw-medium">{{ item.label }}</span>
+      </a>
+    </li>
+  </ul>
 
-      <!-- Home Icon -->
-      <span class="nav-icon" *ngIf="item.icon === 'home'">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-        </svg>
-      </span>
+  <!-- ✅ Logout -->
+  <div class="mt-auto p-3 border-top border-light-subtle">
+    <button
+      class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2"
+      (click)="logout()"
+    >
+      <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M16 13v-2H7V8l-5 4 5 4v-3z"></path>
+        <path
+          d="M20 3h-8v2h8v14h-8v2h8a2 2 0 0 0 
+          2-2V5a2 2 0 0 0-2-2z"
+        ></path>
+      </svg>
+      <span *ngIf="!isCollapsed">Logout</span>
+    </button>
+  </div>
+</div>
 
-      <!-- Users Icon -->
-      <span class="nav-icon" *ngIf="item.icon === 'users'">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-        </svg>
-      </span>
-
-      <!-- Orders Icon -->
-      <span class="nav-icon" *ngIf="item.icon === 'orders'">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
-        </svg>
-      </span>
-
-      <!-- Products Icon -->
-      <span class="nav-icon" *ngIf="item.icon === 'products'">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M19.5 3.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2v14H3v3c0 1.66 1.34 3 3 3h12c1.66 0 3-1.34 3-3V2l-1.5 1.5zM19 19c0 .55-.45 1-1 1s-1-.45-1-1v-3H8V5h11v14z" />
-          <path d="M9 7h6v2H9zm7 0h2v2h-2zm-7 3h6v2H9zm7 0h2v2h-2z" />
-        </svg>
-      </span>
-
-      <span class="nav-icon" *ngIf="item.icon === 'reports'">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <path d="M12 11v6"></path>
-          <path d="M9 14l3 3 3-3"></path>
-        </svg>
-      </span>
-
-
-
-
-      <span class="nav-text" *ngIf="!isCollapsed">{{ item.label }}</span>
-    </a>
-    <!-- Logout Button -->
-    <div class="logout-section" *ngIf="!isCollapsed">
-      <button class="logout-btn" (click)="logout()">
-        <svg viewBox="0 0 24 24" fill="currentColor" class="logout-icon">
-          <path d="M16 13v-2H7V8l-5 4 5 4v-3z"></path>
-          <path d="M20 3h-8v2h8v14h-8v2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"></path>
-        </svg>
-        Logout
-      </button>
-    </div>
-
-  </nav>
-</aside>
-
-<!-- Mobile Overlay -->
-<div class="overlay" [class.active]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+<!-- ✅ Mobile Overlay -->
+<div
+  class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-lg-none"
+  *ngIf="isMobileMenuOpen"
+  (click)="isMobileMenuOpen = false"
+  style="z-index: 1030;"
+></div>
