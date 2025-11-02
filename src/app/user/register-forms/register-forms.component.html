@@ -1,0 +1,290 @@
+<app-sidebar #sidebar></app-sidebar>
+
+<div class="main-content" [class.sidebar-collapsed]="sidebar.isCollapsed">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm p-4 rounded-4 position-relative w-100">
+                    <h3 class="text-center mb-4">Register User</h3>
+
+                    <!-- Close Button -->
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
+                        aria-label="Close" (click)="onClose()"></button>
+
+                    <form class="w-100">
+                        <div class="row g-3">
+                            <!-- Full Name -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="name" placeholder="Enter full name"
+                                    required />
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" placeholder="Enter email address"
+                                    required />
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="phone" class="form-label">Mobile Number</label>
+                                <input type="tel" class="form-control" id="phone" placeholder="Enter mobile number"
+                                    required />
+                            </div>
+
+                            <!-- Password -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" placeholder="Enter password"
+                                    required />
+                            </div>
+
+                            <!-- Confirm Password -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword"
+                                    placeholder="Confirm password" required />
+                            </div>
+
+                            <!-- State -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="state" class="form-label">State</label>
+                                <select class="form-select" id="state" required>
+                                    <option value="">Select state</option>
+                                    <option value="MH">Maharashtra</option>
+                                    <option value="DL">Delhi</option>
+                                    <option value="RJ">Rajasthan</option>
+                                    <option value="UP">Uttar Pradesh</option>
+                                </select>
+                            </div>
+
+                            <!-- District -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="district" class="form-label">District</label>
+                                <select class="form-select" id="district" required>
+                                    <option value="">Select district</option>
+                                    <option value="NGP">Nagpur</option>
+                                    <option value="PUN">Pune</option>
+                                    <option value="JPR">Jaipur</option>
+                                    <option value="ND">New Delhi</option>
+                                </select>
+                            </div>
+
+                            <!-- Block / Sub-District -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="block" class="form-label">Block / Sub-District</label>
+                                <select class="form-select" id="block" required>
+                                    <option value="">Select block</option>
+                                    <option value="b1">Block 1</option>
+                                    <option value="b2">Block 2</option>
+                                    <option value="b3">Block 3</option>
+                                </select>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" required>
+                                    <option value="">Select status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="suspended">Suspended</option>
+                                </select>
+                            </div>
+
+                            <!-- Profile Image -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="profileImage" class="form-label">Profile Image URL</label>
+                                <input type="text" class="form-control" id="profileImage"
+                                    placeholder="Enter profile image URL (optional)" />
+                            </div>
+
+                            <!-- Role -->
+                            <div class="col-md-6 col-lg-4">
+                                <label for="roleId" class="form-label">Role</label>
+                                <select class="form-select" id="roleId" required (change)="onRoleChange($event)">
+                                    <option value="">Select role</option>
+
+                                    <!-- 🌍 Global Administration -->
+                                    <optgroup label="Global Administration">
+                                        <option value="r1">Global Admin</option>
+                                        <option value="r2">India Manager</option>
+                                    </optgroup>
+
+                                    <!-- 🏛️ Regional Management -->
+                                    <optgroup label="Regional Management">
+                                        <option value="r3">State Manager</option>
+                                        <option value="r4">District Manager</option>
+                                        <option value="r5">Block Manager</option>
+                                        <option value="r5">Field Manager</option>
+                                    </optgroup>
+
+                                    <!-- 🍽️ Restaurant Operations -->
+                                    <optgroup label="Restaurant Operations">
+                                        <option value="r6">Restaurant Owner</option>
+                                        <option value="r7">Restaurant Manager</option>
+                                        <option value="r8">Chef / Kitchen Head</option>
+                                        <option value="r9">Waiter / Service Staff</option>
+                                        <option value="r10">Inventory Manager</option>
+                                        <option value="r11">Quality Inspector</option>
+                                    </optgroup>
+
+                                    <!-- 🚚 Delivery & Logistics -->
+                                    <optgroup label="Delivery & Logistics">
+                                        <option value="r12">Delivery Partner</option>
+                                    </optgroup>
+
+                                    <!-- 💬 Support & Operations -->
+                                    <optgroup label="Support & Back Office">
+                                        <option value="r14">Support Executive</option>
+                                        <option value="r15">Marketing Manager</option>
+                                        <option value="r16">Finance / Accounts</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <!-- Restaurant Related Details (Visible only if role == 'r6') -->
+                            <div class="col-12" *ngIf="role === 'r6'">
+                                <div class="card border p-3 mt-3">
+                                    <h5 class="mb-3">Restaurant Details</h5>
+
+                                    <div class="row g-3">
+                                        <!-- Restaurant Name -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="restaurantName" class="form-label">Restaurant Name</label>
+                                            <input type="text" class="form-control" id="restaurantName"
+                                                placeholder="Enter restaurant name" value="Kids Pizza and Restaurant" />
+                                        </div>
+
+                                        <!-- Type -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="restaurantType" class="form-label">Type</label>
+                                            <select class="form-select" id="restaurantType" required>
+                                                <option value="">Select Type</option>
+                                                <option value="cloud_kitchen">Cloud Kitchen</option>
+                                                <option value="cafe">Cafe</option>
+                                                <option value="restaurant">Restaurant</option>
+                                                <option value="hygienic_cart">Hygienic Cart</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Full Address -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="restaurantAddress" class="form-label">Full Address</label>
+                                            <input type="text" class="form-control" id="restaurantAddress"
+                                                placeholder="Enter full address" />
+                                        </div>
+
+                                        <!-- Pincode -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="pincode" class="form-label">Pincode</label>
+                                            <input type="text" class="form-control" id="pincode"
+                                                placeholder="Enter pincode" />
+                                        </div>
+
+                                        <!-- Latitude -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="latitude" class="form-label">Latitude</label>
+                                            <input type="text" class="form-control" id="latitude"
+                                                placeholder="Enter latitude" />
+                                        </div>
+
+                                        <!-- Longitude -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="longitude" class="form-label">Longitude</label>
+                                            <input type="text" class="form-control" id="longitude"
+                                                placeholder="Enter longitude" />
+                                        </div>
+
+                                        <!-- FSSAI Number -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="fssaiNumber" class="form-label">FSSAI Number</label>
+                                            <input type="text" class="form-control" id="fssaiNumber"
+                                                placeholder="Enter FSSAI number" />
+                                        </div>
+
+                                        <!-- GST Number -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="gstNumber" class="form-label">GST Number</label>
+                                            <input type="text" class="form-control" id="gstNumber"
+                                                placeholder="Enter GST number" />
+                                        </div>
+
+                                        <!-- PAN Number -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="panNumber" class="form-label">PAN Number</label>
+                                            <input type="text" class="form-control" id="panNumber"
+                                                placeholder="Enter PAN number" />
+                                        </div>
+
+                                        <!-- Registration Date -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="registrationDate" class="form-label">Registration Date</label>
+                                            <input type="date" class="form-control" id="registrationDate" />
+                                        </div>
+
+                                        <!-- Opening Time -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="openingTime" class="form-label">Opening Time</label>
+                                            <input type="time" class="form-control" id="openingTime" />
+                                        </div>
+
+                                        <!-- Closing Time -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="closingTime" class="form-label">Closing Time</label>
+                                            <input type="time" class="form-control" id="closingTime" />
+                                        </div>
+
+                                        <!-- Logo URL -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="logoUrl" class="form-label">Logo URL</label>
+                                            <input type="text" class="form-control" id="logoUrl"
+                                                placeholder="Enter logo URL" />
+                                        </div>
+
+                                        <!-- Cover Image URL -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="coverImageUrl" class="form-label">Cover Image URL</label>
+                                            <input type="text" class="form-control" id="coverImageUrl"
+                                                placeholder="Enter cover image URL" />
+                                        </div>
+
+                                        <!-- Description -->
+                                        <div class="col-12">
+                                            <label for="description" class="form-label">Description</label>
+                                            <textarea class="form-control" id="description" rows="3"
+                                                placeholder="Write something about your restaurant..."></textarea>
+                                        </div>
+
+                                        <!-- Is Verified -->
+                                        <div class="col-md-6 col-lg-4">
+                                            <label for="isVerified" class="form-label">Is Verified</label>
+                                            <select class="form-select" id="isVerified">
+                                                <option value="false">No</option>
+                                                <option value="true">Yes</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Submit Button -->
+                            <div class="col-12 d-grid mt-3">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    Register
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <p class="text-center mt-3 mb-0">
+                        Already have an account? <a href="#">Login here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
