@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { SidebarComponent } from "../layouts/sidebar/sidebar.component";
 import { HeaderComponent } from "../layouts/header/header.component";
-import { RegisterFormsComponent } from "./register-forms/register-forms.component";
 import { CommonModule } from '@angular/common';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-user',
   standalone: true,
-  imports: [SidebarComponent, HeaderComponent, RegisterFormsComponent,CommonModule],
+  imports: [SidebarComponent, HeaderComponent,CommonModule, SharedModule],
   templateUrl: './user.component.html',
   styleUrl: './user.component.css'
 })
