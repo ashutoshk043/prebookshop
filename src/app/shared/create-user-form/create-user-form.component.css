@@ -1,0 +1,248 @@
+/* Main Content Area */
+main.content-area {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding-top: 1rem;
+}
+
+/* Card Styling */
+.card {
+  background: #fff;
+  border-radius: 1rem;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollable Form Container */
+.form-scroll-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(90vh - 120px);
+  padding-right: 8px;
+}
+
+/* Custom Scrollbar */
+.form-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.form-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.form-scroll-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.form-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Form Labels */
+.form-label {
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 0.4rem;
+}
+
+.form-label .text-danger {
+  font-size: 0.85rem;
+}
+
+/* Form Controls */
+.form-control,
+.form-select {
+  font-size: 0.95rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ddd;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* Restaurant Section */
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+
+/* Button Styling */
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-close {
+  padding: 0.5rem;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* Heading */
+h3 {
+  color: #2d3748;
+  font-size: 1.75rem;
+}
+
+h5 {
+  color: #4a5568;
+  font-size: 1.25rem;
+}
+
+/* Responsive Design - Mobile */
+@media (max-width: 576px) {
+  .card {
+    padding: 1rem !important;
+    max-height: 95vh;
+  }
+
+  .form-scroll-container {
+    max-height: calc(95vh - 100px);
+  }
+
+  h3 {
+    font-size: 1.35rem;
+    margin-bottom: 1rem !important;
+  }
+
+  h5 {
+    font-size: 1.1rem;
+  }
+
+  .form-label {
+    font-size: 0.85rem;
+  }
+
+  .form-control,
+  .form-select {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.65rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .btn-close {
+    margin: 0.5rem !important;
+  }
+
+  /* Adjust gaps */
+  .row.g-2 {
+    --bs-gutter-x: 0.5rem;
+    --bs-gutter-y: 0.5rem;
+  }
+}
+
+/* Tablet */
+@media (min-width: 577px) and (max-width: 768px) {
+  .card {
+    padding: 1.5rem !important;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+  }
+
+  .btn-primary {
+    padding: 0.7rem 2.5rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 769px) {
+  main.content-area {
+    padding-top: 2rem;
+  }
+
+  .form-scroll-container {
+    max-height: calc(90vh - 140px);
+  }
+}
+
+/* Animation for Restaurant Section */
+.card.bg-light {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading State */
+.form-control:disabled,
+.form-select:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+/* Center Register Form Modal Styles */
+.center-register-form-container {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.register-form-card {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 900px;
+  padding: 2rem;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 576px) {
+  .center-register-form-container {
+    padding: 0.5rem;
+  }
+
+  .register-form-card {
+    padding: 1rem;
+    border-radius: 10px;
+    max-height: 95vh;
+  }
+}
