@@ -504,7 +504,7 @@ onSubmit(): void {
 
         this.toastr.success('User created successfully!', 'Success');
 
-        console.log('Success:', res);
+        // console.log('Success:', res);
 
         // Reset form after success
         this.registerForm.reset();
