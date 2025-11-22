@@ -55,8 +55,8 @@ getRestName(): string | null {
     const decodedToken: any = jwtDecode(token);
 
     // Check property exists
-    if (decodedToken && decodedToken.res_name) {
-      this.restName = decodedToken.res_name;
+    if (decodedToken && decodedToken.rest_name) {
+      this.restName = decodedToken.rest_name;
       console.log(this.restName, "✅ Restaurant Name");
       return this.restName; // ✅ return assigned variable
     } else {

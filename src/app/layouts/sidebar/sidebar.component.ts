@@ -8,8 +8,9 @@ import { Apollo, gql } from 'apollo-angular';
 import { jwtDecode } from 'jwt-decode';
 
 interface CustomJwtPayload {
-  rest_id: string;
-  res_name: string;
+  user_id:string
+  res_id: string;
+  rest_name: string;
   iat?: number;
   exp?: number;
 }
@@ -89,7 +90,9 @@ logout(): void {
 
       // ✅ Decode token to get rest_id
       const decodedToken = jwtDecode<CustomJwtPayload>(token);
-      const restId = decodedToken?.rest_id;
+
+      // console.log(decodedToken, "decodedToken")
+      const restId = decodedToken?.user_id;
 
       if (!restId) {
         this.toster.error('Invalid token. Please login again.');
@@ -99,7 +102,7 @@ logout(): void {
       // ✅ GraphQL logout mutation (correct structure)
       const LOGOUT_MUTATION = gql`
         mutation Logout($restId: String!) {
-          logoutRestaurant(restId: $restId) {
+          logout(restId: $restId) {
             message
           }
         }
@@ -121,7 +124,8 @@ logout(): void {
           sessionStorage.clear();
 
           // ✅ Success toaster
-          this.toster.success(response.data.logoutRestaurant.message, 'Logout Successful');
+          // alert('Logout Successful')
+          this.toster.success(response.data.logout.message, 'Logout Successful');
 
           // ✅ Redirect
           setTimeout(() => {

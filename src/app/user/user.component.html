@@ -1,10 +1,10 @@
 <app-sidebar #sidebar></app-sidebar>
 
 <div class="main-content" [class.sidebar-collapsed]="sidebar.isCollapsed">
-  <!-- Header -->
   <app-header></app-header>
 
   <main class="container-fluid py-4">
+
     <!-- Page Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
       <h2 class="h4 fw-semibold mb-3 mb-md-0">User Management</h2>
@@ -14,63 +14,17 @@
       </button>
     </div>
 
-    <!-- Stats Overview -->
+    <!-- Stats -->
     <div class="row g-3 mb-4">
       <div class="col-sm-6 col-lg-3">
         <div class="card shadow-sm border-0">
           <div class="card-body d-flex align-items-center gap-3">
-            <div class="bg-primary bg-opacity-10 text-primary rounded p-3 d-flex align-items-center justify-content-center">
+            <div class="bg-primary bg-opacity-10 text-primary rounded p-3">
               <i class="bi bi-people fs-4"></i>
             </div>
             <div>
               <p class="text-muted mb-1 small">Total Users</p>
-              <h4 class="mb-1">1,248</h4>
-              <small class="text-success">+12% from last month</small>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-sm-6 col-lg-3">
-        <div class="card shadow-sm border-0">
-          <div class="card-body d-flex align-items-center gap-3">
-            <div class="bg-success bg-opacity-10 text-success rounded p-3 d-flex align-items-center justify-content-center">
-              <i class="bi bi-check-circle fs-4"></i>
-            </div>
-            <div>
-              <p class="text-muted mb-1 small">Active Users</p>
-              <h4 class="mb-1">1,089</h4>
-              <small class="text-success">87% active rate</small>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-sm-6 col-lg-3">
-        <div class="card shadow-sm border-0">
-          <div class="card-body d-flex align-items-center gap-3">
-            <div class="bg-warning bg-opacity-25 text-warning rounded p-3 d-flex align-items-center justify-content-center">
-              <i class="bi bi-hourglass-split fs-4"></i>
-            </div>
-            <div>
-              <p class="text-muted mb-1 small">Pending Approval</p>
-              <h4 class="mb-1">24</h4>
-              <small class="text-secondary">Requires attention</small>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-sm-6 col-lg-3">
-        <div class="card shadow-sm border-0">
-          <div class="card-body d-flex align-items-center gap-3">
-            <div class="bg-danger bg-opacity-10 text-danger rounded p-3 d-flex align-items-center justify-content-center">
-              <i class="bi bi-x-circle fs-4"></i>
-            </div>
-            <div>
-              <p class="text-muted mb-1 small">Inactive Users</p>
-              <h4 class="mb-1">159</h4>
-              <small class="text-danger">13% of total</small>
+              <h4 class="mb-1">{{ filteredUsers.length }}</h4>
             </div>
           </div>
         </div>
@@ -81,36 +35,43 @@
     <div class="card shadow-sm border-0 mb-4">
       <div class="card-body">
         <div class="row g-3 align-items-center">
+
+          <!-- Search -->
           <div class="col-md-4">
             <div class="input-group">
               <span class="input-group-text bg-white border-end-0">
                 <i class="bi bi-search text-muted"></i>
               </span>
-              <input type="text" class="form-control border-start-0" placeholder="Search users..." />
+              <input 
+                type="text" 
+                class="form-control border-start-0" 
+                placeholder="Search users..."
+                [(ngModel)]="searchText"
+                (input)="filterUsers()"
+              />
             </div>
           </div>
+
+          <!-- Role Filter -->
           <div class="col-md-3">
-            <select class="form-select">
-              <option>All Roles</option>
-              <option>Admin</option>
-              <option>Manager</option>
-              <option>User</option>
+            <select class="form-select" [(ngModel)]="selectedRole" (change)="filterUsers()">
+              <option value="">All Roles</option>
+              <option *ngFor="let role of roles" [value]="role.id">
+                {{ role.name }}
+              </option>
             </select>
           </div>
+
+          <!-- Status Filter -->
           <div class="col-md-3">
-            <select class="form-select">
-              <option>All Status</option>
+            <select class="form-select" [(ngModel)]="selectedStatus" (change)="filterUsers()">
+              <option value="">All Status</option>
               <option>Active</option>
               <option>Inactive</option>
               <option>Pending</option>
             </select>
           </div>
-          <div class="col-md-2 text-md-end">
-            <button class="btn btn-outline-secondary w-100">
-              <i class="bi bi-funnel"></i>
-              More Filters
-            </button>
-          </div>
+
         </div>
       </div>
     </div>
@@ -121,67 +82,100 @@
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light text-uppercase small text-muted">
             <tr>
-              <th scope="col"><input class="form-check-input" type="checkbox" /></th>
+              <th><input type="checkbox" class="form-check-input" /></th>
               <th>User</th>
               <th>Email</th>
               <th>Role</th>
               <th>Status</th>
-              <th>Last Active</th>
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
-            <tr>
-              <td><input class="form-check-input" type="checkbox" /></td>
+            <tr *ngFor="let data of paginatedUsers">
+              <td><input type="checkbox" class="form-check-input" /></td>
+
               <td>
                 <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:40px; height:40px;">JD</div>
+                  <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                       style="width:40px; height:40px;">
+                    {{ data.name[0] }}
+                  </div>
+
                   <div>
-                    <div class="fw-medium">John Doe</div>
-                    <small class="text-muted">#USR-1001</small>
+                    <div class="fw-medium">{{ data.name }}</div>
+                    <small class="text-muted">#{{ data._id }}</small>
                   </div>
                 </div>
               </td>
-              <td>john.doe&#64;example.com</td>
-              <td><span class="badge bg-warning text-dark">Admin</span></td>
-              <td><span class="badge bg-success">Active</span></td>
-              <td>2 hours ago</td>
+
+              <td>{{ data.email }}</td>
+
               <td>
-                <div class="btn-group btn-group-sm" role="group">
-                  <button class="btn btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></button>
-                  <button class="btn btn-outline-secondary" title="View"><i class="bi bi-eye"></i></button>
-                  <button class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                <span class="badge bg-warning text-dark">
+                  {{ getRoleName(data.roleId) }}
+                </span>
+              </td>
+
+              <td>
+                <span class="badge bg-success">{{ data.status }}</span>
+              </td>
+
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-secondary"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-outline-secondary"><i class="bi bi-eye"></i></button>
+                  <button class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
                 </div>
               </td>
             </tr>
-            <!-- Repeat similar rows -->
           </tbody>
+
         </table>
       </div>
 
       <!-- Pagination -->
       <div class="card-footer d-flex flex-column flex-md-row justify-content-between align-items-center">
+        
         <div class="text-muted small mb-2 mb-md-0">
-          Showing 1 to 5 of 1,248 users
+          Showing 
+          {{ (currentPage - 1) * pageSize + 1 }} 
+          to 
+          {{ Math.min(currentPage * pageSize, filteredUsers.length) }} 
+          of 
+          {{ filteredUsers.length }} users
         </div>
+
         <nav>
           <ul class="pagination mb-0">
-            <li class="page-item disabled"><button class="page-link">Previous</button></li>
-            <li class="page-item active"><button class="page-link">1</button></li>
-            <li class="page-item"><button class="page-link">2</button></li>
-            <li class="page-item"><button class="page-link">3</button></li>
-            <li class="page-item"><span class="page-link">...</span></li>
-            <li class="page-item"><button class="page-link">250</button></li>
-            <li class="page-item"><button class="page-link">Next</button></li>
+
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <button class="page-link" (click)="prevPage()">Previous</button>
+            </li>
+
+            <li class="page-item" 
+                *ngFor="let page of pageNumbers"
+                [class.active]="currentPage === page">
+              <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+            </li>
+
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <button class="page-link" (click)="nextPage()">Next</button>
+            </li>
+
           </ul>
         </nav>
+
       </div>
     </div>
+
   </main>
 </div>
 
 <div *ngIf="showForm" class="center-register-form-container">
-  <app-create-user-form (closeForm)="closeFormClicked($event)"></app-create-user-form>
+  <app-create-user-form
+    (closeForm)="closeFormClicked($event)"
+    [loggedInRestIid]="loggedInRestIid">
+  </app-create-user-form>
 </div>
-
 

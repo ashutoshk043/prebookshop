@@ -7,39 +7,24 @@ import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 
 const LOGIN_RESTAURENT_USER = gql`
-  mutation loginRestraurentuser($loginData: LoginRestaurantDto!) {
-    loginRestraurentuser(loginData: $loginData) {
+  mutation loginRestraurent($loginData: RestraurentLoginDTO!) {
+    loginRestraurent(loginData: $loginData) {
       token
-      restaurantProfile {
+      userProfile {
         name
-        ownerName
-        type
-        phone
         email
-        address
-        city
+        phone
         state
-        pincode
-        latitude
-        longitude
-        fssaiNumber
-        gstNumber
-        panNumber
-        registrationDate
-        openingTime
-        closingTime
-        isOpen
-        rating
-        totalOrders
-        logoUrl
-        coverImageUrl
-        description
-        isVerified
+        district
+        block
+        village
+        roleId
+        profile
+        status
       }
     }
   }
 `;
-
 
 @Component({
   selector: 'app-login',
@@ -57,7 +42,7 @@ export class LoginComponent implements OnInit {
     private apollo: Apollo,
     private toastr: ToastrService,
     private router: Router,
-    private cookieService: CookieService // ✅ Inject CookieService
+    private cookieService: CookieService
   ) {}
 
   ngOnInit() {
@@ -79,41 +64,45 @@ export class LoginComponent implements OnInit {
     this.loading = true;
     const { email, password } = this.loginForm.value;
 
-    this.apollo
-      .mutate({
-        mutation: LOGIN_RESTAURENT_USER,
-        variables: { loginData: { email, password } }
-      })
-      .subscribe({
-        next: (res: any) => {
-          this.loading = false;
-          const token = res?.data?.loginRestraurentuser?.token;
-          const restDetails = res?.data?.loginRestraurentuser?.restaurantProfile
+    this.apollo.mutate({
+      mutation: LOGIN_RESTAURENT_USER,
+      variables: { loginData: { email, password } }
+    })
+    .subscribe({
+      next: (res: any) => {
+        this.loading = false;
 
-          if (token) {
-            // ✅ Store JWT token in cookies instead of localStorage
-            const expireDays = this.loginForm.value.remember ? 7 : 1;
-            this.cookieService.set('auth_token', token, expireDays, '/', '', false, 'Strict');
+        // ❗ IMPORTANT: your backend returns: loginRestraurent
+        const response = res?.data?.loginRestraurent;
 
-            console.log(restDetails, "restDetails")
+        const token = response?.token;
+        const userDetails = response?.userProfile;
 
-            // if(!restDetails.isVerified){
-            //     this.router.navigate(['/restaurent-profile']);
-            // }else{
-              this.router.navigate(['/home']);
-            // }
+        console.log("🔥 Full Response:", response);
 
-            this.toastr.success('Login successful!');
-            
-          } else {
-            this.toastr.error('Invalid login credentials');
-          }
-        },
-        error: (err) => {
-          this.loading = false;
-          this.toastr.error(err.message || 'Login failed');
-          console.error('GraphQL Error:', err);
+        if (token) {
+          // Cookie expire time
+          const expireDays = this.loginForm.value.remember ? 7 : 1;
+
+          // Save token in cookie
+          this.cookieService.set('auth_token', token, expireDays, '/', '', false, 'Strict');
+
+          console.log("🟢 Saved restaurant details:", userDetails);
+
+          // Redirect
+          this.router.navigate(['/home']);
+          this.toastr.success('Login successful!');
+
+        } else {
+          this.toastr.error('Invalid login credentials');
         }
-      });
+      },
+
+      error: (err) => {
+        this.loading = false;
+        this.toastr.error(err.message || 'Login failed');
+        console.error('GraphQL Error:', err);
+      }
+    });
   }
 }
