@@ -7,6 +7,7 @@ import { SharedModule } from '../shared/shared.module';
 import { FormsModule } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
+import { ToastrService } from 'ngx-toastr';
 
 interface User {
   _id: string;
@@ -15,6 +16,15 @@ interface User {
   roleId: string;
   status?: string;
 }
+
+const DELETE_USER = gql`
+  mutation deleteUser($userId: String!) {
+    deleteUser(userId: $userId) {
+      message
+    }
+  }
+`;
+
 
 @Component({
   selector: 'app-user',
@@ -26,6 +36,7 @@ interface User {
 export class UserComponent implements OnInit {
 
   showForm = false;
+  editFormData:any
   Math = Math;
 
   users: User[] = [];
@@ -43,53 +54,54 @@ export class UserComponent implements OnInit {
   pageSize = 5;
   totalPages = 1;
   pageNumbers: number[] = [];
-  loggedInRestIid:any
+  loggedInRestIid: any
+  editUserDetails: any = null
 
-roles = [
-  { id: "global-admin",          name: "Global Admin" },
-  { id: "india-manager",         name: "India Manager" },
-  { id: "state-manager",         name: "State Manager" },
-  { id: "district-manager",      name: "District Manager" },
-  { id: "block-manager",         name: "Block Manager" },
-  { id: "restaurant-owner",      name: "Restaurant Owner" },
-  { id: "restaurant-manager",    name: "Restaurant Manager" },
-  { id: "chef-kitchen-head",     name: "Chef / Kitchen Head" },
-  { id: "waiter-service-staff",  name: "Waiter / Service Staff" },
-  { id: "inventory-manager",     name: "Inventory Manager" },
-  { id: "quality-inspector",     name: "Quality Inspector" },
-  { id: "delivery-partner",      name: "Delivery Partner" },
-  { id: "support-executive",     name: "Support Executive" },
-  { id: "marketing-manager",     name: "Marketing Manager" },
-  { id: "finance-accounts",      name: "Finance / Accounts" }
-];
+  roles = [
+    { id: "global-admin", name: "Global Admin" },
+    { id: "india-manager", name: "India Manager" },
+    { id: "state-manager", name: "State Manager" },
+    { id: "district-manager", name: "District Manager" },
+    { id: "block-manager", name: "Block Manager" },
+    { id: "restaurant-owner", name: "Restaurant Owner" },
+    { id: "restaurant-manager", name: "Restaurant Manager" },
+    { id: "chef-kitchen-head", name: "Chef / Kitchen Head" },
+    { id: "waiter-service-staff", name: "Waiter / Service Staff" },
+    { id: "inventory-manager", name: "Inventory Manager" },
+    { id: "quality-inspector", name: "Quality Inspector" },
+    { id: "delivery-partner", name: "Delivery Partner" },
+    { id: "support-executive", name: "Support Executive" },
+    { id: "marketing-manager", name: "Marketing Manager" },
+    { id: "finance-accounts", name: "Finance / Accounts" }
+  ];
 
 
-  constructor(private apollo: Apollo, private cookieservice:CookieService) {}
+  constructor(private apollo: Apollo, private cookieservice: CookieService, private toster: ToastrService) { }
 
   ngOnInit() {
 
     this.loggedInRestIid = this.getLoggedInUserDetails();
 
-  if (this.loggedInRestIid) {
-    this.fetchAllUsers(this.loggedInRestIid);  // Pass the id properly
-  }
+    if (this.loggedInRestIid) {
+      this.fetchAllUsers(this.loggedInRestIid);  // Pass the id properly
+    }
   }
 
 
   getLoggedInUserDetails(): string | null {
     try {
       const token = this.cookieservice.get('auth_token');
-  
+
       if (!token) {
         console.warn('No auth_token found in cookies');
         return null;
       }
-  
+
       // Decode token
       const decodedToken: any = jwtDecode(token);
 
       // console.log(decodedToken, "decodedToken")
-  
+
       // Check property exists
       if (decodedToken && decodedToken.res_id) {
         this.loggedInRestIid = decodedToken.res_id;
@@ -99,7 +111,7 @@ roles = [
         this.loggedInRestIid = 'all';
         return 'all';
       }
-  
+
     } catch (error) {
       console.error('Error decoding JWT:', error);
       this.loggedInRestIid = '';
@@ -108,7 +120,13 @@ roles = [
   }
 
   openRegisterForm(status: boolean) {
+     this.editFormData = null;   // VERY IMPORTANT
     this.showForm = status;
+  }
+
+  editRegisterForm(data: any) {
+    this.openRegisterForm(true)
+    this.editFormData = data
   }
 
   closeFormClicked(event: any) {
@@ -118,41 +136,48 @@ roles = [
     }
   }
 
-fetchAllUsers(restId: string) {
-  this.loading = true;
+  fetchAllUsers(restId: string) {
+    this.loading = true;
 
-  const GET_ALL_USERS = gql`
+    const GET_ALL_USERS = gql`
     query getAllUsers($restId: String!) {
       getAllUsers(restId: $restId) {
         _id
         name
         email
+        phone
+        state
+        district
+        block
+        village
         roleId
         status
+        profile
+        restaurantId
       }
     }
   `;
 
-  this.apollo
-    .watchQuery<{ getAllUsers: User[] }>({
-      query: GET_ALL_USERS,
-      variables: { restId },   // ← HERE
-      fetchPolicy: 'network-only',
-    })
-    .valueChanges.subscribe({
-      next: (res) => {
-        this.users = res.data.getAllUsers;
-        this.filteredUsers = [...this.users];
-        this.calculatePagination();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Failed to fetch users:', err);
-        this.error = 'Failed to load users';
-        this.loading = false;
-      },
-    });
-}
+    this.apollo
+      .watchQuery<{ getAllUsers: User[] }>({
+        query: GET_ALL_USERS,
+        variables: { restId },   // ← HERE
+        fetchPolicy: 'network-only',
+      })
+      .valueChanges.subscribe({
+        next: (res) => {
+          this.users = res.data.getAllUsers;
+          this.filteredUsers = [...this.users];
+          this.calculatePagination();
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Failed to fetch users:', err);
+          this.error = 'Failed to load users';
+          this.loading = false;
+        },
+      });
+  }
 
 
   filterUsers() {
@@ -201,4 +226,42 @@ fetchAllUsers(restId: string) {
   getRoleName(roleId: string) {
     return this.roles.find(r => r.id === roleId)?.name || 'Unknown';
   }
+
+
+  deletedUser(userId: string) {
+    if (!confirm("Are you sure you want to delete this user?")) {
+      return;
+    }
+
+    this.apollo.mutate({
+      mutation: DELETE_USER,
+      variables: { userId }
+    })
+      .subscribe({
+        next: (res: any) => {
+          this.toster.success(res.data.deleteUser.message);
+          console.log("User deleted:", res.data.deleteUser.message);
+
+          // Refresh the list
+          if (this.loggedInRestIid) {
+            this.fetchAllUsers(this.loggedInRestIid);
+          }
+        },
+        error: (err) => {
+          console.error("Delete failed:", err);
+          this.toster.error("Failed to delete user")
+          alert("Failed to delete user");
+        }
+      });
+  }
+
+
+
+
+  viewUser(userId: any) {
+
+  }
+
+
+
 }

@@ -12,7 +12,7 @@
           (click)="closeFormClicked()"></button>
 
         <!-- Heading -->
-        <h3 class="text-center mb-3 mb-md-4 fw-bold text-primary">User Registration</h3>
+        <h3 class="text-center mb-3 mb-md-4 fw-bold text-primary">User Registration {{editForm ? "Update":''}}</h3>
 
         <!-- Scrollable Form Container -->
         <div class="form-scroll-container">
@@ -77,10 +77,13 @@
               <!-- State Dropdown -->
               <div class="col-12 col-sm-6 col-lg-4">
                 <label class="form-label fw-semibold">State <span class="text-danger">*</span></label>
-                <select class="form-select" formControlName="state">
+                <select class="form-select" formControlName="state" (change)="onStateChange($event)">
                   <option value="">Select State</option>
-                  <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+                  <option *ngFor="let s of states" [value]="s.stateName">
+                    {{ s.stateName }}
+                  </option>
                 </select>
+
                 <div *ngIf="registerForm.get('state')?.touched && registerForm.get('state')?.invalid"
                   class="text-danger small mt-1">
                   State is required.
@@ -90,9 +93,9 @@
               <!-- District Dropdown -->
               <div class="col-12 col-sm-6 col-lg-4">
                 <label class="form-label fw-semibold">District <span class="text-danger">*</span></label>
-                <select class="form-select" formControlName="district">
+                <select class="form-select" formControlName="district" (change)="onDistrictChange($event)">
                   <option value="">Select District</option>
-                  <option *ngFor="let d of districts" [value]="d">{{ d }}</option>
+                  <option *ngFor="let d of districts" [value]="d.districtName">{{ d.districtName}}</option>
                 </select>
                 <div *ngIf="registerForm.get('district')?.touched && registerForm.get('district')?.invalid"
                   class="text-danger small mt-1">
@@ -102,10 +105,10 @@
 
               <!-- Block Dropdown -->
               <div class="col-12 col-sm-6 col-lg-4">
-                <label class="form-label fw-semibold">Block <span class="text-danger">*</span></label>
-                <select class="form-select" formControlName="block">
-                  <option value="">Select Block</option>
-                  <option *ngFor="let b of blocks" [value]="b">{{ b }}</option>
+                <label class="form-label fw-semibold">Sub District / Tehsil<span class="text-danger">*</span></label>
+                <select class="form-select" formControlName="block" (change)="onSubDistrictChange($event)">
+                  <option value="">Select subdistrict</option>
+                  <option *ngFor="let b of subDistricts" [value]="b.subDistrictName">{{ b.subDistrictName}}</option>
                 </select>
                 <div *ngIf="registerForm.get('block')?.touched && registerForm.get('block')?.invalid"
                   class="text-danger small mt-1">
@@ -118,7 +121,7 @@
                 <label class="form-label fw-semibold">Village</label>
                 <select class="form-select" formControlName="village">
                   <option value="">Select Village</option>
-                  <option *ngFor="let v of villages" [value]="v">{{ v }}</option>
+                  <option *ngFor="let v of villages" [value]="v.villageName">{{ v.villageName }}</option>
                 </select>
               </div>
 
@@ -143,7 +146,7 @@
               <!-- Role -->
               <div class="col-12 col-sm-6 col-lg-4">
                 <label class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
-                <select class="form-select" formControlName="roleId" (change)="onRoleChange($event)">
+                <select class="form-select" formControlName="roleId">
                   <option value="">Select role</option>
                   <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
                 </select>
@@ -151,14 +154,13 @@
             </div>
 
             <!-- 🍴 Restaurant Section (Only for r6) -->
-            <div class="mt-3 mt-md-4" formGroupName="restaurant" *ngIf="registerForm.get('roleId')?.value === 'restaurant-owner'">
+            <!-- <div class="mt-3 mt-md-4" formGroupName="restaurant" *ngIf="registerForm.get('roleId')?.value === 'restaurant-owner'">
               <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4 bg-light">
                 <h5 class="fw-bold mb-3 text-primary">
                   <i class="bi bi-shop"></i> Restaurant Details
                 </h5>
 
                 <div class="row g-2 g-md-3">
-                  <!-- Restaurant Name -->
                   <div class="col-12 col-sm-6 col-lg-4">
                     <label class="form-label fw-semibold">Restaurant Name <span class="text-danger">*</span></label>
                     <input class="form-control" placeholder="Enter restaurant name" formControlName="restaurantName" />
@@ -169,7 +171,6 @@
                     </div>
                   </div>
 
-                  <!-- Type -->
                   <div class="col-12 col-sm-6 col-lg-4">
                     <label class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
                     <select class="form-select" formControlName="restaurantType">
@@ -185,8 +186,6 @@
                       Restaurant type is required.
                     </div>
                   </div>
-
-                  <!-- Pincode -->
                   <div class="col-12 col-sm-6 col-lg-4">
                     <label class="form-label fw-semibold">Restaurant Address</label>
                     <input class="form-control" placeholder="Enter Restaurant Address"
@@ -197,8 +196,6 @@
                       Invalid restaurantAddress.
                     </div>
                   </div>
-
-                  <!-- Pincode -->
                   <div class="col-12 col-sm-6 col-lg-4">
                     <label class="form-label fw-semibold">Pincode</label>
                     <input class="form-control" placeholder="Enter pincode" formControlName="pincode" />
@@ -208,8 +205,6 @@
                       Enter a valid 6-digit pincode.
                     </div>
                   </div>
-
-                  <!-- Latitude -->
                   <div class="col-12 col-sm-6 col-lg-4">
                     <label class="form-label fw-semibold">Latitude</label>
                     <input class="form-control" placeholder="Enter latitude" formControlName="latitude" />
@@ -220,7 +215,6 @@
                     </div>
                   </div>
 
-                  <!-- Longitude -->
                   <div class="col-12 col-sm-6 col-lg-4">
                     <label class="form-label fw-semibold">Longitude</label>
                     <input class="form-control" placeholder="Enter longitude" formControlName="longitude" />
@@ -230,22 +224,16 @@
                       Enter a valid longitude.
                     </div>
                   </div>
-
-                  <!-- Logo Url -->
                   <div class="col-12 col-sm-6 col-lg-4">
                     <label class="form-label fw-semibold">Logo URL</label>
                     <input type="text" class="form-control" formControlName="logoUrl"
                       placeholder="Enter logoUrl image URL" />
                   </div>
-
-                  <!-- Cover Image -->
                   <div class="col-12 col-sm-6 col-lg-4">
                     <label class="form-label fw-semibold">Cover URL</label>
                     <input type="text" class="form-control" formControlName="coverImageUrl"
                       placeholder="Enter coverImageUrl image URL" />
                   </div>
-
-                  <!-- Address, FSSAI, GST, etc. -->
                   <div class="col-12 col-sm-6 col-lg-4">
                     <label class="form-label fw-semibold">FSSAI Number</label>
                     <input class="form-control" placeholder="Enter FSSAI number" formControlName="fssaiNumber" />
@@ -275,8 +263,6 @@
                     <label class="form-label fw-semibold">Closing Time</label>
                     <input type="time" class="form-control" formControlName="closingTime" />
                   </div>
-
-                  <!-- is Verified -->
                   <div class="col-12 col-sm-6 col-lg-4">
                     <label class="form-label fw-semibold">Verified <span class="text-danger">*</span></label>
                     <select class="form-select" formControlName="isVerified">
@@ -293,11 +279,10 @@
                   </div>
                 </div>
               </div>
-            </div>
-            <!-- Submit Button -->
+            </div> -->
             <div class="text-center mt-3 mt-md-4">
               <button type="submit" class="btn btn-primary btn-lg px-4 px-md-5" [disabled]="registerForm.invalid">
-                <i class="bi bi-person-plus-fill me-2"></i> Register User
+                <i class="bi bi-person-plus-fill me-2"></i> {{editForm ? "Update":''}} Register User
               </button>
             </div>
           </form>

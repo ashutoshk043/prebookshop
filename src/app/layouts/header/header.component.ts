@@ -54,6 +54,8 @@ getRestName(): string | null {
     // Decode token
     const decodedToken: any = jwtDecode(token);
 
+    console.log(decodedToken, "decodedToken")
+
     // Check property exists
     if (decodedToken && decodedToken.rest_name) {
       this.restName = decodedToken.rest_name;
