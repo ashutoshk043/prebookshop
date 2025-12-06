@@ -276,11 +276,6 @@ export class CreateUserFormComponent {
     }
   }
 
-
-
-
-
-
   createRegisterForm() {
     this.registerForm = this.fb.group(
       {
@@ -297,25 +292,6 @@ export class CreateUserFormComponent {
         status: ['', Validators.required],
         profile: [''],
         roleId: ['', Validators.required],
-        restaurantId: [this.loggedInRestIid != 'all' ? this.loggedInRestIid : ''],
-        // restaurant: this.fb.group({
-        //   restaurantName: [{ value: '', disabled: true }, Validators.required],
-        //   restaurantType: [{ value: '', disabled: true }, Validators.required],
-        //   restaurantAddress: [{ value: '', disabled: true }],
-        //   pincode: [{ value: '', disabled: true }, [Validators.pattern(/^[1-9][0-9]{5}$/)]],
-        //   latitude: [{ value: '', disabled: true }],
-        //   longitude: [{ value: '', disabled: true }],
-        //   fssaiNumber: [{ value: '', disabled: true }],
-        //   gstNumber: [{ value: '', disabled: true }],
-        //   panNumber: [{ value: '', disabled: true }],
-        //   registrationDate: [{ value: '', disabled: true }],
-        //   openingTime: [{ value: '', disabled: true }],
-        //   closingTime: [{ value: '', disabled: true }],
-        //   logoUrl: [{ value: '', disabled: true }],
-        //   coverImageUrl: [{ value: '', disabled: true }],
-        //   description: [{ value: '', disabled: true }],
-        //   isVerified: [{ value: false, disabled: true }]
-        // })
       },
       { validators: this.passwordMatchValidator }
     );
@@ -350,50 +326,50 @@ export class CreateUserFormComponent {
     // ----------------------------------
     // 🔥 EDIT MODE → CALL updateUser()
     // ----------------------------------
-if (this.editForm) {
-  const payload = this.registerForm.getRawValue();
+    if (this.editForm) {
+      const payload = this.registerForm.getRawValue();
 
-  // Convert _id → id for backend
-  payload.id = payload._id;
-  delete payload._id;
+      // Convert _id → id for backend
+      payload.id = payload._id;
+      delete payload._id;
 
-  // Remove empty password fields
-  if (!payload.password) {
-    delete payload.password;
-    delete payload.confirmPassword;
-  }
+      // Remove empty password fields
+      if (!payload.password) {
+        delete payload.password;
+        delete payload.confirmPassword;
+      }
 
-  console.log("✏️ Update Mode Payload:", payload);
+      console.log("✏️ Update Mode Payload:", payload);
 
-  this.apollo.mutate({
-    mutation: UPDATE_USER,
-    variables: {
-      updateUserInput: payload
+      this.apollo.mutate({
+        mutation: UPDATE_USER,
+        variables: {
+          updateUserInput: payload
+        }
+      })
+        .subscribe({
+          next: (res: any) => {
+            this.loading = false;
+            this.toastr.success("User updated successfully!", "Updated");
+
+            console.log("Updated User:", res);
+            this.editForm = false;
+            this.registerForm.reset();
+          },
+          error: (err) => {
+            this.loading = false;
+
+            const message =
+              err?.message ||
+              err?.graphQLErrors?.[0]?.message ||
+              "Something went wrong!";
+
+            this.toastr.error(message, "Error");
+          }
+        });
+
+      return;
     }
-  })
-  .subscribe({
-    next: (res: any) => {
-      this.loading = false;
-      this.toastr.success("User updated successfully!", "Updated");
-
-      console.log("Updated User:", res);
-      this.editForm = false;
-      this.registerForm.reset();
-    },
-    error: (err) => {
-      this.loading = false;
-
-      const message =
-        err?.message ||
-        err?.graphQLErrors?.[0]?.message ||
-        "Something went wrong!";
-
-      this.toastr.error(message, "Error");
-    }
-  });
-
-  return;
-}
 
     // ----------------------------------
     // 🟢 CREATE MODE → CALL Register
@@ -447,7 +423,8 @@ if (this.editForm) {
   getStateLists() {
     this.apollo
       .watchQuery({
-        query: GET_ALL_STATES
+        query: GET_ALL_STATES,
+        fetchPolicy: 'network-only'   // 🔥 force backend call every time
       })
       .valueChanges.subscribe({
         next: (res: any) => {
@@ -465,7 +442,8 @@ if (this.editForm) {
     this.apollo
       .watchQuery({
         query: GET_ALL_DISTRICTS,
-        variables: { stateName }
+        variables: { stateName },
+        fetchPolicy: 'network-only'   // 🔥 force backend call every time
       })
       .valueChanges.subscribe({
         next: (res: any) => {
@@ -486,7 +464,8 @@ if (this.editForm) {
     this.apollo
       .watchQuery({
         query: GET_ALL_SUB_DISTRICTS,
-        variables: { districtName }
+        variables: { districtName },
+        fetchPolicy: 'network-only'   // 🔥 force backend call every time
       })
       .valueChanges.subscribe({
         next: (res: any) => {
@@ -507,14 +486,13 @@ if (this.editForm) {
     this.apollo
       .watchQuery({
         query: GET_ALL_VILLAGES,
-        variables: { subDistrictName }
+        variables: { subDistrictName },
+        fetchPolicy: 'network-only'   // 🔥 force backend call every time
       })
       .valueChanges.subscribe({
         next: (res: any) => {
-          // Store data
           this.villages = res?.data?.getAllVillages || [];
 
-          // 🔥 Execute callback when done
           if (callback) callback();
         },
         error: (err) => {
@@ -525,20 +503,46 @@ if (this.editForm) {
 
 
 
+
   onStateChange(event: any) {
     const selectedState = event.target.value;
-    this.getAllDistricts(selectedState)
-  }
 
+    // Reset fields
+    this.registerForm.patchValue({
+      district: '',
+      block: '',
+      village: ''
+    });
+
+    // Reset dropdown data
+    this.subDistricts = [];
+    this.villages = [];
+
+    this.getAllDistricts(selectedState);
+  }
 
   onDistrictChange(event: any) {
     const selectedDistrict = event.target.value;
-    this.getAllSubDistrict(selectedDistrict)
+
+    this.registerForm.patchValue({
+      block: '',
+      village: ''
+    });
+
+    this.villages = [];
+
+    this.getAllSubDistrict(selectedDistrict);
   }
 
   onSubDistrictChange(event: any) {
-    const selectedSubDistricts = event.target.value;
-    this.getAllVillages(selectedSubDistricts)
+    const selectedSubDistrict = event.target.value;
+
+    this.registerForm.patchValue({
+      village: ''
+    });
+
+    this.getAllVillages(selectedSubDistrict);
   }
+
 
 }
