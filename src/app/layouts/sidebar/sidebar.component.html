@@ -50,47 +50,63 @@
 
   <!-- ✅ Navigation Menu -->
   <ul class="nav flex-column mt-3 px-2">
+
     <li *ngFor="let item of menuItems" class="nav-item mb-1">
       <a [routerLink]="item.route" routerLinkActive="active" (click)="onNavClick()"
         [attr.title]="isCollapsed ? item.label : null"
         class="nav-link text-white d-flex align-items-center rounded py-2 px-3"
         style="gap: 10px; transition: all 0.3s ease;">
+
         <span class="d-flex align-items-center justify-content-center">
 
-          <!-- Home Icon -->
+          <!-- Home -->
           <svg *ngIf="item.icon === 'home'" width="22" height="22" fill="white" viewBox="0 0 24 24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+            <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3z" />
           </svg>
 
-          <!-- Users Icon -->
-          <svg *ngIf="item.icon === 'users'" width="22" height="22" fill="white" viewBox="0 0 24 24">
+          <!-- Users (people) -->
+          <svg *ngIf="item.icon === 'people'" width="22" height="22" fill="white" viewBox="0 0 24 24">
             <path
-              d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0C9.66 11 11 9.66 11 8s-1.34-3-3-3S5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C13 14.17 8.33 13 6 13zm10 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V20h6v-3.5C23 14.17 18.33 13 16 13z" />
+              d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm8 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5c0-2.33-4.67-3.5-7-3.5zM8 13c-2.67 0-8 1.34-8 4v3h8v-3c0-.87.29-1.7.77-2.4C8.62 13.23 8.32 13 8 13z" />
           </svg>
 
-          <!-- Orders Icon -->
-          <svg *ngIf="item.icon === 'orders'" width="22" height="22" fill="white" viewBox="0 0 24 24">
+          <!-- Orders (cart) -->
+          <svg *ngIf="item.icon === 'cart'" width="22" height="22" fill="white" viewBox="0 0 24 24">
             <path
-              d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm0-2h14v2H9.42a4 4 0 00-2.42-.84V4h16v10H7v2z" />
+              d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12-2H7l-1-2H1V8h2l3.6 7.59L6.25 17h10.51l3.24-6.45L22 11l-3 5zM17 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
           </svg>
 
-          <!-- Products Icon -->
-          <svg *ngIf="item.icon === 'products'" width="22" height="22" fill="white" viewBox="0 0 24 24">
+          <!-- Products (box) -->
+          <svg *ngIf="item.icon === 'box'" width="22" height="22" fill="white" viewBox="0 0 24 24">
             <path
               d="M21 16V8l-9-5-9 5v8l9 5 9-5zm-9-9.5L18.74 8 12 11.5 5.26 8 12 6.5zm0 12.01l-7-3.89V10.3l7 3.89 7-3.89v4.32l-7 3.89z" />
           </svg>
 
-          <!-- Reports Icon -->
-          <svg *ngIf="item.icon === 'reports'" width="22" height="22" fill="white" viewBox="0 0 24 24">
-            <path d="M3 3v18h18V3H3zm8 14H7v-2h4v2zm6-4H7v-2h10v2zm0-4H7V7h10v2z" />
+          <!-- Reports (file-text) -->
+          <svg *ngIf="item.icon === 'file-text'" width="22" height="22" fill="white" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-2 0v6h6" />
+            <path d="M8 13h8M8 17h6M8 9h4" />
+          </svg>
+
+          <!-- Restaurants (shop) -->
+          <svg *ngIf="item.icon === 'shop'" width="22" height="22" fill="white" viewBox="0 0 24 24">
+            <path d="M3 9l1-5h16l1 5H3zm2 2h14v9H5v-9zm3 2v5h2v-5H8z" />
+          </svg>
+
+          <!-- Delivery Partners (truck) -->
+          <svg *ngIf="item.icon === 'truck'" width="22" height="22" fill="white" viewBox="0 0 24 24">
+            <path d="M1 3h15v13H1zM16 8h4l3 5v3h-2a3 3 0 11-6 0H9a3 3 0 11-6 0H1" />
           </svg>
 
         </span>
 
         <span *ngIf="!isCollapsed" class="fw-medium">{{ item.label }}</span>
+
       </a>
     </li>
+
   </ul>
+
 
   <!-- ✅ Logout -->
   <div class="mt-auto p-3 border-top border-light-subtle">

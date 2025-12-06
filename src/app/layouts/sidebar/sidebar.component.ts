@@ -31,13 +31,16 @@ isCollapsed: boolean = false;
 
   @Output() sidebarStateChange = new EventEmitter<boolean>();
 
-  menuItems = [
-    { label: 'Home', icon: 'home', route: '/home' },
-    { label: 'Users', icon: 'users', route: '/user' },
-    { label: 'Orders', icon: 'orders', route: '/orders' },
-    { label: 'Products', icon: 'products', route: '/products' },
-    { label: 'Generate Report', icon: 'reports', route: '/reports' }
-  ];
+menuItems = [
+  { label: 'Home', icon: 'home', route: '/home' },
+  { label: 'Users', icon: 'people', route: '/user' },
+  { label: 'Restaurants', icon: 'shop', route: '/restraurent' },
+  { label: 'Delivery Partners', icon: 'truck', route: '/partner' },
+  { label: 'Orders', icon: 'cart', route: '/orders' },
+  { label: 'Products', icon: 'box', route: '/products' },
+  { label: 'Generate Report', icon: 'file-text', route: '/reports' },
+];
+
 
   constructor(private router: Router, private toster:ToastrService, private cookieservice:CookieService, private apollo:Apollo) {}
 

@@ -1,0 +1,29 @@
+.main-content {
+  margin-left: 260px;
+  transition: margin-left 0.3s ease;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 80px;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+.center-register-form-container {
+  position: fixed; /* या absolute अगर parent relative हो */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* हल्का अंधेरा बैकग्राउंड */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050; /* sidebar और header से ऊपर */
+}
+

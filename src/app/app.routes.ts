@@ -14,6 +14,14 @@ export const routes: Routes = [
     loadChildren: () => import('./user/user.module').then(m => m.UserModule)
   },
   {
+    path: 'restraurent',
+    loadChildren: () => import('./manage-restraurent/manage-restraurent.module').then(m => m.ManageRestraurentModule)
+  },
+  {
+    path: 'partner',
+    loadChildren: () => import('./manage-delivery-partners/manage-delivery-partners.module').then(m => m.ManageDeliveryPartnersModule)
+  },
+  {
     path: 'orders',
     loadChildren: () => import('./ordermanagement/ordermanagement.module')
       .then(m => m.OrdermanagementModule)
