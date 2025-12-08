@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 
 import { SharedRoutingModule } from './shared-routing.module';
 import { CreateUserFormComponent } from './create-user-form/create-user-form.component';
+import { CreateDeliveryPartnerFormComponent } from './create-delivery-partner-form/create-delivery-partner-form.component';
+import { CreateRestraurentFormComponent } from './create-restraurent-form/create-restraurent-form.component';
 
 
 @NgModule({
@@ -10,8 +12,9 @@ import { CreateUserFormComponent } from './create-user-form/create-user-form.com
   imports: [
     CommonModule,
     SharedRoutingModule,
-    CreateUserFormComponent
+    CreateUserFormComponent,
+    CreateDeliveryPartnerFormComponent,CreateRestraurentFormComponent
   ],
-  exports:[CreateUserFormComponent]
+  exports:[CreateUserFormComponent,CreateDeliveryPartnerFormComponent,CreateRestraurentFormComponent]
 })
 export class SharedModule { }

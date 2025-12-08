@@ -1,0 +1,112 @@
+<div class="container my-5" *ngIf="openForm">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Add New Restaurant</h4>
+                <button type="button" class="btn-close btn-close-white" (click)="closeForm()"></button>
+            </div>
+            <div class="card-body p-4">
+                <form id="restaurantForm">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="restaurantName" class="form-label">Restaurant Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="restaurantName" name="restaurantName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="restaurantType" class="form-label">Restaurant Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="restaurantType" name="restaurantType" required>
+                                <option value="">Select Type</option>
+                                <option value="fine-dining">Fine Dining</option>
+                                <option value="casual-dining">Casual Dining</option>
+                                <option value="quick-service">Quick Service</option>
+                                <option value="fast-food">Fast Food</option>
+                                <option value="cafe">Cafe</option>
+                                <option value="cloud-kitchen">Cloud Kitchen</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="restaurantAddress" class="form-label">Restaurant Address <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="restaurantAddress" name="restaurantAddress" required>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="pincode" class="form-label">Pincode <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="pincode" name="pincode" pattern="[0-9]{6}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="latitude" class="form-label">Latitude <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="latitude" name="latitude" placeholder="e.g., 26.8467" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="longitude" class="form-label">Longitude <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="longitude" name="longitude" placeholder="e.g., 80.9462" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="fssaiNumber" class="form-label">FSSAI Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="fssaiNumber" name="fssaiNumber" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="gstNumber" class="form-label">GST Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="gstNumber" name="gstNumber" pattern="[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="panNumber" class="form-label">PAN Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="panNumber" name="panNumber" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="registrationDate" class="form-label">Registration Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="registrationDate" name="registrationDate" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="openingTime" class="form-label">Opening Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="openingTime" name="openingTime" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="closingTime" class="form-label">Closing Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="closingTime" name="closingTime" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="logoUrl" class="form-label">Logo URL</label>
+                            <input type="url" class="form-control" id="logoUrl" name="logoUrl" placeholder="https://example.com/logo.png">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="coverImageUrl" class="form-label">Cover Image URL</label>
+                            <input type="url" class="form-control" id="coverImageUrl" name="coverImageUrl" placeholder="https://example.com/cover.jpg">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Brief description about your restaurant"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="isVerified" class="form-label">Verification Status <span class="text-danger">*</span></label>
+                        <select class="form-select" id="isVerified" name="isVerified" required>
+                            <option value="">Select Status</option>
+                            <option value="true">Verified</option>
+                            <option value="false">Not Verified</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary" onclick="alert('Form cancelled')">Cancel</button>
+                        <button type="reset" class="btn btn-warning">Reset</button>
+                        <button type="submit" class="btn btn-primary">Add Restaurant</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
