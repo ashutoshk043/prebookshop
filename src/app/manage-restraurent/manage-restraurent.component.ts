@@ -4,7 +4,11 @@ import { HeaderComponent } from "../layouts/header/header.component";
 import { SharedModule } from '../shared/shared.module';
 import { CreateRestraurentFormComponent } from '../shared/create-restraurent-form/create-restraurent-form.component';
 import { CommonModule } from '@angular/common';
-
+import { Apollo, gql } from 'apollo-angular';
+import { CookieService } from 'ngx-cookie-service';
+import { ToastrService } from 'ngx-toastr';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 @Component({
   selector: 'app-manage-restraurent',
   standalone: true,
@@ -13,18 +17,195 @@ import { CommonModule } from '@angular/common';
   styleUrl: './manage-restraurent.component.css'
 })
 export class ManageRestraurentComponent {
+  getEndRecord() {
+    throw new Error('Method not implemented.');
+  }
 
   @ViewChild(CreateRestraurentFormComponent)
   child!: CreateRestraurentFormComponent;
+  private searchSubject = new Subject<string>();
+  restaurants: any[] = [];
+  totalRecords = 0;
+  page = 1;
+  limit = 10;
+  loading = false;
+  error = '';
+  searchText = '';
 
-  openFormStatus:boolean=false
-
-  openForm(openType: any) {
-    this.openFormStatus =true
-    // alert(openType);
-
-    // Child function call example (optional)
-    this.child.openFormFromParent(openType);
+  ngAfterViewInit() {
+    // ViewChild is now available
+    console.log('Child component loaded:', this.child);
   }
+
+  ngOnInit() {
+    this.fetchRestaurants()
+    this.searchSubject
+      .pipe(
+        debounceTime(500),          // 500ms wait
+        distinctUntilChanged()      // same value ignore
+      )
+      .subscribe((search) => {
+        this.page = 1;
+        this.fetchRestaurants(this.page, this.limit, search);
+      });
+  }
+
+  constructor(private apollo: Apollo, private cookieservice: CookieService, private toster: ToastrService) { }
+
+
+
+  // Open form in add or edit mode
+  openForm(mode: 'add' | 'edit', restaurantData?: any) {
+    if (this.child) {
+      this.child.openFormFromParent(mode, restaurantData);
+    }
+  }
+
+  // Handle form status change event
+  onFormStatusChange(status: boolean) {
+    console.log('Form status changed:', status);
+  }
+
+  // Handle form submission
+  onFormSubmit(formData: any) {
+    console.log('Form submitted with data:', formData);
+
+    if (formData.mode === 'add') {
+      // Add new restaurant logic
+      const newRestaurant = {
+        id: `RST${String(this.restaurants.length + 1).padStart(3, '0')}`,
+        restaurantName: formData.restaurantName,
+        owner: 'New Owner', // You can get this from form or auth
+        category: formData.restaurantType,
+        status: formData.isVerified === 'true' ? 'Open' : 'Pending'
+      };
+      this.restaurants.push(newRestaurant);
+      alert('Restaurant added successfully!');
+    } else if (formData.mode === 'edit') {
+      // Update restaurant logic
+      alert('Restaurant updated successfully!');
+    }
+  }
+
+  // Edit existing restaurant (DYNAMIC & SAFE)
+  editRestaurant(restaurant: any) {
+
+    const formData = {
+      restaurantName: restaurant.restaurantName ?? '',
+      restaurantType: restaurant.restaurantType ?? '',
+      restaurantAddress: restaurant.restaurantAddress ?? '',
+      pincode: restaurant.pincode ?? '',
+      latitude: restaurant.latitude ?? '',
+      longitude: restaurant.longitude ?? '',
+      fssaiNumber: restaurant.fssaiNumber ?? '',
+      gstNumber: restaurant.gstNumber ?? '',
+      registrationDate: restaurant.registrationDate ?? '',
+      openingTime: restaurant.openingTime ?? '',
+      closingTime: restaurant.closingTime ?? '',
+      logoUrl: restaurant.logoUrl ?? '',
+      coverImageUrl: restaurant.coverImageUrl ?? '',
+      description: restaurant.description ?? '',
+      isVerified: restaurant.isVerified ? 'true' : 'false',
+      id: restaurant.id,
+      ownerEmail: restaurant.ownerEmail ?? '',
+      verifiedBy: restaurant.verifiedBy ?? '',
+    };
+
+    this.openForm('edit', formData);
+  }
+
+  // View restaurant details
+  viewRestaurant(restaurant: any) {
+    alert(`Viewing details for: ${restaurant.restaurantName}`);
+  }
+
+  // Delete restaurant
+  deleteRestaurant(restaurant: any) {
+    if (confirm(`Are you sure you want to delete ${restaurant.restaurantName}?`)) {
+      this.restaurants = this.restaurants.filter(r => r.id !== restaurant.id);
+      alert('Restaurant deleted successfully!');
+    }
+  }
+
+  fetchRestaurants(page: number = 1, limit: number = 10, search: string = '') {
+    this.loading = true;
+
+    const GET_RESTAURANTS = gql`
+  query getRestaurants($page: Int, $limit: Int, $search: String) {
+    restaurants(page: $page, limit: $limit, search: $search) {
+      data {
+        id
+        restaurantName
+        restaurantType
+        restaurantAddress
+        ownerEmail
+        pincode
+        latitude
+        longitude
+        fssaiNumber
+        gstNumber
+        registrationDate
+        openingTime
+        closingTime
+        logoUrl
+        coverImageUrl
+        description
+        isVerified
+        verifiedBy
+        createdAt
+        updatedAt
+      }
+      total
+      page
+      limit
+    }
+  }
+`;
+
+
+    this.apollo
+      .watchQuery<{
+        restaurants: {
+          data: any[];
+          total: number;
+          page: number;
+          limit: number;
+        };
+      }>({
+        query: GET_RESTAURANTS,
+        variables: {
+          page,
+          limit,
+          search: search || null,
+        },
+        fetchPolicy: 'network-only',
+      })
+      .valueChanges.subscribe({
+        next: (res: any) => {
+          const response = res.data.restaurants;
+
+          this.restaurants = response.data;
+          this.totalRecords = response.total;
+          this.page = response.page;
+          this.limit = response.limit;
+
+          this.loading = false;
+
+          console.log(this.restaurants, "this.restaurants")
+        },
+        error: (err) => {
+          console.error('Failed to fetch restaurants:', err);
+          this.error = 'Failed to load restaurants';
+          this.loading = false;
+        },
+      });
+  }
+
+  onSearch(event: Event) {
+    const value = (event.target as HTMLInputElement).value.trim();
+    this.searchSubject.next(value);
+  }
+
+
 
 }

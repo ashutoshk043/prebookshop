@@ -312,17 +312,6 @@ export class CreateUserFormComponent {
 
     // Extract payload (including disabled fields)
     const payload = this.registerForm.getRawValue();
-
-    // Convert isVerified string -> boolean (if restaurant field exists)
-    // if (payload.restaurant) {
-    //   payload.restaurant.isVerified =
-    //     payload.restaurant.isVerified === 'true'
-    //       ? true
-    //       : payload.restaurant.isVerified === 'false'
-    //         ? false
-    //         : payload.restaurant.isVerified;
-    // }
-
     // ----------------------------------
     // 🔥 EDIT MODE → CALL updateUser()
     // ----------------------------------
