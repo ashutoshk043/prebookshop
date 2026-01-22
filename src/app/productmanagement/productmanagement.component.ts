@@ -4,6 +4,9 @@ import { HeaderComponent } from "../layouts/header/header.component";
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { ProductImportService } from '../services/product-import.service';
+import { HttpEventType } from '@angular/common/http';
+import { ProductImportProgressService } from '../services/product-import-progress.service';
 
 interface Product {
   id: string;
@@ -27,7 +30,6 @@ interface Product {
 })
 export class ProductmanagementComponent implements OnInit {
   showModal = false;
-  showImportModal = false;
   isEditMode = false;
   productForm!: FormGroup;
   
@@ -88,7 +90,18 @@ export class ProductmanagementComponent implements OnInit {
   variants = ['Half', 'Full', 'Single', 'Regular', 'Large'];
   units = ['Plate', 'Piece', 'Bowl', 'Glass', 'Kg'];
 
-  constructor(private fb: FormBuilder, private toster:ToastrService) {}
+  showImportModal = false;
+  selectedFile: File | null = null;
+  uploading = false;
+  uploadProgress = 0;
+  progressSubscription: any;
+  importId: string = '';
+  importedCount: any;
+  failedCount: any;
+  totalCount: any;
+
+  constructor(private progressService:ProductImportProgressService, private fb: FormBuilder, private toster:ToastrService, private importService: ProductImportService,
+) {}
 
   ngOnInit(): void {
     this.initializeForm();
@@ -171,63 +184,82 @@ export class ProductmanagementComponent implements OnInit {
     this.productForm.reset();
   }
 
-  openImportModal(): void {
+openImportModal() {
     this.showImportModal = true;
-    this.importFile = null;
+    this.reset();
   }
 
-  closeImportModal(): void {
+  closeImportModal() {
     this.showImportModal = false;
-    this.importFile = null;
+    this.reset();
   }
 
-  onFileSelect(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.importFile = file;
+  reset() {
+    this.selectedFile = null;
+    this.uploadProgress = 0;
+    this.uploading = false;
+  }
+
+  onFileSelect(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
     }
   }
 
-  handleImport(): void {
-    if (!this.importFile) {
-      alert('Please select a file to import');
-      return;
-    }
+handleImport() {
+  if (!this.selectedFile) {
+    this.toster.warning('Please select a CSV file');
+    return;
+  }
 
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
+  this.uploading = true;
+  this.uploadProgress = 0;
+
+  // 1️⃣ Upload file to backend
+this.importService.uploadCsv(this.selectedFile).subscribe({
+  next: async (event) => {
+    if (event.type === HttpEventType.Response) {
+      const importId = event.body.importId;
+      this.toster.success('File uploaded. Import started!');
+
       try {
-        const text = e.target.result;
-        const lines = text.split('\n');
-        
-        for (let i = 1; i < lines.length; i++) {
-          if (lines[i].trim()) {
-            const values = lines[i].split(',').map((v: string) => v.trim());
-            const product: Product = {
-              id: 'PRD-' + String(this.products.length + 1).padStart(3, '0'),
-              productName: values[0] || '',
-              category: values[1] || '',
-              description: values[2] || '',
-              variantType: values[3] || '',
-              price: parseFloat(values[4]) || 0,
-              unit: values[5] || '',
-              stock: parseInt(values[6]) || 0,
-              ingredients: values[7] || '',
-              available: values[8]?.toUpperCase() === 'TRUE'
-            };
-            this.products.push(product);
+        await this.progressService.connect(importId); // wait for join
+
+        this.progressSubscription = this.progressService.getProgress().subscribe({
+          next: (data) => {
+            this.uploadProgress = data.progress;
+            this.importedCount = data.importedCount
+            this.failedCount = data.failedCount
+            this.totalCount = data.total
+
+            // alert(this.uploadProgress)
+
+            console.log(`Imported: ${data.importedCount}, Failed: ${data.failedCount}, Total: ${data.total}`);
+
+            if (data.progress >= 100) {
+              // this.uploading = false;
+              this.toster.success('Import completed!');
+            }
+          },
+          error: (err) => {
+            console.error('Socket progress error', err);
+            this.uploading = false;
           }
-        }
-        
-        alert('Products imported successfully!');
-        this.closeImportModal();
-      } catch (error) {
-        alert('Error importing file. Please check the format.');
-        console.error(error);
+        });
+      } catch (err) {
+        console.error('Socket failed to connect/join', err);
       }
-    };
-    reader.readAsText(this.importFile);
+    }
+  },
+  error: () => {
+    this.uploading = false;
+    this.toster.error('Upload failed');
   }
+});
+
+}
+
 
   saveProduct(): void {
     if (this.productForm.invalid) {
@@ -268,12 +300,6 @@ export class ProductmanagementComponent implements OnInit {
 
   toggleAvailability(product: Product): void {
     product.available = !product.available;
-  }
-
-  getStockClass(stock: number): string {
-    if (stock === 0) return 'out-of-stock';
-    if (stock < 20) return 'low-stock';
-    return 'in-stock';
   }
 
   downloadTemplate(): void {

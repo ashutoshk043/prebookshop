@@ -55,15 +55,16 @@
               Owner Email <span class="text-danger">*</span>
             </label>
 
-            <ng-select [items]="ownerEmailList" bindLabel="email" bindValue="email" placeholder="Select owner email"
-              formControlName="ownerEmail" [searchable]="true"
+            <ng-select [items]="ownerEmailList" bindLabel="email" bindValue="id" placeholder="Search owner email"
+              formControlName="ownerEmail" [searchable]="true" (search)="onOwnerSearch($event)"
               [class.is-invalid]="f['ownerEmail'].invalid && f['ownerEmail'].touched">
             </ng-select>
 
             <div class="invalid-feedback d-block" *ngIf="f['ownerEmail'].invalid && f['ownerEmail'].touched">
-              Valid email is required
+              Owner email is required
             </div>
           </div>
+
 
 
 

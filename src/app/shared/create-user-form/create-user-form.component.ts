@@ -5,64 +5,26 @@ import { SidebarComponent } from "../../layouts/sidebar/sidebar.component";
 import { Apollo, gql } from 'apollo-angular';
 import { ToastrService } from 'ngx-toastr';
 
-const REGISTER_USER_WITH_RESTRAURENT = gql`
-  mutation registerUser($input: CreateUserInput!) {
-    registerUser(createUserInput: $input) {
-      _id
-      name
-      email
-      phone
-      password
-      state
-      district
-      block
-      village
-      roleId
-      status
-      permissions
-      profile
-      createdBy
-      restaurant {
-        restaurantName
-        restaurantType
-        restaurantAddress
-        pincode
-        latitude
-        longitude
-        fssaiNumber
-        gstNumber
-        panNumber
-        registrationDate
-        openingTime
-        closingTime
-        logoUrl
-        coverImageUrl
-        description
-        isVerified
-      }
-    }
-  }
-`;
 
 const REGISTER_USER = gql`
 mutation registerUser($input: CreateUserInput!) {
-    registerUser(createUserInput: $input) {
-      name
-      email
-      phone
-      password
-      state
-      district
-      block
-      village
-      roleId
-      status
-      profile
-      permissions
-      createdBy
-    }
+  registerUser(createUserInput: $input) {
+    name
+    email
+    phone
+    state
+    district
+    block
+    village
+    roleId
+    status
+    profile
+    permissions
+    createdBy
   }
+}
 `;
+
 
 const UPDATE_USER = gql`
   mutation updateUser($updateUserInput: UpdateUserInput!) {
@@ -303,103 +265,96 @@ export class CreateUserFormComponent {
     return pass === confirm ? null : { passwordMismatch: true };
   }
 
-  onSubmit(): void {
-    if (this.registerForm.invalid) {
-      this.registerForm.markAllAsTouched();
-      this.toastr.error('Please fill all required fields', 'Form Invalid');
-      return;
-    }
+onSubmit(): void {
+  if (this.registerForm.invalid) {
+    this.registerForm.markAllAsTouched();
+    this.toastr.error('Please fill all required fields', 'Form Invalid');
+    return;
+  }
 
-    // Extract payload (including disabled fields)
-    const payload = this.registerForm.getRawValue();
-    // ----------------------------------
-    // 🔥 EDIT MODE → CALL updateUser()
-    // ----------------------------------
-    if (this.editForm) {
-      const payload = this.registerForm.getRawValue();
+  this.loading = true;
 
-      // Convert _id → id for backend
-      payload.id = payload._id;
-      delete payload._id;
+  // 🔹 Get all values (including disabled fields)
+  const payload = this.registerForm.getRawValue();
 
-      // Remove empty password fields
-      if (!payload.password) {
-        delete payload.password;
-        delete payload.confirmPassword;
-      }
+  // 🔹 Password safety
+  if (!payload.password) {
+    delete payload.password;
+    delete payload.confirmPassword;
+  }
 
-      console.log("✏️ Update Mode Payload:", payload);
+  // ==============================
+  // 🔁 UPDATE USER FLOW
+  // ==============================
+  if (this.editForm && this.editForm._id) {
+    const updatePayload = {
+      id: this.editForm._id, // 🔥 IMPORTANT (_id → id)
+      ...payload,
+    };
 
-      this.apollo.mutate({
-        mutation: UPDATE_USER,
-        variables: {
-          updateUserInput: payload
-        }
-      })
-        .subscribe({
-          next: (res: any) => {
-            this.loading = false;
-            this.toastr.success("User updated successfully!", "Updated");
+    delete updatePayload._id; // safety
 
-            console.log("Updated User:", res);
-            this.editForm = false;
-            this.registerForm.reset();
-          },
-          error: (err) => {
-            this.loading = false;
-
-            const message =
-              err?.message ||
-              err?.graphQLErrors?.[0]?.message ||
-              "Something went wrong!";
-
-            this.toastr.error(message, "Error");
-          }
-        });
-
-      return;
-    }
-
-    // ----------------------------------
-    // 🟢 CREATE MODE → CALL Register
-    // ----------------------------------
-
-    if ('_id' in payload) {
-      delete payload._id;
-    }
-
-    console.log("🆕 Create Mode Payload:", payload);
-
-    this.loading = true;
+    console.log('📝 Update User Payload:', updatePayload);
 
     this.apollo
       .mutate({
-        mutation:
-          this.restraurentSelected
-            ? REGISTER_USER_WITH_RESTRAURENT
-            : REGISTER_USER,
-        variables: { input: payload },
+        mutation: UPDATE_USER,
+        variables: {
+          updateUserInput: updatePayload,
+        },
       })
       .subscribe({
-        next: (res: any) => {
+        next: () => {
           this.loading = false;
-          this.toastr.success('User created successfully!', 'Success');
-
+          this.toastr.success('User updated successfully!', 'Success');
           this.registerForm.reset();
+          this.editForm = null;
         },
-
         error: (err) => {
           this.loading = false;
-
-          const message =
-            err?.message ||
-            err?.graphQLErrors?.[0]?.message ||
-            'Something went wrong!';
-
-          this.toastr.error(message, 'Error');
+          this.handleError(err);
         },
       });
+
+    return; // ⛔ important
   }
+
+  // ==============================
+  // 🆕 CREATE USER FLOW
+  // ==============================
+  delete payload._id; // safety
+
+  console.log('🆕 Create User Payload:', payload);
+
+  this.apollo
+    .mutate({
+      mutation: REGISTER_USER,
+      variables: {
+        input: payload, // ✅ backend expects "input"
+      },
+    })
+    .subscribe({
+      next: () => {
+        this.loading = false;
+        this.toastr.success('User created successfully!', 'Success');
+        this.registerForm.reset();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.handleError(err);
+      },
+    });
+}
+
+handleError(err: any) {
+  const message =
+    err?.graphQLErrors?.[0]?.message ||
+    err?.message ||
+    'Something went wrong!';
+  this.toastr.error(message, 'Error');
+}
+
+
 
 
 

@@ -79,12 +79,7 @@ export class UserComponent implements OnInit {
   constructor(private apollo: Apollo, private cookieservice: CookieService, private toster: ToastrService) { }
 
   ngOnInit() {
-
-    this.loggedInRestIid = this.getLoggedInUserDetails();
-
-    if (this.loggedInRestIid) {
-      this.fetchAllUsers(this.loggedInRestIid);  // Pass the id properly
-    }
+      this.fetchAllUsers();
   }
 
 
@@ -132,16 +127,16 @@ export class UserComponent implements OnInit {
   closeFormClicked(event: any) {
     this.openRegisterForm(event.status);
     if (!event.status) {
-      this.fetchAllUsers(this.loggedInRestIid);
+      this.fetchAllUsers();
     }
   }
 
-  fetchAllUsers(restId: string) {
-    this.loading = true;
+ fetchAllUsers() {
+  this.loading = true;
 
-    const GET_ALL_USERS = gql`
-    query getAllUsers($restId: String!) {
-      getAllUsers(restId: $restId) {
+  const GET_ALL_USERS = gql`
+    query getAllUsers {
+      getAllUsers {
         _id
         name
         email
@@ -153,31 +148,30 @@ export class UserComponent implements OnInit {
         roleId
         status
         profile
-        restaurantId
+        restaurantIds
       }
     }
   `;
 
-    this.apollo
-      .watchQuery<{ getAllUsers: User[] }>({
-        query: GET_ALL_USERS,
-        variables: { restId },   // ← HERE
-        fetchPolicy: 'network-only',
-      })
-      .valueChanges.subscribe({
-        next: (res) => {
-          this.users = res.data.getAllUsers;
-          this.filteredUsers = [...this.users];
-          this.calculatePagination();
-          this.loading = false;
-        },
-        error: (err) => {
-          console.error('Failed to fetch users:', err);
-          this.error = 'Failed to load users';
-          this.loading = false;
-        },
-      });
-  }
+  this.apollo
+    .watchQuery<{ getAllUsers: User[] }>({
+      query: GET_ALL_USERS,
+      fetchPolicy: 'network-only',
+    })
+    .valueChanges.subscribe({
+      next: (res) => {
+        this.users = res.data.getAllUsers;
+        this.filteredUsers = [...this.users];
+        this.calculatePagination();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Failed to fetch users:', err);
+        this.error = 'Failed to load users';
+        this.loading = false;
+      },
+    });
+}
 
 
   filterUsers() {
@@ -244,7 +238,7 @@ export class UserComponent implements OnInit {
 
           // Refresh the list
           if (this.loggedInRestIid) {
-            this.fetchAllUsers(this.loggedInRestIid);
+            this.fetchAllUsers();
           }
         },
         error: (err) => {

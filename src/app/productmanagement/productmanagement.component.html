@@ -183,20 +183,53 @@
 <div class="modal fade show" *ngIf="showImportModal" style="display:block; background:rgba(0,0,0,0.5);">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg">
+
       <div class="modal-header">
         <h5 class="modal-title">Import Products</h5>
         <button type="button" class="btn-close" (click)="closeImportModal()"></button>
       </div>
+
       <div class="modal-body text-center">
-        <input type="file" class="form-control mb-3" (change)="onFileSelect($event)" accept=".csv">
-        <button class="btn btn-outline-primary w-100 mb-2" (click)="downloadTemplate()">
-          <i class="bi bi-file-earmark-arrow-down me-2"></i> Download Template
+
+        <input type="file" class="form-control mb-3" accept=".csv" (change)="onFileSelect($event)"
+          [disabled]="uploading" />
+
+        <!-- Progress Bar -->
+        <div *ngIf="uploading" class="mb-3">
+          <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+              [style.width.%]="uploadProgress">
+              {{ uploadProgress }}%
+            </div>
+          </div>
+          <div>
+            <span>Total: {{totalCount}}</span><br>
+            <span>Imported: {{importedCount}}</span><br>
+            <span>Failed: {{failedCount}}</span><br>
+          </div>
+        </div>
+
+        <button class="btn btn-outline-primary w-100 mb-2" (click)="downloadTemplate()" [disabled]="uploading">
+          <i class="bi bi-file-earmark-arrow-down me-2"></i>
+          Download Template
         </button>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" (click)="closeImportModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="handleImport()">Import</button>
+
+      <div class="modal-footer" *ngIf="uploadProgress != 100">
+        <button class="btn btn-outline-secondary" (click)="closeImportModal()" [disabled]="uploading">
+          Cancel
+        </button>
+
+        <button class="btn btn-primary" (click)="handleImport()" [disabled]="uploading">
+          {{ uploading ? 'Uploading...' : 'Import' }}
+        </button>
       </div>
+        <div class="modal-footer" *ngIf="uploadProgress == 100">
+        <button class="btn btn-outline-danger">
+          Check File Log
+        </button>
+      </div>
+
     </div>
   </div>
 </div>

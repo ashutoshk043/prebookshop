@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Apollo, gql } from 'apollo-angular';
 import { ToastrService } from 'ngx-toastr';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 declare var bootstrap: any;
 
 @Component({
@@ -15,19 +16,56 @@ declare var bootstrap: any;
 })
 export class CreateRestraurentFormComponent {
 
+  usersTotal: any;
+  usersPage: any;
+  usersLimit: any;
+
   @ViewChild('restaurantModal') modalElement!: ElementRef;
   @Output() formStatus = new EventEmitter<boolean>();
   @Output() formSubmit = new EventEmitter<any>();
+  ownerSearch$ = new Subject<string>();
 
   private modalInstance: any;
   formMode: 'add' | 'edit' = 'add';
   restaurantForm!: FormGroup;
+  RESTAURANT_FIELDS = `
+  id
+  restaurantName
+  restaurantType
+  restaurantAddress
+  ownerEmail
+  pincode
+  latitude
+  longitude
+  fssaiNumber
+  gstNumber
+  registrationDate
+  openingTime
+  closingTime
+  logoUrl
+  coverImageUrl
+  description
+  isVerified
+  verifiedBy
+`;
 
-  ownerEmailList = [
-    { email: 'owner1@gmail.com' },
-    { email: 'owner2@gmail.com' },
-    { email: 'owner3@gmail.com' }
+  GET_USERS_FROM_AUTH = gql`
+  query usersFromAuth($input: UserDetailsPaginationInput!) {
+    usersFromAuth(input: $input) {
+      data {
+        email
+        id
+      }
+      total
+      page
+      limit
+    }
+  }
+`;
+
+  ownerEmailList:any = [
   ];
+  @Output() ownerEmailListChange = new EventEmitter<any[]>();
 
   hours = Array.from({ length: 12 }, (_, i) =>
     (i + 1).toString().padStart(2, '0')
@@ -46,34 +84,51 @@ export class CreateRestraurentFormComponent {
     return `${h.toString().padStart(2, '0')}:${minute}`;
   }
 
+  updateOwnerEmailList(newList: any[]) {
+    this.ownerEmailList = newList;
+
+    // 🔥 Emit करके parent में भेजो
+    this.ownerEmailListChange.emit(this.ownerEmailList);
+  }
+
 CREATE_RESTAURANT = gql`
   mutation createRestaurant($input: CreateRestaurantInput!) {
     createRestaurant(input: $input) {
-      id
-      restaurantName
-      restaurantType
-      restaurantAddress
-      ownerEmail
-      pincode
-      latitude
-      longitude
-      fssaiNumber
-      gstNumber
-      registrationDate
-      openingTime
-      closingTime
-      logoUrl
-      coverImageUrl
-      description
-      isVerified
-      verifiedBy
+      ${this.RESTAURANT_FIELDS}
+    }
+  }
+`;
+
+UPDATE_RESTAURANT = gql`
+  mutation updateRestaurant($input: CreateRestaurantInput!) {
+    updateRestaurant(input: $input) {
+      ${this.RESTAURANT_FIELDS}
     }
   }
 `;
 
 
+
+
+
   constructor(private fb: FormBuilder, private apollo: Apollo, private toastr: ToastrService) {
     this.initializeForm();
+    this.fetchUsersFromAuth(
+      1, 1000000, ''
+    ),
+
+      this.ownerSearch$
+        .pipe(
+          debounceTime(400),
+          distinctUntilChanged()
+        )
+        .subscribe(search => {
+          this.fetchUsersFromAuth(1, 1000000, search);
+        });
+  }
+
+  onOwnerSearch(event: { term: string }) {
+    this.ownerSearch$.next(event.term || '');
   }
 
   initializeForm() {
@@ -86,7 +141,7 @@ CREATE_RESTAURANT = gql`
       restaurantType: ['', Validators.required],
       restaurantAddress: ['', Validators.required],
 
-      ownerEmail: ['', [Validators.required, Validators.email]],
+      ownerEmail: ['', [Validators.required]],
 
       pincode: ['', [Validators.required, Validators.pattern('[0-9]{6}')]],
       latitude: ['', Validators.required],
@@ -152,17 +207,19 @@ CREATE_RESTAURANT = gql`
   }
 
 openFormFromParent(mode: 'add' | 'edit', data?: any) {
+  // console.log('Opening form for mode:', mode);
+  // console.log('Restaurant data:', data);
+  // console.log('OwnerEmailList:', this.ownerEmailList);
+
   this.formMode = mode;
+  this.restaurantForm.reset();
 
   if (mode === 'edit' && data) {
-
-    // ⏱ Convert opening / closing time
     const opening = this.convertFrom24(data.openingTime);
     const closing = this.convertFrom24(data.closingTime);
 
-    const patchData = {
+    const patchData: any = {
       _id: data.id || data._id,
-
       restaurantName: data.restaurantName ?? '',
       restaurantType: data.restaurantType ?? '',
       restaurantAddress: data.restaurantAddress ?? '',
@@ -175,32 +232,26 @@ openFormFromParent(mode: 'add' | 'edit', data?: any) {
       logoUrl: data.logoUrl ?? '',
       coverImageUrl: data.coverImageUrl ?? '',
       description: data.description ?? '',
-      ownerEmail: data.ownerEmail ?? '',
       verifiedBy: data.verifiedBy ?? '',
-
-      // 🔁 boolean → string (radio / select)
       isVerified: data.isVerified ? 'true' : 'false',
-
-      // 🕒 ADD FORM FIELDS
       openingHour: opening.hour,
       openingMinute: opening.minute,
       openingPeriod: opening.period,
-
       closingHour: closing.hour,
       closingMinute: closing.minute,
       closingPeriod: closing.period,
+      ownerEmail: data.ownerEmail ?? '',  // check console to see if ownerId exists
     };
 
-    this.restaurantForm.reset();
     this.restaurantForm.patchValue(patchData);
-
   } else {
-    this.restaurantForm.reset();
     this.setTodayDate();
   }
 
   this.modalInstance?.show();
 }
+
+
 
 
   closeForm() {
@@ -253,7 +304,7 @@ openFormFromParent(mode: 'add' | 'edit', data?: any) {
       console.log('✏️ Update Restaurant Payload:', payload);
 
       this.apollo.mutate({
-        mutation: this.CREATE_RESTAURANT,
+        mutation: this.UPDATE_RESTAURANT,
         variables: { input: payload }
       }).subscribe({
         next: (res: any) => {
@@ -358,23 +409,67 @@ openFormFromParent(mode: 'add' | 'edit', data?: any) {
 
 
   convertFrom24(time: string): { hour: string; minute: string; period: 'AM' | 'PM' } {
-  if (!time) {
-    return { hour: '12', minute: '00', period: 'AM' };
+    if (!time) {
+      return { hour: '12', minute: '00', period: 'AM' };
+    }
+
+    let [h, m] = time.split(':').map(Number);
+    const period: 'AM' | 'PM' = h >= 12 ? 'PM' : 'AM';
+
+    if (h === 0) h = 12;
+    else if (h > 12) h -= 12;
+
+    return {
+      hour: h.toString().padStart(2, '0'),
+      minute: m.toString().padStart(2, '0'),
+      period
+    };
   }
 
-  let [h, m] = time.split(':').map(Number);
-  const period: 'AM' | 'PM' = h >= 12 ? 'PM' : 'AM';
 
-  if (h === 0) h = 12;
-  else if (h > 12) h -= 12;
 
-  return {
-    hour: h.toString().padStart(2, '0'),
-    minute: m.toString().padStart(2, '0'),
-    period
-  };
-}
+  fetchUsersFromAuth(
+    page: number,
+    limit: number,
+    search: string
+  ) {
 
+    this.apollo
+      .watchQuery<{
+        usersFromAuth: {
+          data: any[];
+          total: number;
+          page: number;
+          limit: number;
+        };
+      }>({
+        query: this.GET_USERS_FROM_AUTH,
+        variables: {
+          input: {
+            page,
+            limit,
+            search: search || null,
+          },
+        },
+        fetchPolicy: 'network-only',
+      })
+      .valueChanges.subscribe({
+        next: (res: any) => {
+          const response = res.data.usersFromAuth;
+
+          this.ownerEmailList = response.data;
+          this.usersTotal = response.total;
+          this.usersPage = response.page;
+          this.usersLimit = response.limit;
+           this.updateOwnerEmailList(this.ownerEmailList);
+
+          // console.log('Users from Auth:', this.ownerEmailList);
+        },
+        error: (err) => {
+          console.error('Failed to fetch users from auth:', err);
+        },
+      });
+  }
 
 
 }

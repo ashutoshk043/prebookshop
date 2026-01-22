@@ -17,6 +17,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
   styleUrl: './manage-restraurent.component.css'
 })
 export class ManageRestraurentComponent {
+
   getEndRecord() {
     throw new Error('Method not implemented.');
   }
@@ -31,6 +32,27 @@ export class ManageRestraurentComponent {
   loading = false;
   error = '';
   searchText = '';
+  totalPages = 0;
+  pages: number[] = [];
+  ownerEmailListParent: any[] = [];
+  GET_RESTAURANT_SUMMARY = gql`
+  query getRestaurantSummary {
+    getRestaurantSummary {
+      totalRestaurants
+      openCount
+      closedCount
+    }
+  }
+`;
+
+summary = {
+    totalRestaurants: 0,
+    openCount: 0,
+    closedCount: 0,
+  };
+
+
+
 
   ngAfterViewInit() {
     // ViewChild is now available
@@ -39,6 +61,7 @@ export class ManageRestraurentComponent {
 
   ngOnInit() {
     this.fetchRestaurants()
+    this.fetchSummary();
     this.searchSubject
       .pipe(
         debounceTime(500),          // 500ms wait
@@ -90,6 +113,8 @@ export class ManageRestraurentComponent {
   // Edit existing restaurant (DYNAMIC & SAFE)
   editRestaurant(restaurant: any) {
 
+    console.log(restaurant, "restaurant")
+
     const formData = {
       restaurantName: restaurant.restaurantName ?? '',
       restaurantType: restaurant.restaurantType ?? '',
@@ -115,9 +140,9 @@ export class ManageRestraurentComponent {
   }
 
   // View restaurant details
-  viewRestaurant(restaurant: any) {
-    alert(`Viewing details for: ${restaurant.restaurantName}`);
-  }
+  // viewRestaurant(restaurant: any) {
+  //   alert(`Viewing details for: ${restaurant.restaurantName}`);
+  // }
 
   // Delete restaurant
   deleteRestaurant(restaurant: any) {
@@ -127,10 +152,7 @@ export class ManageRestraurentComponent {
     }
   }
 
-  fetchRestaurants(page: number = 1, limit: number = 10, search: string = '') {
-    this.loading = true;
-
-    const GET_RESTAURANTS = gql`
+  GET_RESTAURANTS = gql`
   query getRestaurants($page: Int, $limit: Int, $search: String) {
     restaurants(page: $page, limit: $limit, search: $search) {
       data {
@@ -162,17 +184,12 @@ export class ManageRestraurentComponent {
   }
 `;
 
+  fetchRestaurants(page: number = 1, limit: number = 10, search: string = '') {
+    this.loading = true;
 
     this.apollo
-      .watchQuery<{
-        restaurants: {
-          data: any[];
-          total: number;
-          page: number;
-          limit: number;
-        };
-      }>({
-        query: GET_RESTAURANTS,
+      .watchQuery<any>({
+        query: this.GET_RESTAURANTS,
         variables: {
           page,
           limit,
@@ -181,7 +198,7 @@ export class ManageRestraurentComponent {
         fetchPolicy: 'network-only',
       })
       .valueChanges.subscribe({
-        next: (res: any) => {
+        next: (res) => {
           const response = res.data.restaurants;
 
           this.restaurants = response.data;
@@ -189,23 +206,71 @@ export class ManageRestraurentComponent {
           this.page = response.page;
           this.limit = response.limit;
 
-          this.loading = false;
+          // ✅ pagination calculation
+          this.totalPages = Math.ceil(this.totalRecords / this.limit);
+          this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
 
-          console.log(this.restaurants, "this.restaurants")
+          this.loading = false;
         },
-        error: (err) => {
-          console.error('Failed to fetch restaurants:', err);
+        error: () => {
           this.error = 'Failed to load restaurants';
           this.loading = false;
         },
       });
   }
 
+
   onSearch(event: Event) {
     const value = (event.target as HTMLInputElement).value.trim();
+    this.searchText = value;
     this.searchSubject.next(value);
   }
 
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.fetchRestaurants(page, this.limit, this.searchText);
+  }
 
+  nextPage() {
+    if (this.page < this.totalPages) {
+      this.goToPage(this.page + 1);
+    }
+  }
+
+  prevPage() {
+    if (this.page > 1) {
+      this.goToPage(this.page - 1);
+    }
+  }
+
+  onOwnerEmailListChange(newList: any[]) {
+    this.ownerEmailListParent = newList;
+    console.log('Updated in parent:', this.ownerEmailListParent);
+  }
+
+  getOwnerEmail(ownerId: string): string {
+  const user = this.ownerEmailListParent.find(u => u.id === ownerId);
+  return user ? user.email : 'N/A';
+}
+
+fetchSummary() {
+    this.apollo
+      .watchQuery<any>({
+        query: this.GET_RESTAURANT_SUMMARY,
+        fetchPolicy: 'network-only',
+      })
+      .valueChanges
+      .subscribe({
+        next: (res: any) => {
+          this.summary = res.data.getRestaurantSummary;
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error(err);
+          this.error = 'Failed to load summary';
+          this.loading = false;
+        },
+      });
+  }
 
 }
