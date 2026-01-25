@@ -3,8 +3,8 @@
 <div class="main-content" [class.sidebar-collapsed]="sidebar.isCollapsed">
   <app-header></app-header>
   <div class="center-register-form-container">
-    <app-create-restraurent-form (formStatus)="onFormStatusChange($event)"
-      (formSubmit)="onFormSubmit($event)" (ownerEmailListChange)="onOwnerEmailListChange($event)"></app-create-restraurent-form>
+    <app-create-restraurent-form (formStatus)="onFormStatusChange($event)" (formSubmit)="onFormSubmit($event)"
+      (ownerEmailListChange)="onOwnerEmailListChange($event)"></app-create-restraurent-form>
   </div>
   <main class="container-fluid py-4">
 
@@ -142,7 +142,7 @@
                   <!-- <button class="btn btn-outline-secondary" (click)="viewRestaurant(restaurant)">
                   <i class="bi bi-eye"></i>
                 </button> -->
-                  <button class="btn btn-outline-danger" (click)="deleteRestaurant(restaurant)">
+                  <button class="btn btn-outline-danger" (click)="openDeleteModal(restaurant)">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
@@ -172,7 +172,7 @@
 
         <!-- Pagination -->
         <nav *ngIf="totalPages > 1">
-          <ul class="pagination pagination-sm mb-0">  
+          <ul class="pagination pagination-sm mb-0">
 
             <!-- Prev -->
             <li class="page-item" [class.disabled]="page === 1">
@@ -202,4 +202,49 @@
   </main>
 
 
+</div>
+
+
+<!-- 🔴 Delete Confirmation Modal -->
+<div class="modal fade show" *ngIf="showDeleteModal" style="display:block; background:rgba(0,0,0,0.5);">
+
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+
+      <!-- Header -->
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          Confirm Delete
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDeleteModal()"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body text-center p-4">
+        <i class="bi bi-trash fs-1 text-danger mb-3"></i>
+
+        <p class="fs-6">
+          Are you sure you want to delete
+          <strong>{{ restaurantToDelete?.restaurantName }}</strong>?
+        </p>
+
+        <p class="text-muted small">
+          This action cannot be undone.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer justify-content-center">
+        <button class="btn btn-outline-secondary px-4" (click)="closeDeleteModal()">
+          Cancel
+        </button>
+
+        <button class="btn btn-danger px-4" (click)="confirmDelete()">
+          Yes, Delete
+        </button>
+      </div>
+
+    </div>
+  </div>
 </div>

@@ -1,0 +1,111 @@
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-shop me-2"></i> {{formMode | titlecase}} Products
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body">
+
+        <form [formGroup]="productForm">
+
+          <!-- Product Name -->
+          <div class="mb-3">
+            <label class="form-label">Product Name</label>
+            <input type="text" class="form-control" placeholder="Enter product name" formControlName="name">
+
+            <small class="text-danger" *ngIf="productForm.get('name')?.touched && productForm.get('name')?.invalid">
+              Product name is required
+            </small>
+          </div>
+
+          <!-- Restaurant Name -->
+          <div class="mb-3">
+            <label class="form-label">Restaurant Name</label>
+            <input type="text" class="form-control" placeholder="Enter restaurant name"
+              formControlName="restaurantName">
+          </div>
+
+          <!-- Category -->
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select class="form-select" formControlName="category">
+              <option value="">Select Category</option>
+              <option>Indian</option>
+              <option>Chinese</option>
+              <option>Italian</option>
+            </select>
+          </div>
+
+          <!-- Variant -->
+          <div class="mb-3">
+            <label class="form-label">Variant</label>
+            <select class="form-select" formControlName="variant">
+              <option value="">Select Variant</option>
+              <!-- <option>Plate</option> -->
+              <option>Half</option>
+              <option>Full</option>
+            </select>
+          </div>
+
+          <!-- Price -->
+          <div class="mb-3">
+            <label class="form-label">Price</label>
+            <input type="number" class="form-control" placeholder="Enter price" formControlName="price">
+          </div>
+
+          <!-- Stock -->
+          <div class="mb-3">
+            <label class="form-label">Stock</label>
+            <input type="number" class="form-control" placeholder="Enter stock" formControlName="stock">
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="3" placeholder="Optional description" formControlName="description">
+    </textarea>
+          </div>
+
+          <!-- Image URL -->
+          <div class="row align-items-end mb-3">
+
+            <!-- Image URL Input -->
+            <div class="col-md-8">
+              <label class="form-label">Image URL</label>
+              <input type="text" class="form-control" placeholder="https://example.com/image.jpg"
+                formControlName="imageUrl" (input)="onImageUrlChange($event)" />
+            </div>
+
+            <!-- Image Preview -->
+            <div class="col-md-4 text-center" *ngIf="previewImage">
+              <label class="form-label d-block">Preview</label>
+              <img [src]="previewImage" class="img-thumbnail"
+                style="max-width: 120px; max-height: 120px; object-fit: cover;" (error)="previewImage=null" />
+            </div>
+
+          </div>
+
+
+          <!-- Footer -->
+          <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button *ngIf="formMode == 'add'" class="btn btn-primary" (click)="submit()">Save</button>
+            <button *ngIf="formMode == 'edit'" class="btn btn-primary" (click)="updateProduct()">Update</button>
+          </div>
+        </form>
+
+      </div>
+
+
+
+    </div>
+  </div>
+</div>

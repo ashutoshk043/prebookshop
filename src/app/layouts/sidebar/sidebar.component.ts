@@ -81,71 +81,35 @@ menuItems = [
     }
   }
 
-
 logout(): void {
-    try {
-      const token = this.cookieservice.get('auth_token');
-
-      if (!token) {
-        this.toster.warning('No active session found!');
-        return;
+  const LOGOUT_MUTATION = gql`
+    mutation Logout {
+      logout {
+        message
       }
-
-      // ✅ Decode token to get rest_id
-      const decodedToken = jwtDecode<CustomJwtPayload>(token);
-
-      // console.log(decodedToken, "decodedToken")
-      const restId = decodedToken?.user_id;
-
-      if (!restId) {
-        this.toster.error('Invalid token. Please login again.');
-        return;
-      }
-
-      // ✅ GraphQL logout mutation (correct structure)
-      const LOGOUT_MUTATION = gql`
-        mutation Logout($restId: String!) {
-          logout(restId: $restId) {
-            message
-          }
-        }
-      `;
-
-      // console.log('🚀 Sending logout request for rest_id:', restId);
-
-      // ✅ Send mutation request
-      this.apollo.mutate({
-        mutation: LOGOUT_MUTATION,
-        variables: { restId }
-      }).subscribe({
-        next: (response: any) => {
-          // console.log('✅ Logout API Response:', response);
-
-          // ✅ Clear token, storage & session
-          this.cookieservice.delete('auth_token', '/');
-          localStorage.clear();
-          sessionStorage.clear();
-
-          // ✅ Success toaster
-          // alert('Logout Successful')
-          this.toster.success(response.data.logout.message, 'Logout Successful');
-
-          // ✅ Redirect
-          setTimeout(() => {
-            this.router.navigate(['/']);
-          }, 1200);
-        },
-        error: (err) => {
-          console.error('❌ Logout API Error:', err);
-          this.toster.error('Logout failed. Please try again.');
-        }
-      });
-
-    } catch (error) {
-      console.error('❌ Error during logout:', error);
-      this.toster.error('Something went wrong during logout.');
     }
-  }
+  `;
+
+  this.apollo.mutate({
+    mutation: LOGOUT_MUTATION,
+  }).subscribe({
+    next: (res: any) => {
+      this.toster.success(res.data.logout.message, 'Logout');
+
+      // frontend cleanup
+      localStorage.clear();
+      sessionStorage.clear();
+
+      setTimeout(() => {
+        this.router.navigate(['/']);
+      }, 1000);
+    },
+    error: () => {
+      this.toster.error('Logout failed');
+    }
+  });
+}
+
 
 
   }

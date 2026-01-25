@@ -9,6 +9,8 @@ import { CookieService } from 'ngx-cookie-service';
 import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { DELETE_RESTAURANT } from '../graphql/restraurentmanagement/restraurent-mutation';
+import { GET_RESTAURANT_SUMMARY, GET_RESTAURANTS } from '../graphql/restraurentmanagement/restraurent-query';
 @Component({
   selector: 'app-manage-restraurent',
   standalone: true,
@@ -35,17 +37,11 @@ export class ManageRestraurentComponent {
   totalPages = 0;
   pages: number[] = [];
   ownerEmailListParent: any[] = [];
-  GET_RESTAURANT_SUMMARY = gql`
-  query getRestaurantSummary {
-    getRestaurantSummary {
-      totalRestaurants
-      openCount
-      closedCount
-    }
-  }
-`;
+  showDeleteModal = false;
+  restaurantToDelete: any = null;
 
-summary = {
+
+  summary = {
     totalRestaurants: 0,
     openCount: 0,
     closedCount: 0,
@@ -82,6 +78,16 @@ summary = {
     if (this.child) {
       this.child.openFormFromParent(mode, restaurantData);
     }
+  }
+
+  openDeleteModal(restaurant: any) {
+    this.restaurantToDelete = restaurant;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.restaurantToDelete = null;
   }
 
   // Handle form status change event
@@ -138,58 +144,71 @@ summary = {
 
     this.openForm('edit', formData);
   }
-
-  // View restaurant details
-  // viewRestaurant(restaurant: any) {
-  //   alert(`Viewing details for: ${restaurant.restaurantName}`);
-  // }
-
   // Delete restaurant
-  deleteRestaurant(restaurant: any) {
-    if (confirm(`Are you sure you want to delete ${restaurant.restaurantName}?`)) {
-      this.restaurants = this.restaurants.filter(r => r.id !== restaurant.id);
-      alert('Restaurant deleted successfully!');
-    }
+  confirmDelete() {
+
+    const id = this.restaurantToDelete.id; // 🔥 IMPORTANT
+
+    this.apollo.mutate({
+      mutation: DELETE_RESTAURANT,
+      variables: { id }
+    }).subscribe({
+      next: (res: any) => {
+
+        // Remove from UI list
+        this.restaurants = this.restaurants.filter(
+          r => r._id !== id
+        );
+
+        this.toster.success(`${this.restaurantToDelete.restaurantName} deleted successfully!`);
+        this.fetchRestaurants()
+        this.closeDeleteModal();
+      },
+      error: (err) => {
+        this.toster.error(err)
+        console.error('Delete failed', err);
+      }
+    });
   }
 
-  GET_RESTAURANTS = gql`
-  query getRestaurants($page: Int, $limit: Int, $search: String) {
-    restaurants(page: $page, limit: $limit, search: $search) {
-      data {
-        id
-        restaurantName
-        restaurantType
-        restaurantAddress
-        ownerEmail
-        pincode
-        latitude
-        longitude
-        fssaiNumber
-        gstNumber
-        registrationDate
-        openingTime
-        closingTime
-        logoUrl
-        coverImageUrl
-        description
-        isVerified
-        verifiedBy
-        createdAt
-        updatedAt
-      }
-      total
-      page
-      limit
-    }
-  }
-`;
+  //   GET_RESTAURANTS = gql`
+  //   query getRestaurants($page: Int, $limit: Int, $search: String) {
+  //     restaurants(page: $page, limit: $limit, search: $search) {
+  //       data {
+  //         id
+  //         restaurantName
+  //         restaurantType
+  //         restaurantAddress
+  //         ownerEmail
+  //         pincode
+  //         latitude
+  //         longitude
+  //         fssaiNumber
+  //         gstNumber
+  //         registrationDate
+  //         openingTime
+  //         closingTime
+  //         logoUrl
+  //         coverImageUrl
+  //         description
+  //         isVerified
+  //         verifiedBy
+  //         createdAt
+  //         updatedAt
+  //       }
+  //       total
+  //       page
+  //       limit
+  //     }
+  //   }
+  // `;
 
   fetchRestaurants(page: number = 1, limit: number = 10, search: string = '') {
     this.loading = true;
 
     this.apollo
       .watchQuery<any>({
-        query: this.GET_RESTAURANTS,
+        query: GET_RESTAURANTS,
         variables: {
           page,
           limit,
@@ -249,14 +268,14 @@ summary = {
   }
 
   getOwnerEmail(ownerId: string): string {
-  const user = this.ownerEmailListParent.find(u => u.id === ownerId);
-  return user ? user.email : 'N/A';
-}
+    const user = this.ownerEmailListParent.find(u => u.id === ownerId);
+    return user ? user.email : 'N/A';
+  }
 
-fetchSummary() {
+  fetchSummary() {
     this.apollo
       .watchQuery<any>({
-        query: this.GET_RESTAURANT_SUMMARY,
+        query: GET_RESTAURANT_SUMMARY,
         fetchPolicy: 'network-only',
       })
       .valueChanges

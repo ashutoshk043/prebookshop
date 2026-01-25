@@ -15,9 +15,11 @@
               <div class="col-12 col-md-4">
                 <div class="position-relative">
                   <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ps-2 text-secondary"></i>
-                  <input type="text" class="form-control ps-5" placeholder="Search products..." />
+                  <input type="text" class="form-control ps-5" placeholder="Search products..."
+                    (input)="onSearch($event)" />
                 </div>
               </div>
+
 
               <!-- Import Button -->
               <div class="col-6 col-md-4">
@@ -28,7 +30,7 @@
 
               <!-- Add Product Button -->
               <div class="col-6 col-md-4">
-                <button class="btn btn-primary w-100" (click)="openAddModal()">
+                <button class="btn btn-primary w-100" (click)="openAddForm('add')">
                   <i class="bi bi-plus-lg me-2"></i> Add Product
                 </button>
               </div>
@@ -41,25 +43,26 @@
             <table class="table align-middle mb-0">
               <thead class="table-light text-uppercase small">
                 <tr>
-                  <th>ID</th>
+                  <!-- <th>ID</th> -->
                   <th>Name</th>
                   <th>Category</th>
                   <th>Variant</th>
                   <th>Price</th>
                   <th>Stock</th>
                   <th>Status</th>
+                  <th>Image</th>
                   <th class="text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let product of products">
-                  <td class="fw-semibold text-primary">{{ product.id }}</td>
+                  <!-- <td class="fw-semibold text-primary">{{ product.id }}</td> -->
                   <td>
-                    <div class="fw-bold">{{ product.productName }}</div>
+                    <div class="fw-bold">{{ product.name }}</div>
                     <small class="text-muted">{{ product.description }}</small>
                   </td>
                   <td><span class="badge bg-primary-subtle text-primary">{{ product.category }}</span></td>
-                  <td>{{ product.variantType }} / {{ product.unit }}</td>
+                  <td>{{ product.variant }}</td>
                   <td>₹{{ product.price }}</td>
                   <td>
                     <span class="badge" [ngClass]="{
@@ -67,22 +70,28 @@
                         'bg-warning-subtle text-warning': product.stock <= 20 && product.stock > 0,
                         'bg-danger-subtle text-danger': product.stock == 0
                       }">
-                      {{ product.stock }} {{ product.unit }}
+                      {{ product.stock }}
                     </span>
                   </td>
                   <td>
                     <span class="badge"
-                      [ngClass]="product.available ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
-                      {{ product.available ? 'Available' : 'Unavailable' }}
+                      [ngClass]="product.status ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+                      {{ product.status ? 'Available' : 'Unavailable' }}
                     </span>
                   </td>
+                  <td>
+                    <img [src]="product.imageUrl" alt="{{ product.name }}" width="100" height="60"
+                      style="object-fit: cover; border-radius: 6px;"
+                      (error)="product.imageUrl = 'assets/no-image.png'" />
+                  </td>
+
                   <td class="text-end">
                     <div class="btn-group">
-                      <button class="btn btn-sm btn-light" (click)="openEditModal(product)">
+                      <button class="btn btn-sm btn-light" (click)="openAddForm('edit',product)">
                         <i class="bi bi-pencil"></i>
                       </button>
                       <button class="btn btn-sm btn-light" (click)="toggleAvailability(product)">
-                        <i class="bi" [ngClass]="product.available ? 'bi-check-circle' : 'bi-x-circle'"></i>
+                        <i class="bi" [ngClass]="product.status ? 'bi-check-circle' : 'bi-x-circle'"></i>
                       </button>
                       <button class="btn btn-sm btn-light text-danger" (click)="deleteProduct(product.id)">
                         <i class="bi bi-trash"></i>
@@ -96,140 +105,135 @@
 
           <!-- ✅ Pagination -->
           <div class="card-footer d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
-            <button class="btn btn-outline-secondary btn-sm w-100 w-sm-auto" disabled>← Previous</button>
+
+            <!-- Previous -->
+            <button class="btn btn-outline-secondary btn-sm w-100 w-sm-auto" (click)="prevPage()"
+              [disabled]="currentPage === 1">
+              ← Previous
+            </button>
+
+            <!-- Page Numbers -->
             <ul class="pagination pagination-sm mb-0">
-              <li class="page-item active"><button class="page-link">1</button></li>
-              <li class="page-item"><button class="page-link">2</button></li>
-              <li class="page-item"><button class="page-link">3</button></li>
+              <li class="page-item" *ngFor="let p of pages" [class.active]="p === currentPage">
+                <button class="page-link" (click)="goToPage(p)">
+                  {{ p }}
+                </button>
+              </li>
             </ul>
-            <button class="btn btn-outline-secondary btn-sm w-100 w-sm-auto">Next →</button>
+
+            <!-- Next -->
+            <button class="btn btn-outline-secondary btn-sm w-100 w-sm-auto" (click)="nextPage()"
+              [disabled]="currentPage === totalPages">
+              Next →
+            </button>
+
           </div>
+
         </div>
       </div>
     </main>
   </div>
 </div>
+<!-- ✅ Import Modal -->
+<div class="modal fade show" *ngIf="showImportModal" style="display:block; background:rgba(0,0,0,0.6);">
 
-<!-- ✅ Add/Edit Modal -->
-<div class="modal fade show" *ngIf="showModal" style="display:block; background:rgba(0,0,0,0.5);">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ isEditMode ? 'Edit Product' : 'Add Product' }}</h5>
-        <button type="button" class="btn-close" (click)="closeModal()"></button>
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+      <!-- 🔷 Header -->
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title d-flex align-items-center">
+          <i class="bi bi-upload fs-4 me-2"></i>
+          Import Products via CSV
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeImportModal()"></button>
       </div>
 
-      <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
-        <div class="modal-body">
-          <div class="row g-3">
-            <div class="col-12 col-md-6">
-              <label class="form-label">Product Name</label>
-              <input type="text" class="form-control" formControlName="productName" placeholder="Enter product name">
-            </div>
-            <div class="col-12 col-md-6">
-              <label class="form-label">Category</label>
-              <select class="form-select" formControlName="category">
-                <option value="">Select Category</option>
-                <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-              </select>
-            </div>
-            <div class="col-12">
-              <label class="form-label">Description</label>
-              <textarea class="form-control" rows="2" formControlName="description"></textarea>
-            </div>
-            <div class="col-6 col-md-4">
-              <label class="form-label">Variant</label>
-              <select class="form-select" formControlName="variantType">
-                <option value="">Select</option>
-                <option *ngFor="let v of variants" [value]="v">{{ v }}</option>
-              </select>
-            </div>
-            <div class="col-6 col-md-4">
-              <label class="form-label">Unit</label>
-              <select class="form-select" formControlName="unit">
-                <option value="">Select</option>
-                <option *ngFor="let u of units" [value]="u">{{ u }}</option>
-              </select>
-            </div>
-            <div class="col-12 col-md-4">
-              <label class="form-label">Price (₹)</label>
-              <input type="number" class="form-control" formControlName="price">
-            </div>
-            <div class="col-6">
-              <label class="form-label">Stock</label>
-              <input type="number" class="form-control" formControlName="stock">
-            </div>
-            <div class="col-6">
-              <label class="form-label">Ingredients</label>
-              <input type="text" class="form-control" formControlName="ingredients">
-            </div>
-            <div class="col-12 d-flex align-items-center mt-2">
-              <input type="checkbox" class="form-check-input me-2" formControlName="available">
-              <label class="form-check-label">Available</label>
-            </div>
+      <!-- 🔶 Body -->
+      <div class="modal-body p-4">
+
+        <!-- Info Box -->
+        <div class="alert alert-info d-flex align-items-start mb-4">
+          <i class="bi bi-info-circle fs-5 me-2"></i>
+          <div>
+            Upload a CSV file to import products in bulk.
+            Please follow the template format for smooth import.
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Add' }} Product</button>
+        <!-- File Upload -->
+        <div class="card border-dashed mb-4 p-4 text-center">
+          <i class="bi bi-file-earmark-spreadsheet fs-1 text-primary mb-3"></i>
+
+          <input type="file" class="form-control" accept=".csv" (change)="onFileSelect($event)"
+            [disabled]="uploading" />
         </div>
-      </form>
-    </div>
-  </div>
-</div>
 
-<!-- ✅ Import Modal -->
-<div class="modal fade show" *ngIf="showImportModal" style="display:block; background:rgba(0,0,0,0.5);">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg">
+        <!-- Progress Section -->
+        <div *ngIf="uploading" class="mb-4">
 
-      <div class="modal-header">
-        <h5 class="modal-title">Import Products</h5>
-        <button type="button" class="btn-close" (click)="closeImportModal()"></button>
-      </div>
-
-      <div class="modal-body text-center">
-
-        <input type="file" class="form-control mb-3" accept=".csv" (change)="onFileSelect($event)"
-          [disabled]="uploading" />
-
-        <!-- Progress Bar -->
-        <div *ngIf="uploading" class="mb-3">
-          <div class="progress">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+          <div class="progress mb-3" style="height: 22px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated fw-semibold" role="progressbar"
               [style.width.%]="uploadProgress">
               {{ uploadProgress }}%
             </div>
           </div>
-          <div>
-            <span>Total: {{totalCount}}</span><br>
-            <span>Imported: {{importedCount}}</span><br>
-            <span>Failed: {{failedCount}}</span><br>
+
+          <!-- Stats -->
+          <div class="row text-center">
+            <div class="col-md-4">
+              <div class="stat-box bg-light">
+                <strong>Total</strong>
+                <div>{{ totalCount }}</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="stat-box bg-success text-white">
+                <strong>Imported</strong>
+                <div>{{ importedCount }}</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="stat-box bg-danger text-white">
+                <strong>Failed</strong>
+                <div>{{ failedCount }}</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <button class="btn btn-outline-primary w-100 mb-2" (click)="downloadTemplate()" [disabled]="uploading">
-          <i class="bi bi-file-earmark-arrow-down me-2"></i>
-          Download Template
+        <!-- Template Download -->
+        <button class="btn btn-outline-primary w-100" (click)="downloadTemplate()" [disabled]="uploading">
+          <i class="bi bi-download me-2"></i>
+          Download CSV Template
         </button>
+
       </div>
 
-      <div class="modal-footer" *ngIf="uploadProgress != 100">
+      <!-- 🔷 Footer -->
+      <div class="modal-footer justify-content-between">
+
         <button class="btn btn-outline-secondary" (click)="closeImportModal()" [disabled]="uploading">
           Cancel
         </button>
 
-        <button class="btn btn-primary" (click)="handleImport()" [disabled]="uploading">
-          {{ uploading ? 'Uploading...' : 'Import' }}
+        <button *ngIf="uploadProgress != 100" class="btn btn-primary px-4" (click)="handleImport()"
+          [disabled]="uploading">
+          <i class="bi bi-cloud-upload me-2"></i>
+          {{ uploading ? 'Uploading...' : 'Start Import' }}
         </button>
-      </div>
-        <div class="modal-footer" *ngIf="uploadProgress == 100">
-        <button class="btn btn-outline-danger">
-          Check File Log
+
+        <button *ngIf="uploadProgress == 100" class="btn btn-outline-danger px-4">
+          <i class="bi bi-exclamation-circle me-2"></i>
+          Check Error Log
         </button>
+
       </div>
 
     </div>
   </div>
 </div>
+
+
+<app-product-management-form *ngIf="showForm" (close)="closeForm()">
+</app-product-management-form>

@@ -70,3 +70,15 @@
 .card-header input {
   height: 42px;
 }
+
+
+.border-dashed {
+  border: 2px dashed #dee2e6;
+  border-radius: 12px;
+}
+
+.stat-box {
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 14px;
+}

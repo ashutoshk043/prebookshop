@@ -5,6 +5,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { Apollo, gql } from 'apollo-angular';
 import { ToastrService } from 'ngx-toastr';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { CREATE_RESTAURANT, UPDATE_RESTAURANT } from '../../graphql/restraurentmanagement/restraurent-mutation';
+import { GET_USERS_FROM_AUTH } from '../../graphql/restraurentmanagement/restraurent-query';
 declare var bootstrap: any;
 
 @Component({
@@ -28,42 +30,10 @@ export class CreateRestraurentFormComponent {
   private modalInstance: any;
   formMode: 'add' | 'edit' = 'add';
   restaurantForm!: FormGroup;
-  RESTAURANT_FIELDS = `
-  id
-  restaurantName
-  restaurantType
-  restaurantAddress
-  ownerEmail
-  pincode
-  latitude
-  longitude
-  fssaiNumber
-  gstNumber
-  registrationDate
-  openingTime
-  closingTime
-  logoUrl
-  coverImageUrl
-  description
-  isVerified
-  verifiedBy
-`;
 
-  GET_USERS_FROM_AUTH = gql`
-  query usersFromAuth($input: UserDetailsPaginationInput!) {
-    usersFromAuth(input: $input) {
-      data {
-        email
-        id
-      }
-      total
-      page
-      limit
-    }
-  }
-`;
 
-  ownerEmailList:any = [
+
+  ownerEmailList: any = [
   ];
   @Output() ownerEmailListChange = new EventEmitter<any[]>();
 
@@ -91,21 +61,6 @@ export class CreateRestraurentFormComponent {
     this.ownerEmailListChange.emit(this.ownerEmailList);
   }
 
-CREATE_RESTAURANT = gql`
-  mutation createRestaurant($input: CreateRestaurantInput!) {
-    createRestaurant(input: $input) {
-      ${this.RESTAURANT_FIELDS}
-    }
-  }
-`;
-
-UPDATE_RESTAURANT = gql`
-  mutation updateRestaurant($input: CreateRestaurantInput!) {
-    updateRestaurant(input: $input) {
-      ${this.RESTAURANT_FIELDS}
-    }
-  }
-`;
 
 
 
@@ -152,11 +107,6 @@ UPDATE_RESTAURANT = gql`
       gstNumber: ['', [
         Validators.pattern('[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}')
       ]],
-
-      // panNumber: ['', [
-      //   Validators.required,
-      //   Validators.pattern('[A-Z]{5}[0-9]{4}[A-Z]{1}')
-      // ]],
 
       registrationDate: [today, Validators.required],
 
@@ -206,50 +156,49 @@ UPDATE_RESTAURANT = gql`
     }
   }
 
-openFormFromParent(mode: 'add' | 'edit', data?: any) {
-  // console.log('Opening form for mode:', mode);
-  // console.log('Restaurant data:', data);
-  // console.log('OwnerEmailList:', this.ownerEmailList);
+  openFormFromParent(mode: 'add' | 'edit', data?: any) {
 
-  this.formMode = mode;
-  this.restaurantForm.reset();
+    this.formMode = mode;
+    this.restaurantForm.reset();
 
-  if (mode === 'edit' && data) {
-    const opening = this.convertFrom24(data.openingTime);
-    const closing = this.convertFrom24(data.closingTime);
+    if (mode === 'edit' && data) {
+      const opening = this.convertFrom24(data.openingTime);
+      const closing = this.convertFrom24(data.closingTime);
 
-    const patchData: any = {
-      _id: data.id || data._id,
-      restaurantName: data.restaurantName ?? '',
-      restaurantType: data.restaurantType ?? '',
-      restaurantAddress: data.restaurantAddress ?? '',
-      pincode: data.pincode ?? '',
-      latitude: data.latitude ?? '',
-      longitude: data.longitude ?? '',
-      fssaiNumber: data.fssaiNumber ?? '',
-      gstNumber: data.gstNumber ?? '',
-      registrationDate: data.registrationDate ?? '',
-      logoUrl: data.logoUrl ?? '',
-      coverImageUrl: data.coverImageUrl ?? '',
-      description: data.description ?? '',
-      verifiedBy: data.verifiedBy ?? '',
-      isVerified: data.isVerified ? 'true' : 'false',
-      openingHour: opening.hour,
-      openingMinute: opening.minute,
-      openingPeriod: opening.period,
-      closingHour: closing.hour,
-      closingMinute: closing.minute,
-      closingPeriod: closing.period,
-      ownerEmail: data.ownerEmail ?? '',  // check console to see if ownerId exists
-    };
+      const patchData: any = {
+        // _id: data.id || data._id,
+        restaurantName: data.restaurantName ?? '',
+        restaurantType: data.restaurantType ?? '',
+        restaurantAddress: data.restaurantAddress ?? '',
+        pincode: data.pincode ?? '',
+        latitude: data.latitude ?? '',
+        longitude: data.longitude ?? '',
+        fssaiNumber: data.fssaiNumber ?? '',
+        gstNumber: data.gstNumber ?? '',
+        registrationDate: data.registrationDate ?? '',
+        logoUrl: data.logoUrl ?? '',
+        coverImageUrl: data.coverImageUrl ?? '',
+        description: data.description ?? '',
+        verifiedBy: data.verifiedBy ?? '',
+        isVerified: data.isVerified ? 'true' : 'false',
+        openingHour: opening.hour,
+        openingMinute: opening.minute,
+        openingPeriod: opening.period,
+        closingHour: closing.hour,
+        closingMinute: closing.minute,
+        closingPeriod: closing.period,
+        ownerEmail: data.ownerEmail ?? '',  // check console to see if ownerId exists
+      };
 
-    this.restaurantForm.patchValue(patchData);
-  } else {
-    this.setTodayDate();
+      this.restaurantForm.patchValue(patchData);
+
+
+    } else {
+      this.setTodayDate();
+    }
+
+    this.modalInstance?.show();
   }
-
-  this.modalInstance?.show();
-}
 
 
 
@@ -304,7 +253,7 @@ openFormFromParent(mode: 'add' | 'edit', data?: any) {
       console.log('✏️ Update Restaurant Payload:', payload);
 
       this.apollo.mutate({
-        mutation: this.UPDATE_RESTAURANT,
+        mutation: UPDATE_RESTAURANT,
         variables: { input: payload }
       }).subscribe({
         next: (res: any) => {
@@ -330,7 +279,7 @@ openFormFromParent(mode: 'add' | 'edit', data?: any) {
 
     console.log('🆕 Create Restaurant Payload:', payload);
     this.apollo.mutate({
-      mutation: this.CREATE_RESTAURANT,
+      mutation: CREATE_RESTAURANT,
       variables: { input: payload }
     }).subscribe({
       next: (res: any) => {
@@ -408,12 +357,22 @@ openFormFromParent(mode: 'add' | 'edit', data?: any) {
   }
 
 
-  convertFrom24(time: string): { hour: string; minute: string; period: 'AM' | 'PM' } {
-    if (!time) {
-      return { hour: '12', minute: '00', period: 'AM' };
+  convertFrom24(
+    time?: string | null
+  ): { hour: string; minute: string; period: 'AM' | 'PM' } {
+
+    // 🛑 null / undefined / empty safety
+    if (!time || !time.includes(':')) {
+      return { hour: '', minute: '', period: 'AM' };
     }
 
     let [h, m] = time.split(':').map(Number);
+
+    // 🛑 NaN safety
+    if (isNaN(h) || isNaN(m)) {
+      return { hour: '', minute: '', period: 'AM' };
+    }
+
     const period: 'AM' | 'PM' = h >= 12 ? 'PM' : 'AM';
 
     if (h === 0) h = 12;
@@ -425,6 +384,7 @@ openFormFromParent(mode: 'add' | 'edit', data?: any) {
       period
     };
   }
+
 
 
 
@@ -443,7 +403,7 @@ openFormFromParent(mode: 'add' | 'edit', data?: any) {
           limit: number;
         };
       }>({
-        query: this.GET_USERS_FROM_AUTH,
+        query: GET_USERS_FROM_AUTH,
         variables: {
           input: {
             page,
@@ -461,7 +421,7 @@ openFormFromParent(mode: 'add' | 'edit', data?: any) {
           this.usersTotal = response.total;
           this.usersPage = response.page;
           this.usersLimit = response.limit;
-           this.updateOwnerEmailList(this.ownerEmailList);
+          this.updateOwnerEmailList(this.ownerEmailList);
 
           // console.log('Users from Auth:', this.ownerEmailList);
         },
