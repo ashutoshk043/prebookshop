@@ -14,21 +14,32 @@ import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { REFRESH_TOKEN_MUTATION } from './graphql/authManagement/login.mutation';
 
+const PUBLIC_OPERATIONS = ['loginRestraurent', 'RefreshToken'];
+
+
 // 🔐 Auth Link (access token → Authorization header)
-const authLink = setContext(() => {
+const authLink = setContext((operation, prevContext) => {
   const token =
     localStorage.getItem('access_token') ||
     sessionStorage.getItem('access_token');
 
-  console.log('🧪 authLink token:', token);
+  // 👇 ensure string
+  const operationName = operation.operationName ?? '';
+
+  const isPublic = PUBLIC_OPERATIONS.includes(operationName);
+
+  if (isPublic) {
+    console.log('🟢 Public operation:', operationName);
+    return { headers: {} };
+  }
 
   return {
     headers: {
+      ...prevContext['headers'],
       Authorization: token ? `Bearer ${token}` : '',
     },
   };
 });
-
 
 export const errorLink = onError((errorResponse) => {
   const { graphQLErrors, operation, forward } = errorResponse;
@@ -126,7 +137,7 @@ export const appConfig: ApplicationConfig = {
         uri: 'http://localhost:8080/graphql',
       });
 
-     return {
+      return {
         link: from([
           errorLink, // 🔥 FIRST (refresh logic)
           authLink,  // 🔐 SECOND (attach token)

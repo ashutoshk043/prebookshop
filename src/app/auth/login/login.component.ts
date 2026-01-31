@@ -24,7 +24,7 @@ export class LoginComponent implements OnInit {
     private apollo: Apollo,
     private toastr: ToastrService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loginForm = this.fb.group({
@@ -36,57 +36,58 @@ export class LoginComponent implements OnInit {
     console.log('Login Form Initialized:', this.loginForm.value);
   }
 
-onSubmit() {
-  if (this.loginForm.invalid) {
-    this.toastr.error('Please fill all required fields!');
-    return;
-  }
-  const { email, password, remember } = this.loginForm.value;
-
-  this.apollo.mutate({
-    mutation: LOGIN_RESTAURENT_USER,
-    variables: { loginData: { email, password } }
-  }).subscribe({
-    next: (res: any) => {
-      this.loading = false;
-
-      const response = res?.data?.loginRestraurent;
-
-      const accessToken = response?.accessToken;   // ✅ correct
-      const refreshToken = response?.refreshToken; // ✅ correct
-      const userProfile = response?.userProfile;
-
-      if (!accessToken || !refreshToken) {
-        this.toastr.error('Invalid login response');
-        return;
-      }
-
-      // 🔐 Store tokens
-      if (remember) {
-        localStorage.setItem('access_token', accessToken);
-        localStorage.setItem('refresh_token', refreshToken);
-      } else {
-        sessionStorage.setItem('access_token', accessToken);
-        sessionStorage.setItem('refresh_token', refreshToken);
-      }
-
-      // 👤 Store user profile (UI purpose only)
-      localStorage.setItem('user_profile', JSON.stringify(userProfile));
-
-      console.log('🟢 Access Token:', accessToken);
-      console.log('🔁 Refresh Token:', refreshToken);
-
-      this.toastr.success('Login successful!');
-      this.router.navigate(['/home']);
-    },
-
-    error: (err) => {
-      this.loading = false;
-      this.toastr.error(err.message || 'Login failed');
-      console.error('GraphQL Error:', err);
+  onSubmit() {
+    if (this.loginForm.invalid) {
+      this.toastr.error('Please fill all required fields!');
+      return;
     }
-  });
-}
+    const { email, password, remember } = this.loginForm.value;
+
+    this.apollo.mutate({
+      mutation: LOGIN_RESTAURENT_USER,
+      variables: { loginData: { email, password } },
+      context: { operationName: 'loginRestraurent' }
+    }).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+
+        const response = res?.data?.loginRestraurent;
+
+        const accessToken = response?.accessToken;   // ✅ correct
+        const refreshToken = response?.refreshToken; // ✅ correct
+        const userProfile = response?.userProfile;
+
+        if (!accessToken || !refreshToken) {
+          this.toastr.error('Invalid login response');
+          return;
+        }
+
+        // 🔐 Store tokens
+        if (remember) {
+          localStorage.setItem('access_token', accessToken);
+          localStorage.setItem('refresh_token', refreshToken);
+        } else {
+          sessionStorage.setItem('access_token', accessToken);
+          sessionStorage.setItem('refresh_token', refreshToken);
+        }
+
+        // 👤 Store user profile (UI purpose only)
+        localStorage.setItem('user_profile', JSON.stringify(userProfile));
+
+        console.log('🟢 Access Token:', accessToken);
+        console.log('🔁 Refresh Token:', refreshToken);
+
+        this.toastr.success('Login successful!');
+        this.router.navigate(['/home']);
+      },
+
+      error: (err) => {
+        this.loading = false;
+        this.toastr.error(err.message || 'Login failed');
+        console.error('GraphQL Error:', err);
+      }
+    });
+  }
 
 
 }
