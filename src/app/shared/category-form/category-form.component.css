@@ -1,0 +1,16 @@
+.card {
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.badge-option label {
+  cursor: pointer;
+}
+
+.form-control,
+.form-select {
+  border-radius: 0.75rem;
+}

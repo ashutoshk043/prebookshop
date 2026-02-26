@@ -5,9 +5,11 @@ export const ADD_PRODUCT = gql`
     addProducts(input: $input) {
       _id
       name
-      price
-      stock
-      status
+      slug
+      categoryId
+      isVeg
+      isActive
+      isOnlineVisible
     }
   }
 `;
@@ -18,9 +20,22 @@ export const UPDATE_PRODUCT = gql`
     updateProduct(_id: $_id, input: $input) {
       _id
       name
-      price
-      stock
-      status
+      slug
+      categoryId
+      isVeg
+      isActive
+      isOnlineVisible
+    }
+  }
+`;
+
+
+
+export const DELETE_PRODUCT = gql`
+  mutation DeleteProduct($_id: String!) {
+    deleteProduct(_id: $_id) {
+      _id
+      name
     }
   }
 `;

@@ -3,24 +3,26 @@ import { Injectable } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class TokenService {
 
-  getAccessToken() {
+  // 🔐 Access Token
+  getAccessToken(): string | null {
     return localStorage.getItem('access_token');
-  }
-
-  getRefreshToken() {
-    return localStorage.getItem('refresh_token');
   }
 
   setAccessToken(token: string) {
     localStorage.setItem('access_token', token);
   }
 
+  // 🔁 Refresh Token
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refresh_token');
+  }
+
   setRefreshToken(token: string) {
     localStorage.setItem('refresh_token', token);
   }
 
-  clear() {
-    localStorage.clear();
-    sessionStorage.clear();
+  clearTokens() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
   }
 }

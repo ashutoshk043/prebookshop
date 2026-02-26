@@ -11,10 +11,10 @@ export class JwtDecoderService {
   constructor(
     private cookieService: CookieService,
     private toastr: ToastrService
-  ) {}
+  ) { }
 
   decodeToken(): any | null {
-    const token = this.cookieService.get('auth_token');
+    const token = this.getAccessToken();
 
     if (!token) {
       this.toastr.warning('No active session found!');
@@ -29,4 +29,13 @@ export class JwtDecoderService {
       return null;
     }
   }
+
+  getAccessToken(): string | null {
+    return (
+      localStorage.getItem('access_token') ||
+      sessionStorage.getItem('access_token')
+    );
+  }
 }
+
+

@@ -36,58 +36,49 @@ export class LoginComponent implements OnInit {
     console.log('Login Form Initialized:', this.loginForm.value);
   }
 
-  onSubmit() {
-    if (this.loginForm.invalid) {
-      this.toastr.error('Please fill all required fields!');
-      return;
-    }
-    const { email, password, remember } = this.loginForm.value;
-
-    this.apollo.mutate({
-      mutation: LOGIN_RESTAURENT_USER,
-      variables: { loginData: { email, password } },
-      context: { operationName: 'loginRestraurent' }
-    }).subscribe({
-      next: (res: any) => {
-        this.loading = false;
-
-        const response = res?.data?.loginRestraurent;
-
-        const accessToken = response?.accessToken;   // ✅ correct
-        const refreshToken = response?.refreshToken; // ✅ correct
-        const userProfile = response?.userProfile;
-
-        if (!accessToken || !refreshToken) {
-          this.toastr.error('Invalid login response');
-          return;
-        }
-
-        // 🔐 Store tokens
-        if (remember) {
-          localStorage.setItem('access_token', accessToken);
-          localStorage.setItem('refresh_token', refreshToken);
-        } else {
-          sessionStorage.setItem('access_token', accessToken);
-          sessionStorage.setItem('refresh_token', refreshToken);
-        }
-
-        // 👤 Store user profile (UI purpose only)
-        localStorage.setItem('user_profile', JSON.stringify(userProfile));
-
-        console.log('🟢 Access Token:', accessToken);
-        console.log('🔁 Refresh Token:', refreshToken);
-
-        this.toastr.success('Login successful!');
-        this.router.navigate(['/home']);
-      },
-
-      error: (err) => {
-        this.loading = false;
-        this.toastr.error(err.message || 'Login failed');
-        console.error('GraphQL Error:', err);
-      }
-    });
+onSubmit() {
+  if (this.loginForm.invalid) {
+    this.toastr.error('Please fill all required fields!');
+    return;
   }
+  
+  this.loading = true; // Loading start
+  const { email, password, remember } = this.loginForm.value;
 
+  this.apollo.mutate({
+    mutation: LOGIN_RESTAURENT_USER,
+    variables: { loginData: { email, password } },
+    // context remove kar dein, gql mutation name par depend karein
+  }).subscribe({
+    next: (res: any) => {
+      this.loading = false;
+      const response = res?.data?.loginRestraurent;
+
+      if (!response || !response.accessToken) {
+        this.toastr.error('Login failed: No data received');
+        return;
+      }
+
+      const { accessToken, refreshToken, userProfile } = response;
+
+      // 🔐 Consistent Storage logic
+      const storage = remember ? localStorage : sessionStorage;
+      
+      storage.setItem('access_token', accessToken);
+      storage.setItem('refresh_token', refreshToken);
+      
+      // User profile hamesha localStorage mein rakh sakte hain UI ke liye
+      localStorage.setItem('user_profile', JSON.stringify(userProfile));
+
+      this.toastr.success('Login successful!');
+      this.router.navigate(['/home']);
+    },
+    error: (err) => {
+      this.loading = false;
+      this.toastr.error(err.message || 'Login failed');
+      console.error('Login Error:', err);
+    }
+  });
+}
 
 }

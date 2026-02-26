@@ -1,0 +1,119 @@
+<div class="d-flex flex-column flex-md-row">
+    <app-sidebar #sidebar></app-sidebar>
+
+    <div class="main-content flex-grow-1" [class.sidebar-collapsed]="sidebar?.isCollapsed">
+        <app-header></app-header>
+
+        <div class="container-fluid mt-4">
+
+            <!-- Page Header -->
+            <div class="d-flex justify-content-end mb-4">
+                <button class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add Varients
+                </button>
+            </div>
+
+
+            <!-- Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Slug</th>
+                                    <th>Order</th>
+                                    <th>Status</th>
+                                    <th>Online Visible</th>
+                                    <th>Created</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <!-- Row 1 -->
+                                <tr>
+                                    <td>1</td>
+                                    <td>
+                                        <img src="/images/categories/bestseller.png" class="rounded" width="45"
+                                            height="45">
+                                    </td>
+                                    <td class="fw-medium">Bestseller</td>
+                                    <td>best-seller</td>
+                                    <td>1</td>
+                                    <td>
+                                        <span class="badge bg-success">Active</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">Yes</span>
+                                    </td>
+                                    <td>01 Jan 2026</td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-warning me-2">Edit</button>
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 2 -->
+                                <tr>
+                                    <td>2</td>
+                                    <td>
+                                        <img src="/images/categories/bestseller.png" class="rounded" width="45"
+                                            height="45">
+                                    </td>
+                                    <td class="fw-medium">Snacks</td>
+                                    <td>snacks</td>
+                                    <td>2</td>
+                                    <td>
+                                        <span class="badge bg-danger">Inactive</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">No</span>
+                                    </td>
+                                    <td>05 Jan 2026</td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-warning me-2">Edit</button>
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 3 -->
+                                <tr>
+                                    <td>3</td>
+                                    <td>
+                                        <img src="/images/categories/bestseller.png" class="rounded" width="45"
+                                            height="45">
+                                    </td>
+                                    <td class="fw-medium">Beverages</td>
+                                    <td>beverages</td>
+                                    <td>3</td>
+                                    <td>
+                                        <span class="badge bg-success">Active</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">Yes</span>
+                                    </td>
+                                    <td>10 Jan 2026</td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-warning me-2">Edit</button>
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

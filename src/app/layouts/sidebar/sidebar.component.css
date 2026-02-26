@@ -1,26 +1,73 @@
-.transition-all {
-  transition: all 0.3s ease;
+/* ===============================
+   SIDEBAR SCROLL
+================================ */
+.sidebar-scroll {
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
 
-.translate-start-0 {
-  transform: translateX(0);
+/* ===============================
+   GROUP HEADER
+================================ */
+.group-header {
+  color: rgba(255, 255, 255, 0.65);
+  background: transparent;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-.translate-start-n100 {
-  transform: translateX(-100%);
+.group-header:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
-/* ✅ Hide navbar completely on desktop */
-@media (min-width: 992px) {
-  nav.navbar {
-    display: none !important;
-    height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
+/* ACTIVE GROUP */
+.group-active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
 }
 
-/* ✅ Mobile sidebar behaviour */
+/* ===============================
+   GROUP ITEMS DROPDOWN
+================================ */
+.group-items {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+
+/* OPEN STATE – IMPORTANT FIX */
+.group-items.open {
+  max-height: 1000px;   /* 🔥 big value to avoid cut */
+  opacity: 1;
+}
+
+/* ===============================
+   MENU ITEM ACTIVE
+================================ */
+.item-active {
+  background: rgba(255, 255, 255, 0.22) !important;
+  font-weight: 600;
+}
+
+/* ===============================
+   ANIMATIONS
+================================ */
+.transition {
+  transition: transform 0.3s ease;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* ===============================
+   MOBILE FIX
+================================ */
 @media (max-width: 991px) {
   .sidebar {
     width: 240px !important;
@@ -29,5 +76,12 @@
 
   .sidebar.translate-start-0 {
     transform: translateX(0);
+  }
+}
+
+/* Hide navbar on desktop */
+@media (min-width: 992px) {
+  nav.navbar {
+    display: none !important;
   }
 }

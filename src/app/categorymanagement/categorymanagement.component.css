@@ -1,0 +1,14 @@
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.sort-icon {
+  display: inline-block;
+  width: 16px; /* prevents layout jump */
+}

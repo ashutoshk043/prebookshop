@@ -9,9 +9,12 @@
 
         <!-- ✅ Product Management Card -->
         <div class="card border-0 shadow-sm mt-4">
+
+          <!-- HEADER -->
           <div class="card-header">
             <div class="row g-2 align-items-center">
-              <!-- Search Bar -->
+
+              <!-- Search -->
               <div class="col-12 col-md-4">
                 <div class="position-relative">
                   <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ps-2 text-secondary"></i>
@@ -20,99 +23,121 @@
                 </div>
               </div>
 
-
-              <!-- Import Button -->
+              <!-- Import -->
               <div class="col-6 col-md-4">
                 <button class="btn btn-outline-primary w-100" (click)="openImportModal()">
                   <i class="bi bi-upload me-2"></i> Import
                 </button>
               </div>
 
-              <!-- Add Product Button -->
+              <!-- Add -->
               <div class="col-6 col-md-4">
                 <button class="btn btn-primary w-100" (click)="openAddForm('add')">
                   <i class="bi bi-plus-lg me-2"></i> Add Product
                 </button>
               </div>
+
             </div>
           </div>
 
-
-          <!-- ✅ Responsive Table -->
+          <!-- TABLE -->
           <div class="table-responsive">
             <table class="table align-middle mb-0">
               <thead class="table-light text-uppercase small">
                 <tr>
-                  <!-- <th>ID</th> -->
                   <th>Name</th>
                   <th>Category</th>
-                  <th>Variant</th>
-                  <th>Price</th>
-                  <th>Stock</th>
+                  <th>Tags</th>
+                  <th>Visibility</th>
                   <th>Status</th>
                   <th>Image</th>
                   <th class="text-end">Actions</th>
                 </tr>
               </thead>
+
               <tbody>
                 <tr *ngFor="let product of products">
-                  <!-- <td class="fw-semibold text-primary">{{ product.id }}</td> -->
+
+                  <!-- NAME -->
                   <td>
                     <div class="fw-bold">{{ product.name }}</div>
                     <small class="text-muted">{{ product.description }}</small>
                   </td>
-                  <td><span class="badge bg-primary-subtle text-primary">{{ product.category }}</span></td>
-                  <td>{{ product.variant }}</td>
-                  <td>₹{{ product.price }}</td>
+
+                  <!-- CATEGORY -->
                   <td>
-                    <span class="badge" [ngClass]="{
-                        'bg-success-subtle text-success': product.stock > 20,
-                        'bg-warning-subtle text-warning': product.stock <= 20 && product.stock > 0,
-                        'bg-danger-subtle text-danger': product.stock == 0
-                      }">
-                      {{ product.stock }}
+                    <span class="badge bg-primary-subtle text-primary">
+                      {{ getCategoryNameById(product.categoryId) }}
                     </span>
-                  </td>
-                  <td>
-                    <span class="badge"
-                      [ngClass]="product.status ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
-                      {{ product.status ? 'Available' : 'Unavailable' }}
-                    </span>
-                  </td>
-                  <td>
-                    <img [src]="product.imageUrl" alt="{{ product.name }}" width="100" height="60"
-                      style="object-fit: cover; border-radius: 6px;"
-                      (error)="product.imageUrl = 'assets/no-image.png'" />
                   </td>
 
+                  <!-- TAGS -->
+                  <td>
+                    <span *ngFor="let tag of product.tags" class="badge bg-info-subtle text-info me-1">
+                      {{ tag }}
+                    </span>
+                  </td>
+
+                  <!-- ONLINE VISIBILITY -->
+                  <td>
+                    <span class="badge" [ngClass]="product.isOnlineVisible
+                        ? 'bg-success-subtle text-success'
+                        : 'bg-secondary-subtle text-secondary'">
+                      {{ product.isOnlineVisible ? 'Visible' : 'Hidden' }}
+                    </span>
+                  </td>
+
+                  <!-- ACTIVE STATUS -->
+                  <td>
+                    <span class="badge" [ngClass]="product.isActive
+                        ? 'bg-success-subtle text-success'
+                        : 'bg-danger-subtle text-danger'">
+                      {{ product.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+
+                  <!-- IMAGE -->
+                  <td>
+                    <img [src]="product.imageUrl || 'assets/no-image.png'" alt="{{ product.name }}" width="90"
+                      height="55" style="object-fit: cover; border-radius: 6px;" />
+                  </td>
+
+                  <!-- ACTIONS -->
                   <td class="text-end">
                     <div class="btn-group">
-                      <button class="btn btn-sm btn-light" (click)="openAddForm('edit',product)">
+
+                      <!-- EDIT -->
+                      <button class="btn btn-sm btn-light" (click)="openAddForm('edit', product)">
                         <i class="bi bi-pencil"></i>
                       </button>
-                      <button class="btn btn-sm btn-light" (click)="toggleAvailability(product)">
-                        <i class="bi" [ngClass]="product.status ? 'bi-check-circle' : 'bi-x-circle'"></i>
-                      </button>
-                      <button class="btn btn-sm btn-light text-danger" (click)="deleteProduct(product.id)">
+
+                      <!-- TOGGLE ACTIVE -->
+                      <!-- <button class="btn btn-sm btn-light" (click)="toggleAvailability(product)">
+                        <i class="bi" [ngClass]="product.isActive
+                            ? 'bi-check-circle'
+                            : 'bi-x-circle'"></i>
+                      </button> -->
+
+                      <!-- DELETE -->
+                      <button class="btn btn-sm btn-light text-danger" (click)="deleteProduct(product._id)">
                         <i class="bi bi-trash"></i>
                       </button>
+
                     </div>
                   </td>
+
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- ✅ Pagination -->
+          <!-- PAGINATION -->
           <div class="card-footer d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
 
-            <!-- Previous -->
-            <button class="btn btn-outline-secondary btn-sm w-100 w-sm-auto" (click)="prevPage()"
-              [disabled]="currentPage === 1">
+            <button class="btn btn-outline-secondary btn-sm" (click)="prevPage()" [disabled]="currentPage === 1">
               ← Previous
             </button>
 
-            <!-- Page Numbers -->
             <ul class="pagination pagination-sm mb-0">
               <li class="page-item" *ngFor="let p of pages" [class.active]="p === currentPage">
                 <button class="page-link" (click)="goToPage(p)">
@@ -121,8 +146,7 @@
               </li>
             </ul>
 
-            <!-- Next -->
-            <button class="btn btn-outline-secondary btn-sm w-100 w-sm-auto" (click)="nextPage()"
+            <button class="btn btn-outline-secondary btn-sm" (click)="nextPage()"
               [disabled]="currentPage === totalPages">
               Next →
             </button>
@@ -235,5 +259,5 @@
 </div>
 
 
-<app-product-management-form *ngIf="showForm" (close)="closeForm()">
+<app-product-management-form *ngIf="showForm" [categories]="categories" (close)="closeForm()">
 </app-product-management-form>

@@ -1,90 +1,131 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-declare var bootstrap: any;
-import { ADD_PRODUCT, UPDATE_PRODUCT } from '../../graphql/productmanagement/product-mutaion';
 import { Apollo } from 'apollo-angular';
 import { ToastrService } from 'ngx-toastr';
+import { ADD_PRODUCT, UPDATE_PRODUCT } from '../../graphql/productmanagement/product-mutaion';
+
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-product-management-form',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
-  templateUrl: './product-management-form.component.html',
-  styleUrl: './product-management-form.component.css'
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './product-management-form.component.html'
 })
 export class ProductManagementFormComponent {
 
-  @Input() isEditMode = false;
+  @Input() categories: any[] = [];
   @Input() selectedProduct: any;
-  formMode: 'add' | 'edit' = 'add';
   @Output() close = new EventEmitter<void>();
-  modalInstance: any;
+
+
   productForm!: FormGroup;
-  previewImage: any = null
-  editProductId: any
+  formMode: 'add' | 'edit' = 'add';
+  editProductId: string | null = null;
+  modalInstance: any;
+  previewImage: string | null = null;
 
+  tagOptions = [
+    { id: 'BESTSELLER', name: 'Best Seller' },
+    { id: 'TRENDING', name: 'Trending' },
+    { id: 'NEW', name: 'New' }
+  ];
 
-  constructor(private fb: FormBuilder, private apollo: Apollo, private toster: ToastrService) { }
-
-  ngOnInit(): void {
+  constructor(
+    private fb: FormBuilder,
+    private apollo: Apollo,
+    private toastr: ToastrService
+  ) {
     this.buildForm();
   }
 
   ngAfterViewInit() {
     const modalEl = document.getElementById('productModal');
     this.modalInstance = new bootstrap.Modal(modalEl);
-    this.modalInstance.show(); // 🔥 auto open
+    this.modalInstance.show();
   }
 
-  private buildForm() {
+  buildForm() {
     this.productForm = this.fb.group({
-      name: ['', Validators.required],
-      restaurantName: ['', Validators.required],
-      category: ['', Validators.required],
-      variant: ['', Validators.required],
-      price: [null, [Validators.required, Validators.min(1)]],
-      stock: [0, [Validators.required, Validators.min(0)]],
-
-      // 🔹 Optional
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      slug: ['', Validators.required],
+      categoryId: ['', Validators.required],
       description: [''],
-      imageUrl: ['']
+      imageUrl: [''],
+      tags: [[]],
+      isVeg: [true],
+      isActive: [true],
+      isOnlineVisible: [true]
     });
   }
 
   openFormFromParent(mode: 'add' | 'edit', data?: any) {
-    this.productForm.reset();
     this.formMode = mode;
+    this.editProductId = null;
+    this.previewImage = null;
 
-    if (mode === 'edit' && data) {
-
-      this.productForm.patchValue({
-        name: data.name,
-        restaurantName: data.restaurantName ?? '', // agar backend se aa raha ho
-        category: data.category,
-        variant: data.variant,
-        price: data.price,
-        stock: data.stock,
-        description: data.description,
-        imageUrl: data.imageUrl // ✅ base64 ya normal URL
+    if (mode === 'add') {
+      this.productForm.reset({
+        tags: [],
+        isVeg: true,
+        isActive: true,
+        isOnlineVisible: true
       });
-      this.editProductId = data._id
-
-      // agar image preview chahiye
-      this.previewImage = data.imageUrl;
+      return;
     }
 
-    this.modalInstance?.show();
+    if (mode === 'edit' && data) {
+      this.editProductId = data._id;
+      this.previewImage = data.imageUrl ?? null;
+
+      this.productForm.reset();
+      this.productForm.patchValue({
+        name: data.name ?? '',
+        slug: data.slug ?? '',
+        categoryId: data.categoryId ?? '',
+        description: data.description ?? '',
+        imageUrl: data.imageUrl ?? '',
+        tags: Array.isArray(data.tags) ? data.tags : [],
+        isVeg: data.isVeg ?? true,
+        isActive: data.isActive ?? true,
+        isOnlineVisible: data.isOnlineVisible ?? true
+      });
+    }
+
+    this.modalInstance.show();
   }
 
-  onImageUrlChange(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.previewImage = value?.trim() ? value : null;
+  updateSlug(event: Event) {
+    const value = (event.target as HTMLInputElement).value || '';
+    const slug = value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+
+    this.productForm.patchValue({ slug });
   }
 
-  closeModal() {
-    this.modalInstance.hide();
-    this.close.emit();
+  toggleTag(tagId: string, checked: boolean) {
+    const currentTags = Array.isArray(this.productForm.value.tags)
+      ? [...this.productForm.value.tags]
+      : [];
+
+    if (checked) {
+      if (!currentTags.includes(tagId)) {
+        currentTags.push(tagId);
+      }
+    } else {
+      const index = currentTags.indexOf(tagId);
+      if (index > -1) {
+        currentTags.splice(index, 1);
+      }
+    }
+
+    this.productForm.patchValue({ tags: currentTags });
+    this.productForm.get('tags')?.markAsDirty();
   }
 
   submit() {
@@ -93,49 +134,33 @@ export class ProductManagementFormComponent {
       return;
     }
 
-    this.apollo.mutate({
-      mutation: ADD_PRODUCT,
-      variables: {
-        input: this.productForm.value
-      }
-    }).subscribe({
-      next: (res: any) => {
-        // console.log('Product Added:', res.data.addProducts);
-        this.toster.success('Product Added')
-        this.productForm.reset();
-        this.closeModal()
+    const payload = this.productForm.value;
+
+    const mutation =
+      this.formMode === 'edit'
+        ? this.apollo.mutate({
+          mutation: UPDATE_PRODUCT,
+          variables: { _id: this.editProductId, input: payload }
+        })
+        : this.apollo.mutate({
+          mutation: ADD_PRODUCT,
+          variables: { input: payload }
+        });
+
+    mutation.subscribe({
+      next: () => {
+        this.toastr.success(
+          this.formMode === 'edit' ? 'Product Updated' : 'Product Added'
+        );
+        this.closeModal();
       },
-      error: (err: any) => {
-        this.toster.error('Error adding product')
-        // console.error('Error adding product:', err);
-      }
+      error: () => this.toastr.error('Operation failed')
     });
   }
 
-
-  updateProduct() {
-
-    if (this.productForm.invalid) {
-      this.productForm.markAllAsTouched();
-      return;
-    }
-    this.apollo.mutate({
-      mutation: UPDATE_PRODUCT,
-      variables: {
-        _id: this.editProductId,
-        input: this.productForm.value
-      }
-    }).subscribe({
-      next: (res: any) => {
-        this.toster.success('Product Updated')
-        this.productForm.reset();
-        this.closeModal()
-      },
-      error: (err: any) => {
-        this.toster.error(err)
-      }
-    });
+  closeModal() {
+    this.productForm.reset();
+    this.modalInstance.hide();
+    this.close.emit();
   }
-
-
 }
