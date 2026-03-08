@@ -1,0 +1,91 @@
+<form [formGroup]="productVarientForm" (ngSubmit)="submit()">
+
+  <div class="modal fade show d-block"  id="productVarientModal">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+      <div class="modal-content">
+
+        <!-- HEADER -->
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            {{ formMode === 'add' ? 'Add Product Variant' : 'Edit Product Variant' }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            (click)="closeModal()">
+          </button>
+        </div>
+
+        <!-- BODY -->
+        <div class="modal-body">
+
+          <!-- PRODUCT -->
+          <label class="form-label">Product *</label>
+          <select class="form-select" formControlName="productId">
+            <option value="">Select Product</option>
+            <option *ngFor="let p of products" [value]="p.id">
+              {{ p.name }}
+            </option>
+          </select>
+
+          <div class="text-danger small"
+               *ngIf="productVarientForm.get('productId')?.touched 
+               && productVarientForm.get('productId')?.invalid">
+            Product is required
+          </div>
+
+
+          <!-- SIZE -->
+          <label class="form-label mt-3">Size *</label>
+          <select class="form-select" formControlName="size">
+            <option value="">Select Size</option>
+            <option *ngFor="let s of sizeOptions" [value]="s.value">
+              {{ s.label }}
+            </option>
+          </select>
+
+          <div class="text-danger small"
+               *ngIf="productVarientForm.get('size')?.touched 
+               && productVarientForm.get('size')?.invalid">
+            Size is required
+          </div>
+
+
+          <!-- ACTIVE -->
+          <div class="form-check mt-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              formControlName="isActive"
+              id="isActive" />
+            <label class="form-check-label" for="isActive">
+              Active
+            </label>
+          </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-light"
+            (click)="closeModal()">
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="productVarientForm.invalid">
+            {{ formMode === 'add' ? 'Save Variant' : 'Update Variant' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop fade show"></div>
+
+</form>

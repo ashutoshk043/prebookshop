@@ -44,10 +44,23 @@ export class SidebarComponent {
       title: 'PRODUCT SETUP',
       items: [
         { order: 1, label: 'Categories', route: '/categories' },
+
         { order: 2, label: 'Products', route: '/products' },
-        { order: 3, label: 'Variant Templates', route: '/variant-templates' },
-        { order: 4, label: 'Product Variants', route: '/varients' },
-        { order: 5, label: 'Ingredients', route: '/ingredients' }
+
+        { order: 3, label: 'Product Variants', route: '/product-variants' },
+
+        { order: 4, label: 'Variant Templates', route: '/variant-templates' },
+
+        { order: 5, label: 'Ingredients (Master)', route: '/ingredients' },
+
+        { order: 6, label: 'Variant Ingredients (Recipe)', route: '/variant-ingredients' }
+      ]
+    }, {
+      title: 'RESTAURANT PRODUCT SETUP',
+      items: [
+        { order: 1, label: 'Ingredient Stock', route: '/restaurant-ingredients' },
+
+        { order: 2, label: 'Variant Prices', route: '/restaurant-variant-prices' }
       ]
     },
     {

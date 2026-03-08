@@ -1,19 +1,25 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  OnDestroy,
+  ChangeDetectorRef
+} from '@angular/core';
+
 import { SidebarComponent } from "../layouts/sidebar/sidebar.component";
 import { HeaderComponent } from "../layouts/header/header.component";
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { ProductImportService } from '../services/product-import.service';
-import { HttpEventType } from '@angular/common/http';
-import { ProductImportProgressService } from '../services/product-import-progress.service';
-import { ProductManagementFormComponent } from "../shared/product-management-form/product-management-form.component";
-import { GET_ALL_INCLUDED_CATEGORIES, SEARCH_PRODUCTS } from '../graphql/productmanagement/product-query';
 import { Apollo } from 'apollo-angular';
-import { debounceTime, distinctUntilChanged, Subject, Subscription } from 'rxjs';
-import { JwtDecoderService } from '../services/jwt-decoder.service';
-import { DELETE_PRODUCT } from '../graphql/productmanagement/product-mutaion';
 
+import { debounceTime, distinctUntilChanged, Subject, Subscription } from 'rxjs';
+
+import { ProductManagementFormComponent } from "../shared/product-management-form/product-management-form.component";
+
+import { SEARCH_PRODUCTS } from '../graphql/productmanagement/product-query';
+import { DELETE_PRODUCT } from '../graphql/productmanagement/product-mutaion';
+import { GET_ALL_CATEGORIES_FORM } from '../graphql/categoryManagement/query';
 
 export interface Product {
   _id: string;
@@ -28,304 +34,237 @@ export interface Product {
   isOnlineVisible: boolean;
   createdAt: string;
   updatedAt: string;
+  category?: {
+    id: string;
+    name: string;
+  };
 }
 
 @Component({
   selector: 'app-productmanagement',
   standalone: true,
-  imports: [SidebarComponent, HeaderComponent, CommonModule, ReactiveFormsModule, ProductManagementFormComponent],
+  imports: [
+    SidebarComponent,
+    HeaderComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    ProductManagementFormComponent
+  ],
   templateUrl: './productmanagement.component.html',
   styleUrl: './productmanagement.component.css'
 })
-export class ProductmanagementComponent implements OnInit {
+export class ProductmanagementComponent implements OnInit, OnDestroy {
+
   showForm = false;
-  isEditMode = false;
-  selectedProduct: any = null;
+
   @ViewChild(ProductManagementFormComponent)
   child!: ProductManagementFormComponent;
-  private searchSubject = new Subject<string>();
-  private searchSub!: Subscription;
 
-  products: Product[] = [
-
-  ];
+  products: Product[] = [];
 
   currentPage = 1;
   limit = 10;
   totalItems = 0;
   totalPages = 0;
-  searchName: string | null = null;
-  searchCategory: string | null = null;
 
-  importFile: File | null = null;
+  searchName = '';
 
-  categories:any = [];
-  variants = ['Half', 'Full'];
+  productsLoading = false;
 
-  showImportModal = false;
-  selectedFile: File | null = null;
-  uploading = false;
-  uploadProgress = 0;
-  progressSubscription: any;
-  importId: string = '';
-  importedCount: any;
-  failedCount: any;
-  totalCount: any;
+  categories: any[] = [];
 
-  constructor(private jwtDecoder: JwtDecoderService, private apollo: Apollo, private progressService: ProductImportProgressService, private fb: FormBuilder, private toster: ToastrService, private importService: ProductImportService,
-  ) { }
+  private searchSubject = new Subject<string>();
+  private searchSub!: Subscription;
+
+  constructor(
+    private apollo: Apollo,
+    private toastr: ToastrService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
-    this.getAllProducts()
-    this.getAllIncludedCategories();
 
-    // 🔥 debounce search pipeline
-    this.searchSub = this.searchSubject.pipe(
-      debounceTime(400),          // wait 400ms
-      distinctUntilChanged()      // same value → no API call
-    ).subscribe((value) => {
-      this.getAllProducts(value);
-    });
+    this.getAllProducts();
+    this.getAllCategories()
+
+    this.searchSub = this.searchSubject
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged()
+      )
+      .subscribe((value) => {
+        this.searchName = value;
+        this.currentPage = 1;
+        this.getAllProducts();
+      });
+
   }
 
   ngOnDestroy(): void {
     this.searchSub?.unsubscribe();
   }
 
-  onSearch(event: Event) {
+  onSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value.trim();
     this.searchSubject.next(value);
   }
 
+getAllCategories(): void {
 
-  getAllProducts(
-    name?: string,
-    category?: string,
-    page: number = this.currentPage
-  ) {
+  this.apollo.query<any>({
+    query: GET_ALL_CATEGORIES_FORM,
+    fetchPolicy: 'network-only'
+  }).subscribe({
+    next: (res) => {
+      this.categories = res.data.categories || [];
+    },
+    error: (err: any) => {
+      console.error('Error loading categories:', err);
+    }
+  });
+
+}
+  getAllProducts(): void {
+
+    this.productsLoading = true;
 
     this.apollo.query({
       query: SEARCH_PRODUCTS,
       variables: {
-        name: name ?? null,
-        category: category ?? null,
-        page,
-        limit: this.limit,
-        user: {}
+        name: this.searchName || undefined,
+        page: this.currentPage,
+        limit: this.limit
       },
       fetchPolicy: 'no-cache'
     }).subscribe({
+
       next: (res: any) => {
-        const result = res.data.searchProducts;
 
-        this.products = result.data;
-        this.totalItems = result.total;
-        this.currentPage = result.page;
-        this.limit = result.limit;
-        this.totalPages = Math.ceil(this.totalItems / this.limit);
-      },
-      error: (err) => {
-        console.error('Error fetching products', err);
-      }
-    });
-  }
+        const result = res.data?.searchProducts;
 
+        if (result) {
 
+          this.products = result.data || [];
+          this.totalItems = result.total || 0;
+          this.currentPage = result.page || 1;
+          this.limit = result.limit || 10;
 
-  openAddForm(mode: 'add' | 'edit', restaurantData?: any) {
-    this.showForm = true;
-    setTimeout(() => {
-      if (this.child) {
-        this.child.openFormFromParent(mode, restaurantData);
-      }
-    });
-  }
+          this.totalPages = Math.ceil(this.totalItems / this.limit) || 1;
 
-  closeForm() {
-    this.showForm = false;
-    this.getAllProducts()
-  }
+        } else {
 
-  openImportModal() {
-    this.showImportModal = true;
-    this.reset();
-  }
+          this.products = [];
+          this.totalPages = 0;
 
-  closeImportModal() {
-    this.showImportModal = false;
-    this.reset();
-  }
-
-  reset() {
-    this.selectedFile = null;
-    this.uploadProgress = 0;
-    this.uploading = false;
-  }
-
-  onFileSelect(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-    }
-  }
-
-  handleImport() {
-    if (!this.selectedFile) {
-      this.toster.warning('Please select a CSV file');
-      return;
-    }
-
-    this.uploading = true;
-    this.uploadProgress = 0;
-
-    // 1️⃣ Upload file to backend
-    this.importService.uploadCsv(this.selectedFile).subscribe({
-      next: async (event) => {
-        if (event.type === HttpEventType.Response) {
-          const importId = event.body.importId;
-          this.toster.success('File uploaded. Import started!');
-
-          try {
-            await this.progressService.connect(importId); // wait for join
-
-            this.progressSubscription = this.progressService.getProgress().subscribe({
-              next: (data) => {
-                this.uploadProgress = data.progress;
-                this.importedCount = data.importedCount
-                this.failedCount = data.failedCount
-                this.totalCount = data.total
-
-                // alert(this.uploadProgress)
-
-                console.log(`Imported: ${data.importedCount}, Failed: ${data.failedCount}, Total: ${data.total}`);
-
-                if (data.progress >= 100) {
-                  this.toster.success('Import completed!');
-                }
-              },
-              error: (err) => {
-                console.error('Socket progress error', err);
-                this.uploading = false;
-              }
-            });
-          } catch (err) {
-            console.error('Socket failed to connect/join', err);
-          }
         }
+
+        this.productsLoading = false;
+
       },
+
       error: () => {
-        this.uploading = false;
-        this.toster.error('Upload failed');
+
+        this.toastr.error('Failed to load products');
+        this.productsLoading = false;
+
       }
+
     });
+
   }
 
-deleteProduct(id: string): void {
-  if (!confirm('Are you sure you want to delete this product?')) {
-    return;
+  openAddForm(mode: 'add' | 'edit', productData?: any): void {
+
+    this.showForm = true;
+
+    this.cdr.detectChanges();
+
+    if (this.child) {
+      this.child.openFormFromParent(mode, productData);
+    }
+
   }
 
-  this.apollo.mutate({
-    mutation: DELETE_PRODUCT,
-    variables: {
-      _id: id,
-    },
-  }).subscribe({
-    next: () => {
-      // 🔥 Remove from UI list after backend success
-      this.products = this.products.filter(p => p._id !== id);
-      this.getAllProducts()
-      this.toster.success("Product Deleted Successfully !")
-    },
-    error: (err) => {
-      console.error('Delete error:', err);
-      alert('Failed to delete product');
-    },
-  });
-}
+  closeForm(): void {
 
-  toggleAvailability(product: Product): void {
-    // product.status = !product.status;
+    this.showForm = false;
+
+    this.currentPage = 1;
+
+    this.getAllProducts();
+
   }
 
-downloadTemplate(): void {
-  const csvHeader =
-    'name,category,description,imageUrl,tags,isVeg,isActive,isOnlineVisible\n';
+  goToPage(page: number): void {
 
-  const csvRow1 =
-    'Veg Burger,Fast Food,"Fresh veg patty burger","/images/products/burger.png","BESTSELLER|TRENDING",true,true,true\n';
-
-  const csvRow2 =
-    'Paneer Pizza,Fast Food,"Cheesy paneer pizza","/images/products/pizza.png","TRENDING",true,true,true\n';
-
-  const csvRow3 =
-    'Chicken Biryani,Biryani,"Hyderabadi chicken biryani","/images/products/biryani.png","BESTSELLER",false,true,true\n';
-
-  const csvRow4 =
-    'Cold Coffee,Beverages,"Chilled cold coffee","/images/products/cold-coffee.png","NEW",true,true,true\n';
-
-  const csv = csvHeader + csvRow1 + csvRow2 + csvRow3 + csvRow4;
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = window.URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'product_import_template.csv';
-  document.body.appendChild(a);
-  a.click();
-
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
-}
-
-  goToPage(page: number) {
     if (page < 1 || page > this.totalPages) return;
-    this.getAllProducts(this.searchName!, this.searchCategory!, page);
+
+    this.currentPage = page;
+
+    this.getAllProducts();
+
   }
 
-  nextPage() {
+  nextPage(): void {
+
     if (this.currentPage < this.totalPages) {
       this.goToPage(this.currentPage + 1);
     }
+
   }
 
-  prevPage() {
+  prevPage(): void {
+
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
+
   }
 
   get pages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+
+    return Array.from(
+      { length: this.totalPages },
+      (_, i) => i + 1
+    );
+
   }
 
-getAllIncludedCategories(): void {
-  this.apollo.query<any>({
-    query: GET_ALL_INCLUDED_CATEGORIES,
-    fetchPolicy: 'network-only'
-  }).subscribe({
-    next: (res) => {
-      this.categories = [...res.data.includedCategories];
-      console.log(this.categories, "categories")
-    },
-    error: (err) => {
-      console.error('GraphQL Error:', err);
-    }
-  });
-}
+  deleteProduct(id: string): void {
 
+    if (!confirm('Are you sure?')) return;
 
-getCategoryNameById(id: string): string {
-  if (!id || !this.categories?.length) {
-    return '—';
+    this.apollo.mutate({
+
+      mutation: DELETE_PRODUCT,
+      variables: { _id: id }
+
+    }).subscribe({
+
+      next: () => {
+
+        this.products = this.products.filter(p => p._id !== id);
+
+        this.toastr.success('Product Deleted');
+
+        this.getAllProducts();
+
+      },
+
+      error: () => {
+
+        this.toastr.error('Failed to delete');
+
+      }
+
+    });
+
   }
 
-  const category = this.categories.find(
-    (c: any) => c._id === id
-  );
+  trackByProductId(index: number, product: Product): string {
 
-  return category ? category.name : 'Unknown';
-}
+    return product._id;
+
+  }
 
 }

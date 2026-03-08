@@ -30,6 +30,10 @@ export const routes: Routes = [
     path: 'varients',
     loadChildren: () => import('./varientmanagement/varientmanagement.module').then(m => m.VarientmanagementModule)
   },
+    {
+    path: 'product-variants',
+    loadChildren: () => import('./globalproductvarients/globalproductvarients.module').then(m => m.GlobalproductvarientsModule)
+  },
    {
     path: 'settings',
     loadChildren: () => import('./setting/setting.module').then(m => m.SettingModule)

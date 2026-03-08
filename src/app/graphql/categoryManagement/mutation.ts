@@ -34,3 +34,12 @@ export const UPDATE_CATEGORY = gql`
     }
   }
 `;
+
+export const DELETE_CATEGORY = gql`
+  mutation DeleteCategory($id: ID!) {
+    deleteCategory(id: $id) {
+      _id
+      name
+    }
+  }
+`;

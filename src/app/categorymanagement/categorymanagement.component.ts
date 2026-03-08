@@ -1,18 +1,24 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Apollo } from 'apollo-angular';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 import { LayoutsModule } from '../layouts/layouts.module';
 import { HeaderComponent } from '../layouts/header/header.component';
 import { CategoryFormComponent } from '../shared/category-form/category-form.component';
 
-import { GET_ALL_CATEGORIES } from '../graphql/categoryManagement/query';
+import { GET_INCLUDED_CATEGORIES_PAGINATED } from '../graphql/categoryManagement/query';
+import { subscribe } from 'graphql';
+import { ToastrService } from 'ngx-toastr';
+import { DELETE_CATEGORY } from '../graphql/categoryManagement/mutation';
 
 @Component({
   selector: 'app-categorymanagement',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     LayoutsModule,
     HeaderComponent,
     CategoryFormComponent
@@ -20,112 +26,153 @@ import { GET_ALL_CATEGORIES } from '../graphql/categoryManagement/query';
   templateUrl: './categorymanagement.component.html',
   styleUrl: './categorymanagement.component.css'
 })
-export class CategorymanagementComponent implements OnInit {
+export class CategorymanagementComponent implements OnInit, OnDestroy {
 
   @ViewChild(CategoryFormComponent) child!: CategoryFormComponent;
 
   /* ================= DATA ================= */
-  allCategories: any[] = [];   // 🔒 master list (API)
-  categories: any[] = [];      // 👀 current page UI list
+  categories: any[] = [];
 
   /* ================= UI ================= */
   showForm = false;
   isLoading = false;
+  searchQuery = '';
 
   /* ================= PAGINATION ================= */
   currentPage = 1;
-  pageSize = 15;
+  pageSize = 10;
+  total = 0;
+  totalPages = 1;
 
-  /* ================= SORT ================= */
-  sortField: 'order' = 'order';          // ✅ default icon visible
-  sortDirection: 'asc' | 'desc' = 'asc';
+  /* ================= SEARCH STREAM ================= */
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
-  constructor(private apollo: Apollo) {}
+  constructor(private apollo: Apollo, private toster:ToastrService) {}
 
   ngOnInit(): void {
-    this.getAllCategories();
+
+    this.getIncludedCategoriesPaginated();
+
+    /* 🔥 Debounce Search Setup */
+    this.searchSubject
+      .pipe(
+        debounceTime(400),          // wait 400ms
+        distinctUntilChanged(),     // ignore same value
+        takeUntil(this.destroy$)
+      )
+      .subscribe(searchTerm => {
+
+        this.currentPage = 1;
+
+        this.getIncludedCategoriesPaginated(
+          1,
+          this.pageSize,
+          searchTerm
+        );
+
+      });
+
   }
 
-  /* ================= PAGINATION ================= */
-
-  get totalRecords(): number {
-    return this.allCategories.length;
-  }
-
-  get totalPages(): number {
-    return Math.ceil(this.totalRecords / this.pageSize);
-  }
-
-  get visiblePages(): number[] {
-    const range = 2;
-    const start = Math.max(1, this.currentPage - range);
-    const end = Math.min(this.totalPages, this.currentPage + range);
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  }
-
-  applyPagination(): void {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-
-    this.categories = this.allCategories.slice(start, end);
-
-    // ✅ page change ke baad bhi sorting rahe
-    this.applySortingOnCurrentPage();
-  }
-
-  changePage(page: number): void {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-    this.applyPagination();
-  }
-
-  /* ================= SORTING ================= */
-
-  sortByOrder(): void {
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-
-    // ❌ page reset nahi hoga
-    this.applySortingOnCurrentPage();
-  }
-
-  private applySortingOnCurrentPage(): void {
-    this.categories = [...this.categories].sort((a, b) => {
-      const aVal = a.order ?? 0;
-      const bVal = b.order ?? 0;
-
-      return this.sortDirection === 'asc'
-        ? aVal - bVal
-        : bVal - aVal;
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /* ================= API ================= */
 
-  getAllCategories(): void {
+  getIncludedCategoriesPaginated(
+    page: number = 1,
+    limit: number = 10,
+    search: string = ''
+  ): void {
+
     this.isLoading = true;
 
     this.apollo.query<any>({
-      query: GET_ALL_CATEGORIES,
+      query: GET_INCLUDED_CATEGORIES_PAGINATED,
+      variables: {
+        page: page,
+        limit: limit,
+        search: search || null
+      },
       fetchPolicy: 'network-only'
-    }).subscribe({
+    })
+    .subscribe({
       next: (res) => {
-        this.allCategories = [...res.data.categories];
 
-        this.currentPage = 1;
-        this.applyPagination();
+        const result = res.data?.includedCategoriesPaginated;
+
+        if (result) {
+          this.categories = result.data;
+
+          console.log('Fetched categories:', this.categories);
+          this.total = result.total;
+          this.totalPages = result.totalPages;
+          this.currentPage = result.currentPage;
+        } else {
+          this.categories = [];
+        }
+
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('GraphQL Error:', err);
+        console.error('Error loading categories:', err);
         this.isLoading = false;
       }
     });
+
+  }
+
+  /* ================= SEARCH ================= */
+
+  onSearch(): void {
+    this.searchSubject.next(this.searchQuery);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.searchSubject.next('');
+  }
+
+  /* ================= PAGINATION ================= */
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.getIncludedCategoriesPaginated(
+        this.currentPage + 1,
+        this.pageSize,
+        this.searchQuery
+      );
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.getIncludedCategoriesPaginated(
+        this.currentPage - 1,
+        this.pageSize,
+        this.searchQuery
+      );
+    }
+  }
+
+  changePage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+
+    this.getIncludedCategoriesPaginated(
+      page,
+      this.pageSize,
+      this.searchQuery
+    );
   }
 
   /* ================= CRUD ================= */
 
   openCategoryForm(mode: 'add' | 'edit', category?: any): void {
     this.showForm = true;
+
     setTimeout(() => {
       this.child?.openFormFromParent(mode, category);
     });
@@ -133,22 +180,40 @@ export class CategorymanagementComponent implements OnInit {
 
   closeCategoryForm(): void {
     this.showForm = false;
-    this.getAllCategories();
-  }
 
-  deleteCategory(id: string): void {
-    if (!confirm('Are you sure you want to delete this category?')) return;
-
-    this.allCategories = this.allCategories.filter(c => c._id !== id);
-
-    if ((this.currentPage - 1) * this.pageSize >= this.allCategories.length) {
-      this.currentPage = Math.max(1, this.currentPage - 1);
-    }
-
-    this.applyPagination();
+    this.getIncludedCategoriesPaginated(
+      this.currentPage,
+      this.pageSize,
+      this.searchQuery
+    );
   }
 
   trackById(index: number, item: any): string {
-  return item._id;
+    return item._id;
+  }
+
+deleteCategory(categoryId: string): void {
+
+  if (confirm('Are you sure you want to delete this category?')) {
+
+    console.log('Deleting category with ID:', categoryId);
+
+    this.apollo.mutate({
+      mutation: DELETE_CATEGORY,
+      variables: { id: categoryId }
+    }).subscribe({
+      next: () => {
+        this.toster.success('Category deleted successfully');
+        this.closeCategoryForm()
+      },
+      error: (err) => {
+        this.toster.error('Failed to delete category');
+        console.error('Error:', err);
+      }
+    });
+
+  }
+
 }
+
 }

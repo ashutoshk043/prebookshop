@@ -17,7 +17,6 @@ export const SEARCH_PRODUCTS = gql`
         _id
         name
         slug
-        categoryId
         description
         imageUrl
         tags
@@ -26,6 +25,10 @@ export const SEARCH_PRODUCTS = gql`
         isOnlineVisible
         createdAt
         updatedAt
+        category {
+          id
+          name
+        }
       }
       total
       page
@@ -34,7 +37,45 @@ export const SEARCH_PRODUCTS = gql`
   }
 `;
 
+export const GET_ALL_CATEGORIES = gql`
+  query GetCategories {
+    categories {
+      _id
+      name
+      slug
+      imageUrl
+      order
+      priority
+      categoryType
+      displaySections
+      badges
+      isActive
+      isOnlineVisible
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
+export const GET_INCLUDED_CATEGORIES = gql`
+  query GetIncludedCategories {
+    includedCategories {
+      _id
+      name
+      slug
+      imageUrl
+      order
+      priority
+      categoryType
+      displaySections
+      badges
+      isActive
+      isOnlineVisible
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
 export const GET_ALL_RESTAURANTS = gql`
   query GetAllRestaurants {
@@ -44,16 +85,3 @@ export const GET_ALL_RESTAURANTS = gql`
     }
   }
 `;
-
-
-export const GET_ALL_INCLUDED_CATEGORIES = gql`
-  query GetAllIncludedCategories {
-    includedCategories {
-      _id
-      name
-    }
-  }
-`;
-
-
-
