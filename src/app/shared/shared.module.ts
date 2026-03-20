@@ -13,7 +13,7 @@ import { CreateRestraurentFormComponent } from './create-restraurent-form/create
     CommonModule,
     SharedRoutingModule,
     CreateUserFormComponent,
-    CreateDeliveryPartnerFormComponent,CreateRestraurentFormComponent
+    CreateDeliveryPartnerFormComponent,CreateRestraurentFormComponent,
   ],
   exports:[CreateUserFormComponent,CreateDeliveryPartnerFormComponent,CreateRestraurentFormComponent]
 })

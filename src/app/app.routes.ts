@@ -23,6 +23,10 @@ export const routes: Routes = [
     loadChildren: () => import('./ingredientmanagement/ingredientmanagement.module').then(m => m.IngredientmanagementModule)
   },
   {
+    path: 'ingredient-varient-recipe',
+    loadChildren: () => import('./ingredient-varient-recipe/ingredient-varient-recipe.module').then(m => m.IngredientVarientRecipeModule)
+  },
+  {
     path: 'reports',
     loadChildren: () => import('./reportmanagement/reportmanagement.module').then(m => m.ReportmanagementModule)
   },
@@ -30,11 +34,15 @@ export const routes: Routes = [
     path: 'varients',
     loadChildren: () => import('./varientmanagement/varientmanagement.module').then(m => m.VarientmanagementModule)
   },
-    {
+  // {
+  //   path: 'restaurant-variant-price',
+  //   loadChildren: () => import('./restaurant-variant-price/restaurant-variant-price.module').then(m => m.RestaurantVariantPriceModule)
+  // },
+  {
     path: 'product-variants',
     loadChildren: () => import('./globalproductvarients/globalproductvarients.module').then(m => m.GlobalproductvarientsModule)
   },
-   {
+  {
     path: 'settings',
     loadChildren: () => import('./setting/setting.module').then(m => m.SettingModule)
   },

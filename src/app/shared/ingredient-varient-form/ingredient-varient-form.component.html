@@ -1,0 +1,91 @@
+<div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {{ mode === 'add' ? 'Add Recipe' : 'Edit Recipe' }}
+                </h5>
+                <button type="button" class="btn-close" (click)="closeModal()"></button>
+            </div>
+
+            <form [formGroup]="recipeForm" (ngSubmit)="submitForm()">
+                <div class="modal-body">
+
+                    <!-- Variant Dropdown -->
+                    <div class="mb-3">
+                        <label class="form-label">Product Variant</label>
+                        <ng-select formControlName="variantId" [items]="productVarients" bindValue="_id"
+                            bindLabel="size" [loading]="isLoadingVariants" [searchFn]="disableClientFilter"
+                            (search)="onVariantSearch($event)" (open)="onVariantOpen()"
+                            (scrollToEnd)="onVariantScrollEnd()" placeholder="Search variant..." [clearable]="true"
+                            notFoundText="No variants found">
+
+                            <ng-template ng-option-tmp let-item="item">
+                                <span>{{ item.product?.name || 'N/A' }}</span>
+                                <small class="text-muted ms-1">({{ item.size }})</small>
+                            </ng-template>
+
+                            <ng-template ng-label-tmp let-item="item">
+                                {{ item.product?.name || 'N/A' }} — {{ item.size }}
+                            </ng-template>
+
+                        </ng-select>
+                        <small class="text-danger"
+                            *ngIf="recipeForm.get('variantId')?.touched && recipeForm.get('variantId')?.invalid">
+                            Variant is required
+                        </small>
+                    </div>
+
+                    <!-- Ingredient Dropdown -->
+                    <div class="mb-3">
+                        <label class="form-label">Ingredient Or Brand In case of Drink</label>
+                        <ng-select formControlName="ingredientId" placeholder="Search ingredient..."
+                            [items]="ingredients" bindValue="_id" bindLabel="name" [loading]="isLoadingIngredients"
+                            (search)="onIngredientSearch($event)" (open)="onIngredientOpen()"
+                            (scrollToEnd)="onIngredientScrollEnd()" [clearable]="true"
+                            notFoundText="No ingredients found">
+
+                            <!-- Custom option template — name + unit dikhao -->
+                            <ng-template ng-option-tmp let-item="item">
+                                <span>{{ item.name }}</span>
+                                <small class="ms-1">
+                                    <span class="badge bg-light text-secondary">{{ item.unit }}</span>
+                                </small>
+                            </ng-template>
+
+                        </ng-select>
+                        <small class="text-danger"
+                            *ngIf="recipeForm.get('ingredientId')?.touched && recipeForm.get('ingredientId')?.invalid">
+                            Ingredient is required
+                        </small>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="mb-3">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" class="form-control" placeholder="Enter quantity"
+                            formControlName="quantity" min="0" />
+                        <small class="text-danger"
+                            *ngIf="recipeForm.get('quantity')?.touched && recipeForm.get('quantity')?.invalid">
+                            Valid quantity is required (min 0)
+                        </small>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="closeModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        {{ mode === 'add' ? 'Save Recipe' : 'Update Recipe' }}
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop fade show"></div>

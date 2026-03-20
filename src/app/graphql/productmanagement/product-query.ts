@@ -19,7 +19,7 @@ export const SEARCH_PRODUCTS = gql`
         slug
         description
         imageUrl
-        tags
+        varients
         isVeg
         isActive
         isOnlineVisible
@@ -33,6 +33,17 @@ export const SEARCH_PRODUCTS = gql`
       total
       page
       limit
+    }
+  }
+`;
+
+// product-query.ts
+export const GET_PRODUCT_BY_ID = gql`
+  query GetProductById($_id: ID!) {
+    getProductById(_id: $_id) {
+      _id
+      name
+      varients
     }
   }
 `;

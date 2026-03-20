@@ -49,18 +49,18 @@ export class SidebarComponent {
 
         { order: 3, label: 'Product Variants', route: '/product-variants' },
 
-        { order: 4, label: 'Variant Templates', route: '/variant-templates' },
+        
+        { order: 4, label: 'Ingredients (Master)', route: '/ingredients' },
+        { order: 5, label: 'Ingredients Varients Recipe', route: '/ingredient-varient-recipe' },
+        // { order: 5, label: 'Offer', route: '/offers' },
 
-        { order: 5, label: 'Ingredients (Master)', route: '/ingredients' },
-
-        { order: 6, label: 'Variant Ingredients (Recipe)', route: '/variant-ingredients' }
+        // { order: 6, label: 'Coupons', route: '/coupons' }
       ]
     }, {
       title: 'RESTAURANT PRODUCT SETUP',
       items: [
-        { order: 1, label: 'Ingredient Stock', route: '/restaurant-ingredients' },
-
-        { order: 2, label: 'Variant Prices', route: '/restaurant-variant-prices' }
+        { order: 1, label: 'Variant Prices', route: '/restaurant-variant-price' },
+        { order: 2, label: 'Ingredient Stock', route: '/restaurant-ingredients' }
       ]
     },
     {

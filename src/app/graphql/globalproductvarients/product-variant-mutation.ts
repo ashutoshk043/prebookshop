@@ -1,8 +1,8 @@
 import { gql } from 'apollo-angular';
 
 export const ADD_PRODUCT_VARIANT = gql`
-  mutation AddProductVariant($input: CreateProductVariantInput!) {
-    addProductVariant(input: $input) {
+  mutation CreateProductVariant($input: CreateProductVariantInput!) {
+    createProductVariant(input: $input) {
       _id
       productId
       size
@@ -13,11 +13,8 @@ export const ADD_PRODUCT_VARIANT = gql`
 `;
 
 export const UPDATE_PRODUCT_VARIANT = gql`
-  mutation UpdateProductVariant(
-    $_id: ID!
-    $input: CreateProductVariantInput!
-  ) {
-    updateProductVariant(_id: $_id, input: $input) {
+  mutation UpdateProductVariant($input: UpdateProductVariantInput!) {
+    updateProductVariant(input: $input) {
       _id
       productId
       size

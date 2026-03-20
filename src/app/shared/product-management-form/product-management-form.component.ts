@@ -1,159 +1,232 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, OnInit, AfterViewInit } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Apollo } from 'apollo-angular';
 import { ToastrService } from 'ngx-toastr';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+
 import { ADD_PRODUCT, UPDATE_PRODUCT } from '../../graphql/productmanagement/product-mutaion';
+import { GET_ALL_CATEGORIES_FORM } from '../../graphql/categoryManagement/query';
 
 declare var bootstrap: any;
 
 @Component({
   selector: 'app-product-management-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule],
   templateUrl: './product-management-form.component.html',
-  styleUrl: './product-management-form.component.css'
+  styleUrls: ['./product-management-form.component.css']
 })
 export class ProductManagementFormComponent implements OnInit, AfterViewInit {
 
-  @Input() categories: any[] = [];
   @Output() close = new EventEmitter<void>();
 
   productForm!: FormGroup;
-  formMode: 'add' | 'edit' = 'add';
-  editProductId: string | null = null;
-  modalInstance: any;
+
+  categories: any[] = [];
   previewImage: string | null = null;
 
-  tagOptions = [
-    { id: 'BESTSELLER', name: 'Best Seller' },
-    { id: 'TRENDING', name: 'Trending' },
-    { id: 'NEW', name: 'New' }
+  formMode: 'add' | 'edit' = 'add';
+  editProductId: string | null = null;
+
+  modalInstance: any;
+
+  private searchSubject = new Subject<string>();
+  private lastSearch = '';
+
+  /* ---------------- VARIANTS ---------------- */
+
+  sizes = [
+    { id: 'SMALL', name: 'Small' },
+    { id: 'REGULAR', name: 'Regular' },
+    { id: 'LARGE', name: 'Large' },
+    { id: 'EXTRA_LARGE', name: 'Extra Large' },
+
+    { id: 'QUARTER', name: 'Quarter' },
+    { id: 'HALF', name: 'Half' },
+    { id: 'FULL', name: 'Full' },
+    { id: 'FAMILY_PACK', name: 'Family Pack' },
+
+    { id: 'SINGLE', name: 'Single' },
+    { id: 'DOUBLE', name: 'Double' },
+
+    { id: '100G', name: '100g' },
+    { id: '250G', name: '250g' },
+    { id: '500G', name: '500g' },
+    { id: '750G', name: '750g' },
+    { id: '1KG', name: '1kg' },
+    { id: '2KG', name: '2kg' },
+
+    { id: '250ML', name: '250ml' },
+    { id: '330ML', name: '330ml' },
+    { id: '500ML', name: '500ml' },
+    { id: '750ML', name: '750ml' },
+
+    { id: '1L', name: '1L' },
+    { id: '2L', name: '2L' },
+
+    { id: 'SCOOP', name: 'Scoop' },
+    { id: 'ONE_CUP', name: '1 Cup' },
+    { id: 'TWO_CUPS', name: '2 Cups' },
+    { id: 'TUB_500ML', name: '500ml Tub' },
+
+    { id: '6_INCH', name: '6 Inch' },
+    { id: '9_INCH', name: '9 Inch' },
+    { id: '12_INCH', name: '12 Inch' },
+
+    { id: 'BOWL', name: 'Bowl' },
+    { id: 'LARGE_BOWL', name: 'Large Bowl' },
+    { id: 'TAKEAWAY', name: 'Takeaway' },
+
+    { id: 'CAN', name: 'Can' },
+    { id: 'BOTTLE', name: 'Bottle' },
+    { id: 'LARGE_BOTTLE', name: 'Large Bottle' },
+
+    { id: 'ESPRESSO', name: 'Espresso' },
+    { id: 'CAPPUCCINO', name: 'Cappuccino' },
+    { id: 'LATTE', name: 'Latte' },
+    { id: 'MOCHA', name: 'Mocha' }
   ];
 
   constructor(
     private fb: FormBuilder,
     private apollo: Apollo,
     private toastr: ToastrService
-  ) {
+  ) { }
+
+  ngOnInit(): void {
+
     this.buildForm();
+    this.getIncludedCategoriesPaginated();
+
+    this.searchSubject
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged()
+      )
+      .subscribe(search => {
+        this.getIncludedCategoriesPaginated(1, 10, search);
+      });
   }
 
-  ngOnInit() {
-    console.log('Form initialized');
-  }
+  ngAfterViewInit(): void {
 
-  ngAfterViewInit() {
     const modalEl = document.getElementById('productModal');
+
     if (modalEl) {
       this.modalInstance = new bootstrap.Modal(modalEl);
     }
 
     this.productForm.get('imageUrl')?.valueChanges.subscribe(url => {
-      this.previewImage = url;
+      this.previewImage = url || null;
     });
   }
 
   buildForm() {
+
     this.productForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
+      name: ['', Validators.required],
       slug: ['', Validators.required],
-      categoryId: ['', Validators.required],
+      categoryId: [null, Validators.required],
       description: [''],
       imageUrl: [''],
-      tags: [[]],
+      varients: [[], Validators.required],
       isVeg: [true],
       isActive: [true],
       isOnlineVisible: [true]
     });
+
   }
+
+  /* ---------------- OPEN FORM ---------------- */
 
   openFormFromParent(mode: 'add' | 'edit', data?: any) {
 
+    const modalEl = document.getElementById('productModal');
+
+    if (!this.modalInstance && modalEl) {
+      this.modalInstance = new bootstrap.Modal(modalEl);
+    }
+
     this.formMode = mode;
-    this.editProductId = null;
-    this.previewImage = null;
 
     if (mode === 'add') {
 
+      this.editProductId = null;
+
       this.productForm.reset({
-        tags: [],
+        name: '',
+        slug: '',
+        categoryId: null,
+        description: '',
+        imageUrl: '',
+        varients: [],
         isVeg: true,
         isActive: true,
-        isOnlineVisible: true,
-        categoryId: ''
+        isOnlineVisible: true
       });
 
+      this.previewImage = null;
       this.modalInstance.show();
       return;
     }
 
     if (mode === 'edit' && data) {
 
-      this.editProductId = data._id;
-      this.previewImage = data.imageUrl ?? null;
+      const categoryId = data.category?.id || '';
 
-      const categoryId = data.categoryId || data.category?.id || '';
-
-      // agar categories empty hai to edit wali category add kar do
       if (categoryId && !this.categories.find(c => c._id === categoryId)) {
-        this.categories = [
-          ...this.categories,
-          {
-            _id: categoryId,
-            name: data.category?.name || 'Unknown'
-          }
-        ];
+        this.categories.push({
+          _id: categoryId,
+          name: data.category?.name || 'Unknown'
+        });
       }
 
+      this.editProductId = data._id;
+
       this.productForm.patchValue({
-        name: data.name || '',
-        slug: data.slug || '',
+        ...data,
         categoryId: categoryId,
-        description: data.description || '',
-        imageUrl: data.imageUrl || '',
-        tags: Array.isArray(data.tags) ? [...data.tags] : [],
-        isVeg: data.isVeg ?? true,
-        isActive: data.isActive ?? true,
-        isOnlineVisible: data.isOnlineVisible ?? true
+        varients: data.varients || []
       });
 
+      this.previewImage = data.imageUrl;
       this.modalInstance.show();
     }
   }
 
+  /* ---------------- SLUG ---------------- */
+
   updateSlug(event: Event) {
 
-    const value = (event.target as HTMLInputElement).value || '';
+    const value = (event.target as HTMLInputElement).value;
 
     const slug = value
       .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-');
 
     this.productForm.patchValue({ slug });
   }
 
-  toggleTag(tagId: string, event: Event) {
+  /* ---------------- VARIANT TOGGLE ---------------- */
 
-    const input = event.target as HTMLInputElement;
-    const checked = input.checked;
+  toggleVariant(id: string) {
 
-    const currentTags = [...(this.productForm.value.tags || [])];
+    const control = this.productForm.get('varients');
+    let variants: string[] = control?.value || [];
 
-    if (checked) {
-      if (!currentTags.includes(tagId)) {
-        currentTags.push(tagId);
-      }
+    if (variants.includes(id)) {
+      variants = variants.filter(v => v !== id);
     } else {
-      const index = currentTags.indexOf(tagId);
-      if (index > -1) currentTags.splice(index, 1);
+      variants.push(id);
     }
 
-    this.productForm.patchValue({ tags: currentTags });
+    control?.setValue(variants);
   }
+
+  /* ---------------- SUBMIT ---------------- */
 
   submit() {
 
@@ -163,44 +236,80 @@ export class ProductManagementFormComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const payload = this.productForm.value;
+    const payload = {
+      ...this.productForm.value,
+      varients: this.productForm.value.varients || []
+    };
 
     const mutation =
       this.formMode === 'edit'
         ? this.apollo.mutate({
-            mutation: UPDATE_PRODUCT,
-            variables: { _id: this.editProductId, input: payload }
-          })
+          mutation: UPDATE_PRODUCT,
+          variables: { _id: this.editProductId, input: payload }
+        })
         : this.apollo.mutate({
-            mutation: ADD_PRODUCT,
-            variables: { input: payload }
-          });
+          mutation: ADD_PRODUCT,
+          variables: { input: payload }
+        });
 
     mutation.subscribe({
       next: () => {
+
         this.toastr.success(
           this.formMode === 'edit'
-            ? 'Product Updated!'
-            : 'Product Added!'
+            ? 'Product Updated'
+            : 'Product Added'
         );
 
         this.closeModal();
+
       },
-      error: (err) => {
-        console.error(err);
+      error: () => {
         this.toastr.error('Operation failed');
       }
     });
+
   }
 
   closeModal() {
+
     this.productForm.reset();
-    this.modalInstance.hide();
+    this.previewImage = null;
+
+    if (this.modalInstance) {
+      this.modalInstance.hide();
+    }
+
     this.close.emit();
   }
 
-  trackById(index: number, item: any) {
-    return item._id;
+  /* ---------------- CATEGORY SEARCH ---------------- */
+
+  getIncludedCategoriesPaginated(page = 1, limit = 10, search = '') {
+
+    this.apollo.query<any>({
+      query: GET_ALL_CATEGORIES_FORM,
+      variables: { page, limit, search: search || null },
+      fetchPolicy: 'network-only'
+    })
+      .subscribe(res => {
+
+        const result = res.data?.includedCategoriesPaginated;
+        this.categories = result?.data || [];
+
+      });
+
+  }
+
+  onSearch(event: any) {
+
+    const term = event.term || '';
+
+    if (term === this.lastSearch) return;
+
+    this.lastSearch = term;
+
+    this.searchSubject.next(term);
   }
 
 }

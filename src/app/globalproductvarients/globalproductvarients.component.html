@@ -1,39 +1,55 @@
 <div class="d-flex flex-column flex-md-row">
-  <app-sidebar #sidebar></app-sidebar>
 
-  <div class="main-content flex-grow-1" [class.sidebar-collapsed]="sidebar.isCollapsed">
-    <app-header></app-header>
+  <div class="sidebar">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-content flex-grow-1">
+
+    <div class="header">
+      <app-header></app-header>
+    </div>
 
     <main class="p-3 p-md-5 bg-light min-vh-100">
       <div class="container-fluid">
 
-        <!-- ✅ Product Management Card -->
         <div class="card border-0 shadow-sm mt-4">
 
           <!-- HEADER -->
-          <div class="card-header">
+          <div class="card-header bg-white py-3">
             <div class="row g-2 align-items-center">
 
               <!-- Search -->
-              <div class="col-12 col-md-4">
+              <div class="col-12 col-md-5">
                 <div class="position-relative">
                   <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ps-2 text-secondary"></i>
-                  <input type="text" class="form-control ps-5" placeholder="Search products..."
-                    (input)="onSearch($event)" />
+                  <input
+                    type="text"
+                    class="form-control ps-5"
+                    placeholder="Search by product name..."
+                    [(ngModel)]="searchTerm"
+                    (input)="onSearch(searchTerm)"
+                  />
                 </div>
               </div>
 
-              <!-- Import -->
-              <div class="col-6 col-md-4">
-                <button class="btn btn-outline-primary w-100" (click)="openImportModal()">
-                  <i class="bi bi-upload me-2"></i> Import
-                </button>
+              <!-- Page size -->
+              <div class="col-6 col-md-3">
+                <!-- <select
+                  class="form-select"
+                  [(ngModel)]="pageSize"
+                  (change)="onPageSizeChange()"
+                >
+                  <option [value]="10">10 per page</option>
+                  <option [value]="25">25 per page</option>
+                  <option [value]="50">50 per page</option>
+                </select> -->
               </div>
 
               <!-- Add -->
               <div class="col-6 col-md-4">
                 <button class="btn btn-primary w-100" (click)="openAddForm('add')">
-                  <i class="bi bi-plus-lg me-2"></i> Add Product
+                  <i class="bi bi-plus-lg me-2"></i> Add Variant
                 </button>
               </div>
 
@@ -46,6 +62,7 @@
 
               <thead class="table-light text-uppercase small">
                 <tr>
+                  <th>#</th>
                   <th>Product</th>
                   <th>Size</th>
                   <th>Status</th>
@@ -55,189 +72,151 @@
 
               <tbody>
 
-                <tr *ngFor="let variant of variants">
-
-                  <!-- Product ID -->
-                  <td>
-                    <span class="badge bg-primary-subtle text-primary">
-                      {{ variant.product.name }}
-                    </span>
-                  </td>
-
-                  <!-- Size -->
-                  <td>
-                    <span class="badge" [ngClass]="{
-          'bg-info-subtle text-info': variant.size === 'REGULAR',
-          'bg-warning-subtle text-warning': variant.size === 'LARGE',
-          'bg-secondary-subtle text-secondary': variant.size !== 'REGULAR' && variant.size !== 'LARGE'
-        }">
-                      {{ variant.size }}
-                    </span>
-                  </td>
-
-                  <!-- Status -->
-                  <td>
-                    <span class="badge" [ngClass]="variant.isActive 
-          ? 'bg-success-subtle text-success' 
-          : 'bg-danger-subtle text-danger'">
-                      {{ variant.isActive ? 'Active' : 'Inactive' }}
-                    </span>
-                  </td>
-
-                  <!-- Actions -->
-                  <td class="text-end">
-                    <div class="btn-group">
-                      <button class="btn btn-sm btn-light" (click)="openAddForm('edit')">
-                        <i class="bi bi-pencil"></i>
-                      </button>
-
-                      <button class="btn btn-sm btn-light text-danger" (click)="deleteProduct(variant._id)">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-
-                </tr>
-
-                <!-- Empty State -->
-                <tr *ngIf="variants?.length === 0">
-                  <td colspan="4" class="text-center text-muted py-4">
-                    No variants found
+                <!-- Loading -->
+                <tr *ngIf="isLoading">
+                  <td colspan="5" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                    Loading variants...
                   </td>
                 </tr>
+
+                <!-- Data rows -->
+                <ng-container *ngIf="!isLoading">
+                  <tr *ngFor="let variant of productVarients; let i = index">
+
+                    <!-- Sr No -->
+                    <td class="text-muted small">
+                      {{ (currentPage - 1) * pageSize + i + 1 }}
+                    </td>
+
+                    <!-- Product -->
+                    <td>
+                      <span class="badge bg-primary-subtle text-primary">
+                        {{ variant.product?.name || 'N/A' }}
+                      </span>
+                    </td>
+
+                    <!-- Size -->
+                    <td>
+                      <span class="badge bg-info-subtle text-info">
+                        {{ variant.size }}
+                      </span>
+                    </td>
+
+                    <!-- Status -->
+                    <td>
+                      <span
+                        class="badge"
+                        [ngClass]="variant.isActive
+                          ? 'bg-success-subtle text-success'
+                          : 'bg-danger-subtle text-danger'"
+                      >
+                        {{ variant.isActive ? 'Active' : 'Inactive' }}
+                      </span>
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="text-end">
+                      <div class="btn-group">
+                        <button
+                          class="btn btn-sm btn-light"
+                          title="Edit"
+                          (click)="openAddForm('edit', variant)"
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button
+                          class="btn btn-sm btn-light text-danger"
+                          title="Delete"
+                          (click)="deleteVariant(variant._id)"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+
+                  </tr>
+
+                  <!-- Empty state -->
+                  <tr *ngIf="productVarients.length === 0">
+                    <td colspan="5" class="text-center text-muted py-5">
+                      <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                      No variants found
+                    </td>
+                  </tr>
+                </ng-container>
 
               </tbody>
 
             </table>
           </div>
 
-          <!-- PAGINATION -->
-          <div class="card-footer d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+          <!-- FOOTER: count + pagination -->
+          <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 py-3" *ngIf="!isLoading && totalRecords > 0">
 
-            <button class="btn btn-outline-secondary btn-sm" (click)="prevPage()" [disabled]="currentPage === 1">
-              ← Previous
-            </button>
+            <!-- Record count -->
+            <small class="text-muted">
+              Showing
+              {{ (currentPage - 1) * pageSize + 1 }}–{{ [currentPage * pageSize, totalRecords] | min }}
+              of {{ totalRecords }} variants
+            </small>
 
-            <ul class="pagination pagination-sm mb-0">
-              <li class="page-item" *ngFor="let p of pages" [class.active]="p === currentPage">
-                <button class="page-link" (click)="goToPage(p)">
-                  {{ p }}
-                </button>
-              </li>
-            </ul>
+            <!-- Pagination -->
+            <nav>
+              <ul class="pagination pagination-sm mb-0">
 
-            <button class="btn btn-outline-secondary btn-sm" (click)="nextPage()"
-              [disabled]="currentPage === totalPages">
-              Next →
-            </button>
+                <!-- First -->
+                <li class="page-item" [class.disabled]="!hasPrevPage">
+                  <button class="page-link" (click)="goToPage(1)">
+                    <i class="bi bi-chevron-double-left"></i>
+                  </button>
+                </li>
+
+                <!-- Prev -->
+                <li class="page-item" [class.disabled]="!hasPrevPage">
+                  <button class="page-link" (click)="goToPage(currentPage - 1)">
+                    <i class="bi bi-chevron-left"></i>
+                  </button>
+                </li>
+
+                <!-- Page numbers -->
+                <li
+                  class="page-item"
+                  *ngFor="let p of getPagesArray()"
+                  [class.active]="p === currentPage"
+                >
+                  <button class="page-link" (click)="goToPage(p)">{{ p }}</button>
+                </li>
+
+                <!-- Next -->
+                <li class="page-item" [class.disabled]="!hasNextPage">
+                  <button class="page-link" (click)="goToPage(currentPage + 1)">
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
+                </li>
+
+                <!-- Last -->
+                <li class="page-item" [class.disabled]="!hasNextPage">
+                  <button class="page-link" (click)="goToPage(totalPages)">
+                    <i class="bi bi-chevron-double-right"></i>
+                  </button>
+                </li>
+
+              </ul>
+            </nav>
 
           </div>
 
         </div>
+
       </div>
     </main>
+
   </div>
-</div>
-<!-- ✅ Import Modal -->
-<div class="modal fade show" *ngIf="showImportModal" style="display:block; background:rgba(0, 0, 0, 0.6);">
 
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-
-      <!-- 🔷 Header -->
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title d-flex align-items-center">
-          <i class="bi bi-upload fs-4 me-2"></i>
-          Import Products via CSV
-        </h5>
-        <button type="button" class="btn-close btn-close-white" (click)="closeImportModal()"></button>
-      </div>
-
-      <!-- 🔶 Body -->
-      <div class="modal-body p-4">
-
-        <!-- Info Box -->
-        <div class="alert alert-info d-flex align-items-start mb-4">
-          <i class="bi bi-info-circle fs-5 me-2"></i>
-          <div>
-            Upload a CSV file to import products in bulk.
-            Please follow the template format for smooth import.
-          </div>
-        </div>
-
-        <!-- File Upload -->
-        <div class="card border-dashed mb-4 p-4 text-center">
-          <i class="bi bi-file-earmark-spreadsheet fs-1 text-primary mb-3"></i>
-
-          <input type="file" class="form-control" accept=".csv" (change)="onFileSelect($event)"
-            [disabled]="uploading" />
-        </div>
-
-        <!-- Progress Section -->
-        <div *ngIf="uploading" class="mb-4">
-
-          <div class="progress mb-3" style="height: 22px;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated fw-semibold" role="progressbar"
-              [style.width.%]="uploadProgress">
-              {{ uploadProgress }}%
-            </div>
-          </div>
-
-          <!-- Stats -->
-          <div class="row text-center">
-            <div class="col-md-4">
-              <div class="stat-box bg-light">
-                <strong>Total</strong>
-                <div>{{ totalCount }}</div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="stat-box bg-success text-white">
-                <strong>Imported</strong>
-                <div>{{ importedCount }}</div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="stat-box bg-danger text-white">
-                <strong>Failed</strong>
-                <div>{{ failedCount }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Template Download -->
-        <button class="btn btn-outline-primary w-100" (click)="downloadTemplate()" [disabled]="uploading">
-          <i class="bi bi-download me-2"></i>
-          Download CSV Template
-        </button>
-
-      </div>
-
-      <!-- 🔷 Footer -->
-      <div class="modal-footer justify-content-between">
-
-        <button class="btn btn-outline-secondary" (click)="closeImportModal()" [disabled]="uploading">
-          Cancel
-        </button>
-
-        <button *ngIf="uploadProgress != 100" class="btn btn-primary px-4" (click)="handleImport()"
-          [disabled]="uploading">
-          <i class="bi bi-cloud-upload me-2"></i>
-          {{ uploading ? 'Uploading...' : 'Start Import' }}
-        </button>
-
-        <button *ngIf="uploadProgress == 100" class="btn btn-outline-danger px-4">
-          <i class="bi bi-exclamation-circle me-2"></i>
-          Check Error Log
-        </button>
-
-      </div>
-
-    </div>
-  </div>
 </div>
 
-
-<app-globalproductvarients-form *ngIf="showForm" (close)="closeForm()">
-</app-globalproductvarients-form>
+<app-globalproductvarients-form
+  *ngIf="showForm"
+  (close)="closeForm()"
+></app-globalproductvarients-form>

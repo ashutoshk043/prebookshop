@@ -1,0 +1,127 @@
+<div class="d-flex flex-column flex-md-row">
+  <app-sidebar #sidebar></app-sidebar>
+
+  <div class="main-content flex-grow-1" [class.sidebar-collapsed]="sidebar?.isCollapsed">
+    <app-header></app-header>
+
+    <div class="rc-page">
+
+      <div class="rc-topbar">
+        <div>
+          <h4 class="rc-title">Recipes</h4>
+          <p class="rc-sub">{{ total }} recipes found</p>
+        </div>
+        <button class="rc-add-btn" (click)="openRecipeForm('add')">+ Add Recipe</button>
+      </div>
+
+      <div class="rc-search-row">
+        <div class="rc-search">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <circle cx="6" cy="6" r="4.5" stroke="#9ca3af" stroke-width="1.4" />
+            <path d="M10 10l3 3" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round" />
+          </svg>
+          <input type="text" placeholder="Search recipes..." [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange($event)" />
+          <button *ngIf="searchTerm" (click)="searchTerm = ''; onSearchChange('')">✕</button>
+        </div>
+      </div>
+
+      <div class="rc-card">
+        <div class="rc-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:48px">#</th>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Variant</th>
+                <th>Ingredient</th>
+                <th>Unit</th>
+                <th>Quantity</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <tr *ngIf="isLoading">
+                <td colspan="8" style="text-align:center; padding:40px">
+                  <div class="rc-loading-inner">
+                    <div class="rc-spin"></div>
+                    <span>Loading...</span>
+                  </div>
+                </td>
+              </tr>
+
+              <ng-container *ngIf="!isLoading">
+
+                <tr *ngFor="let item of recipes; let i = index">
+                  <td class="rc-num">{{ getSerial(i) }}</td>
+
+                  <!-- ✅ Flat field from aggregation -->
+                  <td>{{ item.productName || '—' }}</td>
+
+                  <!-- ✅ Flat field from aggregation -->
+                  <td>{{ item.categoryName || '—' }}</td>
+
+                  <!-- ✅ Flat field from aggregation -->
+                  <td>
+                    <span class="rc-badge rc-badge-blue">
+                      {{ item.variantSize || '—' }}
+                    </span>
+                  </td>
+
+                  <!-- ✅ Flat field from aggregation -->
+                  <td>{{ item.ingredientName || '—' }}</td>
+
+                  <!-- ✅ Flat field from aggregation -->
+                  <td>
+                    <span class="rc-badge rc-badge-gray">
+
+                      {{ item.quantity }}
+                    </span>
+                  </td>
+
+                  <td>
+
+                    {{ item.unit || '—' }}
+                  </td>
+
+                  <td style="text-align:right">
+                    <div class="rc-actions">
+                      <button class="rc-btn-edit" (click)="openRecipeForm('edit', item)">Edit</button>
+                      <button class="rc-btn-del" (click)="deleteRecipe(item._id)">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr *ngIf="recipes.length === 0">
+                  <td colspan="8" class="rc-empty">No recipes found.</td>
+                </tr>
+
+              </ng-container>
+
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rc-footer" *ngIf="!isLoading && totalPages > 0">
+          <span class="rc-pg-info">
+            {{ getSerial(0) }}–{{ getSerial(recipes.length - 1) }} of {{ total }}
+          </span>
+          <div class="rc-pg-nav">
+            <button [disabled]="!hasPrevPage" (click)="goToPage(currentPage - 1)">‹</button>
+            <button *ngFor="let p of pageNumbers" [class.active]="p === currentPage" (click)="goToPage(p)">
+              {{ p }}
+            </button>
+            <button [disabled]="!hasNextPage" (click)="goToPage(currentPage + 1)">›</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-ingredient-varient-form *ngIf="showForm" (close)="closeRecipeForm()">
+</app-ingredient-varient-form>

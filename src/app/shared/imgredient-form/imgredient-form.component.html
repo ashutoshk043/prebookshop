@@ -1,38 +1,106 @@
-<!-- Modal Backdrop -->
+<!-- Modal -->
 <div class="modal fade show d-block" tabindex="-1">
+
   <div class="modal-dialog modal-dialog-centered">
+
     <div class="modal-content">
 
       <!-- Header -->
       <div class="modal-header">
-        <h5 class="modal-title">Add Ingredients</h5>
+
+        <h5 class="modal-title">
+          {{ mode === 'add' ? 'Add Ingredient' : 'Edit Ingredient' }}
+        </h5>
+
         <button type="button" class="btn-close" (click)="closeModal()"></button>
+
       </div>
 
-      <!-- Body -->
-      <div class="modal-body">
 
-        <div class="mb-3">
-          <label class="form-label">Category Name</label>
-          <input type="text" class="form-control" placeholder="Enter category name">
+      <!-- Form -->
+      <form [formGroup]="ingredientForm" (ngSubmit)="submitForm()">
+
+        <!-- Body -->
+        <div class="modal-body">
+
+          <!-- Ingredient Name -->
+          <div class="mb-3">
+
+            <label class="form-label">Ingredient Name</label>
+
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Enter ingredient name"
+              formControlName="name"
+            >
+
+            <small
+              class="text-danger"
+              *ngIf="ingredientForm.get('name')?.touched && ingredientForm.get('name')?.invalid"
+            >
+              Ingredient name is required
+            </small>
+
+          </div>
+
+
+          <!-- Unit -->
+          <div class="mb-3">
+
+            <label class="form-label">Unit</label>
+
+            <select class="form-select" formControlName="unit">
+
+              <option value="">Select Unit</option>
+              <option value="PCS">PCS</option>
+              <option value="GRAM">GRAM</option>
+              <!-- <option value="KG">KG</option> -->
+              <option value="ML">ML</option>
+              <!-- <option value="LITER">LITER</option> -->
+
+            </select>
+
+            <small
+              class="text-danger"
+              *ngIf="ingredientForm.get('unit')?.touched && ingredientForm.get('unit')?.invalid"
+            >
+              Unit is required
+            </small>
+
+          </div>
+
         </div>
 
-        <div class="mb-3">
-          <label class="form-label">Description</label>
-          <textarea class="form-control" rows="3"></textarea>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closeModal()"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            {{ mode === 'add' ? 'Save Ingredient' : 'Update Ingredient' }}
+          </button>
+
         </div>
 
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-        <button class="btn btn-primary">Save Category</button>
-      </div>
+      </form>
 
     </div>
+
   </div>
+
 </div>
 
-<!-- Manual backdrop -->
+
+<!-- Backdrop -->
 <div class="modal-backdrop fade show"></div>

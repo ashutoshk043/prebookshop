@@ -19,7 +19,7 @@ import { ProductManagementFormComponent } from "../shared/product-management-for
 
 import { SEARCH_PRODUCTS } from '../graphql/productmanagement/product-query';
 import { DELETE_PRODUCT } from '../graphql/productmanagement/product-mutaion';
-import { GET_ALL_CATEGORIES_FORM } from '../graphql/categoryManagement/query';
+import { GET_ALL_CATEGORIES_FORM, GET_INCLUDED_CATEGORIES_PAGINATED } from '../graphql/categoryManagement/query';
 
 export interface Product {
   _id: string;
@@ -28,7 +28,7 @@ export interface Product {
   categoryId: string;
   description: string;
   imageUrl: string | null;
-  tags: ('BESTSELLER' | 'TRENDING' | 'NEW')[];
+  varients: ('')[];
   isVeg: boolean;
   isActive: boolean;
   isOnlineVisible: boolean;
@@ -71,7 +71,7 @@ export class ProductmanagementComponent implements OnInit, OnDestroy {
 
   productsLoading = false;
 
-  categories: any[] = [];
+  // categories: any[] = [];
 
   private searchSubject = new Subject<string>();
   private searchSub!: Subscription;
@@ -80,12 +80,12 @@ export class ProductmanagementComponent implements OnInit, OnDestroy {
     private apollo: Apollo,
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
 
     this.getAllProducts();
-    this.getAllCategories()
+    // this.getIncludedCategoriesPaginated();
 
     this.searchSub = this.searchSubject
       .pipe(
@@ -109,21 +109,7 @@ export class ProductmanagementComponent implements OnInit, OnDestroy {
     this.searchSubject.next(value);
   }
 
-getAllCategories(): void {
 
-  this.apollo.query<any>({
-    query: GET_ALL_CATEGORIES_FORM,
-    fetchPolicy: 'network-only'
-  }).subscribe({
-    next: (res) => {
-      this.categories = res.data.categories || [];
-    },
-    error: (err: any) => {
-      console.error('Error loading categories:', err);
-    }
-  });
-
-}
   getAllProducts(): void {
 
     this.productsLoading = true;
@@ -145,6 +131,9 @@ getAllCategories(): void {
         if (result) {
 
           this.products = result.data || [];
+
+          console.log(this.products, "products are here")
+
           this.totalItems = result.total || 0;
           this.currentPage = result.page || 1;
           this.limit = result.limit || 10;

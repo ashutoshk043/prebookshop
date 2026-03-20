@@ -1,317 +1,177 @@
-import { HttpEventType } from '@angular/common/http';
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { Apollo } from 'apollo-angular';
-import { ToastrService } from 'ngx-toastr';
-import { Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
-import { DELETE_PRODUCT } from '../graphql/productmanagement/product-mutaion';
-import { Product } from '../productmanagement/productmanagement.component';
-import { JwtDecoderService } from '../services/jwt-decoder.service';
-import { ProductImportProgressService } from '../services/product-import-progress.service';
-import { ProductImportService } from '../services/product-import.service';
-import { ProductManagementFormComponent } from '../shared/product-management-form/product-management-form.component';
+import { Component, OnInit, ViewChild, Pipe, PipeTransform } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Apollo, gql } from 'apollo-angular';
+import { ToastrService } from 'ngx-toastr';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+
+import { GET_PRODUCT_VARIANTS } from '../graphql/globalproductvarients/product-variant-query';
+import { GlobalproductvarientsFormComponent } from '../shared/globalproductvarients-form/globalproductvarients-form.component';
 import { HeaderComponent } from '../layouts/header/header.component';
 import { SidebarComponent } from '../layouts/sidebar/sidebar.component';
-import { GlobalproductvarientsFormComponent } from "../shared/globalproductvarients-form/globalproductvarients-form.component";
-import { SEARCH_PRODUCT_VARIANTS } from '../graphql/globalproductvarients/product-variant-query';
 
+// ─── Inline Pipe ─────────────────────────────────────────────────────────────
+@Pipe({ name: 'min', standalone: true })
+export class MinPipe implements PipeTransform {
+  transform(values: number[]): number {
+    return Math.min(...values);
+  }
+}
+
+// ─── Inline Mutation ──────────────────────────────────────────────────────────
+const DELETE_PRODUCT_VARIANT = gql`
+  mutation DeleteProductVariant($id: String!) {
+    deleteProductVariant(id: $id)
+  }
+`;
+
+// ─── Component ────────────────────────────────────────────────────────────────
 @Component({
   selector: 'app-globalproductvarients',
   standalone: true,
-  imports: [SidebarComponent, HeaderComponent, CommonModule, ReactiveFormsModule, GlobalproductvarientsFormComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SidebarComponent,
+    HeaderComponent,
+    GlobalproductvarientsFormComponent,
+    MinPipe
+  ],
   templateUrl: './globalproductvarients.component.html',
   styleUrl: './globalproductvarients.component.css'
 })
 export class GlobalproductvarientsComponent implements OnInit {
-  showForm = false;
-  isEditMode = false;
-  selectedProduct: any = null;
-  @ViewChild(ProductManagementFormComponent)
-  child!: ProductManagementFormComponent;
+
+  @ViewChild(GlobalproductvarientsFormComponent)
+  formRef!: GlobalproductvarientsFormComponent;
+
+  // UI state
+  showForm  = false;
+  isLoading = false;
+
+  // Data
+  productVarients: any[] = [];
+
+  // Pagination
+  currentPage  = 1;
+  pageSize     = 10;
+  totalRecords = 0;
+  totalPages   = 0;
+  hasNextPage  = false;
+  hasPrevPage  = false;
+
+  // Search
+  searchTerm = '';
   private searchSubject = new Subject<string>();
-  private searchSub!: Subscription;
 
-  products: Product[] = [
-
-  ];
-
-  currentPage = 1;
-  limit = 10;
-  totalItems = 0;
-  totalPages = 0;
-  searchName: string | null = null;
-  searchCategory: string | null = null;
-
-  importFile: File | null = null;
-
-  categories: any = [];
-
-  showImportModal = false;
-  selectedFile: File | null = null;
-  uploading = false;
-  uploadProgress = 0;
-  progressSubscription: any;
-  importId: string = '';
-  importedCount: any;
-  failedCount: any;
-  totalCount: any;
-  variants: any[] = [];
-
-  constructor(private jwtDecoder: JwtDecoderService, private apollo: Apollo, private progressService: ProductImportProgressService, private fb: FormBuilder, private toster: ToastrService, private importService: ProductImportService,
-  ) { }
+  constructor(
+    private apollo: Apollo,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit(): void {
-    this.getAllProductVariants()
-    this.getAllProducts();
+    this.getAllProductVariants();
 
-    // 🔥 debounce search pipeline
-    this.searchSub = this.searchSubject.pipe(
-      debounceTime(400),          // wait 400ms
-      distinctUntilChanged()      // same value → no API call
-    ).subscribe((value) => {
-      this.getAllProductVariants(value);
-    });
+    this.searchSubject
+      .pipe(debounceTime(400), distinctUntilChanged())
+      .subscribe((term) => {
+        this.currentPage = 1;
+        this.getAllProductVariants(1, this.pageSize, term);
+      });
   }
 
-  ngOnDestroy(): void {
-    this.searchSub?.unsubscribe();
-  }
-
-  onSearch(event: Event) {
-    const value = (event.target as HTMLInputElement).value.trim();
-    this.searchSubject.next(value);
-  }
-
-
-  getAllProductVariants(
-    productId?: string,
-    size?: string,
-    page: number = this.currentPage
-  ) {
+  // ─── Fetch ──────────────────────────────────────────────────────────────────
+  getAllProductVariants(page: number = 1, limit: number = 10, search?: string) {
+    this.isLoading = true;
     this.apollo.query({
-      query: SEARCH_PRODUCT_VARIANTS,
+      query: GET_PRODUCT_VARIANTS,
       variables: {
-        productId: productId ?? null,
-        size: size ?? null,
-        page,
-        limit: this.limit
+        input: { page, limit, ...(search ? { search } : {}) }
       },
-      fetchPolicy: 'no-cache'
-    }).subscribe({
-      next: (res: any) => {
-        const result = res.data.getProductVariants;
-
-        this.variants = result.data;
-        this.totalItems = result.total;
-        this.currentPage = result.page;
-        this.limit = result.limit;
-        this.totalPages = Math.ceil(this.totalItems / this.limit);
-
-        // console.log(this.variants, "variants")
+      fetchPolicy: 'network-only'
+    })
+    .subscribe({
+      next: (result: any) => {
+        const response         = result?.data?.getProductVariants;
+        this.productVarients   = response?.data        || [];
+        this.totalRecords      = response?.total       ?? 0;
+        this.currentPage       = response?.page        ?? 1;
+        this.totalPages        = response?.totalPages  ?? 0;
+        this.hasNextPage       = response?.hasNextPage ?? false;
+        this.hasPrevPage       = response?.hasPrevPage ?? false;
+        this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error fetching variants', err);
+        this.toastr.error('Failed to load variants');
+        console.error('Fetch error:', err);
+        this.isLoading = false;
       }
     });
   }
 
+  // ─── Search ─────────────────────────────────────────────────────────────────
+  onSearch(term: string) {
+    this.searchSubject.next(term);
+  }
 
+  // ─── Pagination ─────────────────────────────────────────────────────────────
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.getAllProductVariants(page, this.pageSize, this.searchTerm);
+  }
 
-  openAddForm(mode: 'add' | 'edit', restaurantData?: any) {
+  nextPage() {
+    if (this.hasNextPage) this.goToPage(this.currentPage + 1);
+  }
+
+  prevPage() {
+    if (this.hasPrevPage) this.goToPage(this.currentPage - 1);
+  }
+
+  onPageSizeChange() {
+    this.currentPage = 1;
+    this.getAllProductVariants(1, this.pageSize, this.searchTerm);
+  }
+
+  getPagesArray(): number[] {
+    const maxVisible = 5;
+    let start = Math.max(1, this.currentPage - 2);
+    let end   = Math.min(this.totalPages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
+
+  // ─── Form ───────────────────────────────────────────────────────────────────
+  openAddForm(mode: 'add' | 'edit', data?: any) {
     this.showForm = true;
-    setTimeout(() => {
-      if (this.child) {
-        this.child.openFormFromParent(mode, restaurantData);
-      }
-    });
+    setTimeout(() => this.formRef?.openFormFromParent(mode, data), 0);
   }
 
   closeForm() {
     this.showForm = false;
-    this.getAllProductVariants()
+    this.getAllProductVariants(this.currentPage, this.pageSize, this.searchTerm);
   }
 
-  openImportModal() {
-    this.showImportModal = true;
-    this.reset();
-  }
+  // ─── Delete ─────────────────────────────────────────────────────────────────
+  deleteVariant(id: string): void {
+    if (!confirm('Are you sure you want to delete this variant?')) return;
 
-  closeImportModal() {
-    this.showImportModal = false;
-    this.reset();
-  }
-
-  reset() {
-    this.selectedFile = null;
-    this.uploadProgress = 0;
-    this.uploading = false;
-  }
-
-  onFileSelect(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-    }
-  }
-
-  handleImport() {
-    if (!this.selectedFile) {
-      this.toster.warning('Please select a CSV file');
-      return;
-    }
-
-    this.uploading = true;
-    this.uploadProgress = 0;
-
-    // 1️⃣ Upload file to backend
-    this.importService.uploadCsv(this.selectedFile).subscribe({
-      next: async (event) => {
-        if (event.type === HttpEventType.Response) {
-          const importId = event.body.importId;
-          this.toster.success('File uploaded. Import started!');
-
-          try {
-            await this.progressService.connect(importId); // wait for join
-
-            this.progressSubscription = this.progressService.getProgress().subscribe({
-              next: (data) => {
-                this.uploadProgress = data.progress;
-                this.importedCount = data.importedCount
-                this.failedCount = data.failedCount
-                this.totalCount = data.total
-
-                // alert(this.uploadProgress)
-
-                console.log(`Imported: ${data.importedCount}, Failed: ${data.failedCount}, Total: ${data.total}`);
-
-                if (data.progress >= 100) {
-                  this.toster.success('Import completed!');
-                }
-              },
-              error: (err) => {
-                console.error('Socket progress error', err);
-                this.uploading = false;
-              }
-            });
-          } catch (err) {
-            console.error('Socket failed to connect/join', err);
-          }
+    this.apollo.mutate({
+      mutation: DELETE_PRODUCT_VARIANT,
+      variables: { id }
+    }).subscribe({
+      next: () => {
+        this.toastr.success('Variant deleted successfully');
+        if (this.productVarients.length === 1 && this.currentPage > 1) {
+          this.currentPage--;
         }
+        this.getAllProductVariants(this.currentPage, this.pageSize, this.searchTerm);
       },
-      error: () => {
-        this.uploading = false;
-        this.toster.error('Upload failed');
+      error: (err) => {
+        const message = err?.graphQLErrors?.[0]?.message || 'Failed to delete variant';
+        this.toastr.error(message);
+        console.error('Delete error:', err);
       }
     });
   }
-
-  deleteProduct(id: string): void {
-    if (!confirm('Are you sure you want to delete this product?')) {
-      return;
-    }
-
-    this.apollo.mutate({
-      mutation: DELETE_PRODUCT,
-      variables: {
-        _id: id,
-      },
-    }).subscribe({
-      next: () => {
-        // 🔥 Remove from UI list after backend success
-        this.products = this.products.filter(p => p._id !== id);
-        this.getAllProductVariants()
-        this.toster.success("Product Deleted Successfully !")
-      },
-      error: (err) => {
-        console.error('Delete error:', err);
-        alert('Failed to delete product');
-      },
-    });
-  }
-
-  toggleAvailability(product: Product): void {
-    // product.status = !product.status;
-  }
-
-  downloadTemplate(): void {
-    const csvHeader =
-      'name,category,description,imageUrl,tags,isVeg,isActive,isOnlineVisible\n';
-
-    const csvRow1 =
-      'Veg Burger,Fast Food,"Fresh veg patty burger","/images/products/burger.png","BESTSELLER|TRENDING",true,true,true\n';
-
-    const csvRow2 =
-      'Paneer Pizza,Fast Food,"Cheesy paneer pizza","/images/products/pizza.png","TRENDING",true,true,true\n';
-
-    const csvRow3 =
-      'Chicken Biryani,Biryani,"Hyderabadi chicken biryani","/images/products/biryani.png","BESTSELLER",false,true,true\n';
-
-    const csvRow4 =
-      'Cold Coffee,Beverages,"Chilled cold coffee","/images/products/cold-coffee.png","NEW",true,true,true\n';
-
-    const csv = csvHeader + csvRow1 + csvRow2 + csvRow3 + csvRow4;
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'product_import_template.csv';
-    document.body.appendChild(a);
-    a.click();
-
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  }
-
-  goToPage(page: number) {
-    if (page < 1 || page > this.totalPages) return;
-    this.getAllProductVariants(this.searchName!, this.searchCategory!, page);
-  }
-
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.goToPage(this.currentPage + 1);
-    }
-  }
-
-  prevPage() {
-    if (this.currentPage > 1) {
-      this.goToPage(this.currentPage - 1);
-    }
-  }
-
-  get pages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
-  }
-
-  getAllProducts(): void {
-    // this.apollo.query<any>({
-    //   query: GET_ALL_INCLUDED_CATEGORIES,
-    //   fetchPolicy: 'network-only'
-    // }).subscribe({
-    //   next: (res) => {
-    //     this.categories = [...res.data.includedCategories];
-    //     console.log(this.categories, "categories")
-    //   },
-    //   error: (err) => {
-    //     console.error('GraphQL Error:', err);
-    //   }
-    // });
-  }
-
-
-  getCategoryNameById(id: string): string {
-    if (!id || !this.categories?.length) {
-      return '—';
-    }
-
-    const category = this.categories.find(
-      (c: any) => c._id === id
-    );
-
-    return category ? category.name : 'Unknown';
-  }
-
 }

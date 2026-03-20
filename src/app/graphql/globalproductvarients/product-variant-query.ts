@@ -1,18 +1,8 @@
 import { gql } from "apollo-angular";
 
-export const SEARCH_PRODUCT_VARIANTS = gql`
-  query GetProductVariants(
-    $productId: String
-    $size: String
-    $page: Int
-    $limit: Int
-  ) {
-    getProductVariants(
-      productId: $productId
-      size: $size
-      page: $page
-      limit: $limit
-    ) {
+export const GET_PRODUCT_VARIANTS = gql`
+  query GetProductVariants($input: GetVariantsInput) {
+    getProductVariants(input: $input) {
       data {
         _id
         productId
@@ -28,6 +18,9 @@ export const SEARCH_PRODUCT_VARIANTS = gql`
       total
       page
       limit
+      totalPages
+      hasNextPage
+      hasPrevPage
     }
   }
 `;
