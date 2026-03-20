@@ -6,14 +6,21 @@ export const GET_RESTAURANT_VARIANT_PRICES = gql`
       data {
         _id
         price
+        mrp
         isAvailable
-        createdAt
-        restaurantId
-        restaurantName
-        variantId
-        variantSize
-        productId
-        productName
+        variant {
+          _id
+          name
+          productId
+        }
+        product {
+          _id
+          name
+        }
+        restaurant {
+          _id
+          name
+        }
       }
       total
       page

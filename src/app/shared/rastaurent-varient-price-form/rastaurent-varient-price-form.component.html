@@ -1,0 +1,169 @@
+<div class="modal fade show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ mode === 'add' ? 'Add Price' : 'Edit Price' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="onClose()"></button>
+      </div>
+
+      <form [formGroup]="priceForm" (ngSubmit)="submit()">
+        <div class="modal-body">
+
+          <!-- Restaurant Dropdown -->
+          <div class="mb-3">
+            <label class="form-label">Restaurant</label>
+            <ng-select
+              formControlName="restaurantId"
+              [items]="restaurants"
+              bindValue="id"
+              bindLabel="restaurantName"
+              [loading]="isLoadingRestaurants"
+              [searchFn]="disableClientFilter"
+              (search)="onRestaurantSearch($event)"
+              (open)="onRestaurantOpen()"
+              (scrollToEnd)="onRestaurantScrollEnd()"
+              placeholder="Search restaurant..."
+              [clearable]="true"
+              notFoundText="No restaurants found">
+
+              <ng-template ng-option-tmp let-item="item">
+                <span>{{ item.restaurantName }}</span>
+                <small class="text-muted ms-1">({{ item.restaurantType }})</small>
+              </ng-template>
+
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.restaurantName }}
+              </ng-template>
+
+            </ng-select>
+            <small class="text-danger"
+              *ngIf="priceForm.get('restaurantId')?.touched && priceForm.get('restaurantId')?.invalid">
+              Restaurant is required
+            </small>
+          </div>
+
+          <!-- Variant Dropdown -->
+          <div class="mb-3">
+            <label class="form-label">Product Variant</label>
+            <ng-select
+              formControlName="variantId"
+              [items]="productVarients"
+              bindValue="_id"
+              bindLabel="size"
+              [loading]="isLoadingVariants"
+              [searchFn]="disableClientFilter"
+              (search)="onVariantSearch($event)"
+              (open)="onVariantOpen()"
+              (scrollToEnd)="onVariantScrollEnd()"
+              placeholder="Search variant..."
+              [clearable]="true"
+              notFoundText="No variants found">
+
+              <ng-template ng-option-tmp let-item="item">
+                <span>{{ item.product?.name || 'N/A' }}</span>
+                <small class="text-muted ms-1">({{ item.size }})</small>
+              </ng-template>
+
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.product?.name || 'N/A' }} — {{ item.size }}
+              </ng-template>
+
+            </ng-select>
+            <small class="text-danger"
+              *ngIf="priceForm.get('variantId')?.touched && priceForm.get('variantId')?.invalid">
+              Variant is required
+            </small>
+          </div>
+
+          <!-- Price -->
+          <div class="mb-3">
+            <label class="form-label">Selling Price (₹)</label>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="Enter price e.g. 130"
+              formControlName="price"
+              min="1"
+            />
+            <small class="text-danger"
+              *ngIf="priceForm.get('price')?.touched && priceForm.get('price')?.hasError('required')">
+              Price is required
+            </small>
+            <small class="text-danger"
+              *ngIf="priceForm.get('price')?.touched && priceForm.get('price')?.hasError('min')">
+              Price must be greater than 0
+            </small>
+          </div>
+
+          <!-- MRP -->
+          <div class="mb-3">
+            <label class="form-label">MRP (₹)</label>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="Enter MRP e.g. 200"
+              formControlName="mrp"
+              min="1"
+            />
+            <small class="text-danger"
+              *ngIf="priceForm.get('mrp')?.touched && priceForm.get('mrp')?.hasError('required')">
+              MRP is required
+            </small>
+            <small class="text-danger"
+              *ngIf="priceForm.get('mrp')?.touched && priceForm.get('mrp')?.hasError('min')">
+              MRP must be greater than 0
+            </small>
+          </div>
+
+          <!-- Actual Selling Price -->
+          <!-- <div class="mb-3">
+            <label class="form-label">Actual Selling Price (₹)</label>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="Enter selling price e.g. 150"
+              formControlName="actualSellingPrice"
+              min="1"
+            />
+            <small class="text-danger"
+              *ngIf="priceForm.get('actualSellingPrice')?.touched && priceForm.get('actualSellingPrice')?.hasError('required')">
+              Actual selling price is required
+            </small>
+            <small class="text-danger"
+              *ngIf="priceForm.get('actualSellingPrice')?.touched && priceForm.get('actualSellingPrice')?.hasError('min')">
+              Actual selling price must be greater than 0
+            </small>
+          </div> -->
+
+          <!-- Available Toggle -->
+          <div class="mb-3 d-flex align-items-center gap-3">
+            <label class="form-label mb-0">Available</label>
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                formControlName="isAvailable"
+              />
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="onClose()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Saving...' : (mode === 'add' ? 'Save Price' : 'Update Price') }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show"></div>

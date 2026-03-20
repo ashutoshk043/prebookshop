@@ -34,10 +34,10 @@ export const routes: Routes = [
     path: 'varients',
     loadChildren: () => import('./varientmanagement/varientmanagement.module').then(m => m.VarientmanagementModule)
   },
-  // {
-  //   path: 'restaurant-variant-price',
-  //   loadChildren: () => import('./restaurant-variant-price/restaurant-variant-price.module').then(m => m.RestaurantVariantPriceModule)
-  // },
+  {
+    path: 'restaurant-variant-price',
+    loadChildren: () => import('./restaurent-varient-price/restaurent-varient-price.module').then(m => m.RestaurentVarientPriceModule)
+  },
   {
     path: 'product-variants',
     loadChildren: () => import('./globalproductvarients/globalproductvarients.module').then(m => m.GlobalproductvarientsModule)

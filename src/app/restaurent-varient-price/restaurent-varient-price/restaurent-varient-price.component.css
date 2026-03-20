@@ -1,0 +1,246 @@
+.rc-page {
+  padding: 24px;
+  /* max-width: 900px; */
+}
+
+.rc-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rc-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 2px;
+}
+
+.rc-sub {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.rc-add-btn {
+  padding: 8px 16px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.rc-add-btn:hover { background: #1f2937; }
+
+/* Search */
+.rc-search-row { margin-bottom: 16px; }
+
+.rc-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 40px;
+  width: 100%;
+  transition: border-color .15s;
+}
+
+.rc-search:focus-within { border-color: #6b7280; }
+
+.rc-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #111827;
+  background: transparent;
+  font-family: inherit;
+}
+
+.rc-search input::placeholder { color: #d1d5db; }
+
+.rc-search button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 13px;
+  padding: 0;
+}
+
+.rc-search button:hover { color: #6b7280; }
+
+/* Card */
+.rc-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Table */
+.rc-table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+
+thead tr {
+  background: #f9fafb;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+th {
+  padding: 11px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  text-align: left;
+  white-space: nowrap;
+}
+
+tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background .1s;
+}
+
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f9fafb; }
+
+td {
+  padding: 13px 16px;
+  font-size: 14px;
+  color: #111827;
+  vertical-align: middle;
+}
+
+.rc-num { color: #d1d5db; font-size: 12px; }
+
+.rc-mono {
+  font-family: monospace;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ✅ Loading — flex andar wrapper mein */
+.rc-loading-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.rc-spin {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #6b7280;
+  border-radius: 50%;
+  animation: rc-spin .65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes rc-spin { to { transform: rotate(360deg); } }
+
+/* Empty */
+.rc-empty {
+  text-align: center;
+  padding: 40px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* Badge */
+.rc-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.rc-badge-blue { background: #dbeafe; color: #1d4ed8; }
+
+/* Actions */
+.rc-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+.rc-btn-edit,
+.rc-btn-del {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid;
+  font-family: inherit;
+  transition: background .12s;
+}
+
+.rc-btn-edit { background: #fff; color: #374151; border-color: #e5e7eb; }
+.rc-btn-edit:hover { background: #f3f4f6; }
+
+.rc-btn-del { background: #fff; color: #dc2626; border-color: #fecaca; }
+.rc-btn-del:hover { background: #fef2f2; }
+
+/* Pagination */
+.rc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid #f3f4f6;
+  background: #f9fafb;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rc-pg-info { font-size: 13px; color: #9ca3af; }
+
+.rc-pg-nav { display: flex; gap: 4px; }
+
+.rc-pg-nav button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 13px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all .12s;
+  font-family: inherit;
+}
+
+.rc-pg-nav button:hover:not(:disabled):not(.active) {
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+.rc-pg-nav button.active {
+  background: #111827;
+  border-color: #111827;
+  color: #fff;
+}
+
+.rc-pg-nav button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+@media (max-width: 576px) {
+  .rc-page { padding: 16px; }
+  th:nth-child(3), td:nth-child(3) { display: none; }
+}
