@@ -60,7 +60,14 @@ export class SidebarComponent {
       title: 'RESTAURANT PRODUCT SETUP',
       items: [
         { order: 1, label: 'Restaurant Variant Prices', route: '/restaurant-variant-price' },
-        { order: 2, label: 'Restaurant Ingredient (Stock)', route: '/restaurant-ingredients' }
+        { order: 2, label: 'Restaurant Ingredient (Stock)', route: '/restaurant-ingredient-stock' }
+      ]
+    },
+    {
+      title: 'Offers & Coupons',
+      items: [
+        { order: 1, label: 'Offers', route: '/offers' },
+        { order: 2, label: 'Coupons', route: '/coupons' }
       ]
     },
     {
@@ -71,11 +78,11 @@ export class SidebarComponent {
       ]
     },
     {
-      title: 'OPERATIONS',
+      title: 'ORDER OPERATIONS',
       items: [
         { order: 1, label: 'Orders', route: '/orders' },
-        { order: 2, label: 'Tables (Dine-In)', route: '/tables' },
-        { order: 3, label: 'Reports', route: '/reports' }
+        // { order: 2, label: 'Tables (Dine-In)', route: '/tables' },
+        // { order: 3, label: 'Reports', route: '/reports' }
       ]
     },
     {

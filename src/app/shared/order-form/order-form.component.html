@@ -1,0 +1,263 @@
+<div class="pos-wrap" [formGroup]="posForm">
+
+  <!-- ══ LEFT — Menu ══════════════════════════════════════ -->
+  <div class="pos-left">
+
+    <div class="pos-topbar">
+      <div class="topbar-left">
+
+        <button class="close-pos-btn" (click)="onClose()">✕</button>
+
+        <!-- Restaurant ✅ -->
+        <select formControlName="restaurantId" class="rest-select">
+          <option value="" disabled>
+            {{ isLoadingRestaurants ? 'Loading...' : 'Select Restaurant' }}
+          </option>
+          <option *ngFor="let r of restaurants" [value]="r.id">
+            {{ r.restaurantName }}
+          </option>
+        </select>
+
+        <!-- Table ✅ patchValue into form -->
+        <div class="table-tabs">
+          <button
+            *ngFor="let t of tables"
+            [class.active]="selectedTable === t"
+            (click)="posForm.patchValue({ table: t })"
+            class="table-btn">
+            {{ t }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Menu Search ✅ -->
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
+        <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M10 10l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <input
+        type="text"
+        formControlName="menuSearch"
+        placeholder="Search menu items..."
+        (input)="onMenuSearchChange(posForm.get('menuSearch')?.value || '')"
+        class="search-input"
+      />
+      <button *ngIf="menuSearch" class="search-clear" (click)="clearMenuSearch()">✕</button>
+    </div>
+
+    <!-- Category ✅ stored in form via patchValue -->
+    <!-- <div class="cats-row">
+      <button
+        *ngFor="let cat of categories"
+        [class.active]="activeCategory === cat"
+        (click)="setCategory(cat)"
+        class="cat-btn">
+        {{ cat }}
+      </button>
+    </div> -->
+
+    <div class="menu-loading" *ngIf="isLoadingMenu">
+      <div class="spin"></div>
+      <span>Loading menu...</span>
+    </div>
+
+    <div class="menu-grid" *ngIf="!isLoadingMenu">
+      <div
+        *ngFor="let item of filteredItems"
+        class="menu-card"
+        (click)="addItem(item)">
+        <div class="menu-emoji">{{ getEmoji(item.category) }}</div>
+        <div class="menu-name">{{ item.name }}</div>
+        <div class="menu-variant" *ngIf="item.variant">{{ item.variant }}</div>
+        <div class="menu-price">₹{{ item.price }}</div>
+        <div class="add-hint">+ Add</div>
+      </div>
+      <div class="no-items" *ngIf="filteredItems.length === 0">No items found</div>
+    </div>
+
+  </div>
+
+  <!-- ══ RIGHT — Cart ════════════════════════════════════ -->
+  <div class="pos-right">
+
+    <div class="cart-head">
+      <div class="cart-title-wrap">
+        <!-- ✅ Table from form -->
+        <h3 class="cart-title">Order — {{ posForm.get('table')?.value }}</h3>
+        <span class="cart-count" *ngIf="itemCount > 0">
+          {{ itemCount }} item{{ itemCount > 1 ? 's' : '' }}
+        </span>
+      </div>
+
+      <!-- Order Type ✅ patchValue into form -->
+      <div class="type-tabs">
+        <button
+          *ngFor="let t of types"
+          [class.active]="selectedType === t"
+          (click)="posForm.patchValue({ orderType: t })"
+          class="type-btn">
+          {{ t }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Cart Body — FormArray ✅ -->
+    <div class="cart-body" formArrayName="cartItems">
+
+      <div class="cart-empty" *ngIf="cartItems.length === 0">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"
+            stroke="currentColor" stroke-width="1.2"/>
+          <path d="M3 6h18M16 10a4 4 0 01-8 0"
+            stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <span>Add items to start order</span>
+      </div>
+
+      <div
+        class="cart-item"
+        *ngFor="let ctrl of cartItems.controls; let i = index"
+        [formGroupName]="i">
+
+        <div class="ci-info">
+          <span class="ci-name">{{ ctrl.get('name')?.value }}</span>
+          <span class="ci-sub" *ngIf="ctrl.get('variant')?.value">
+            {{ ctrl.get('variant')?.value }}
+          </span>
+          <span class="ci-price">
+            ₹{{ ctrl.get('price')?.value }} × {{ ctrl.get('qty')?.value }}
+          </span>
+        </div>
+
+        <div class="ci-controls">
+          <button class="qty-btn" (click)="changeQty(i, -1)">−</button>
+          <span class="qty-num">{{ ctrl.get('qty')?.value }}</span>
+          <button class="qty-btn" (click)="changeQty(i, 1)">+</button>
+        </div>
+
+        <!-- lineTotal ✅ from form -->
+        <div class="ci-total">₹{{ ctrl.get('lineTotal')?.value }}</div>
+
+      </div>
+
+    </div>
+
+    <!-- Cart Footer ✅ all values from form -->
+    <div class="cart-foot">
+
+      <!-- Coupon ✅ -->
+      <div class="coupon-row">
+        <input
+          type="text"
+          formControlName="couponCode"
+          placeholder="Coupon code..."
+          class="coupon-input"
+          style="text-transform:uppercase"
+        />
+        <button class="coupon-btn" (click)="applyCoupon()">Apply</button>
+      </div>
+
+      <!-- Applied coupon badge ✅ from form -->
+      <div class="coupon-applied" *ngIf="posForm.get('couponApplied')?.value">
+        <span>
+          {{ posForm.get('couponLabel')?.value }} applied
+          (−₹{{ posForm.get('couponDiscount')?.value }})
+        </span>
+        <button (click)="removeCoupon()">✕ Remove</button>
+      </div>
+
+      <!-- ✅ All totals from form (disabled fields) -->
+      <div class="sum-row">
+        <span>Subtotal</span>
+        <span>₹{{ posForm.get('subTotal')?.value }}</span>
+      </div>
+
+      <div class="sum-row disc" *ngIf="posForm.get('couponDiscount')?.value > 0">
+        <span>Discount ({{ posForm.get('couponLabel')?.value }})</span>
+        <span>−₹{{ posForm.get('couponDiscount')?.value }}</span>
+      </div>
+
+      <div class="sum-row">
+        <span>Tax ({{ posForm.get('taxRate')?.value }}%)</span>
+        <span>₹{{ posForm.get('taxAmount')?.value }}</span>
+      </div>
+
+      <div class="sum-row total">
+        <span>Total</span>
+        <span>₹{{ posForm.get('grandTotal')?.value }}</span>
+      </div>
+
+      <button
+        class="place-btn"
+        [disabled]="cartItems.length === 0 || posForm.invalid"
+        (click)="openPayment()">
+        Place Order — ₹{{ posForm.get('grandTotal')?.value }}
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ══ Payment Modal ════════════════════════════════════ -->
+  <div class="modal-overlay" *ngIf="showPayModal" (click)="closePayment()">
+    <div class="pay-modal" (click)="$event.stopPropagation()">
+
+      <!-- Success -->
+      <div class="success-state" *ngIf="orderSuccess">
+        <div class="success-tick">✓</div>
+        <h3>Order Placed!</h3>
+        <p class="success-sub">
+          {{ posForm.get('table')?.value }} ·
+          {{ posForm.get('orderType')?.value }} ·
+          {{ posForm.get('paymentMode')?.value }}
+        </p>
+        <p class="success-amount">₹{{ posForm.get('grandTotal')?.value }}</p>
+        <button class="confirm-btn" (click)="newOrder()">New Order</button>
+        <button class="cancel-btn"  (click)="onClose()">Close POS</button>
+      </div>
+
+      <ng-container *ngIf="!orderSuccess">
+
+        <div class="pay-modal-head">
+          <h3>Payment</h3>
+          <button class="modal-close" (click)="closePayment()">×</button>
+        </div>
+
+        <!-- Amount box ✅ from form -->
+        <div class="pay-amount-box">
+          <span>Amount to pay</span>
+          <strong>₹{{ posForm.get('grandTotal')?.value }}</strong>
+        </div>
+
+        <!-- Payment mode ✅ patchValue into form -->
+        <div>
+          <p class="pay-label">Select payment mode</p>
+          <div class="pay-modes">
+            <button
+              *ngFor="let m of payModes"
+              [class.active]="posForm.get('paymentMode')?.value === m"
+              (click)="posForm.patchValue({ paymentMode: m })"
+              class="pay-mode-btn">
+              {{ m === 'CASH'   ? '💵 Cash'   :
+                 m === 'CARD'   ? '💳 Card'   :
+                 m === 'UPI'    ? '📱 UPI'    : '🌐 Online' }}
+            </button>
+          </div>
+        </div>
+
+        <button
+          class="confirm-btn"
+          [disabled]="isSubmitting"
+          (click)="confirmOrder()">
+          {{ isSubmitting ? 'Placing...' : 'Confirm & Place Order' }}
+        </button>
+
+        <button class="cancel-btn" (click)="closePayment()">Cancel</button>
+
+      </ng-container>
+    </div>
+  </div>
+
+</div>

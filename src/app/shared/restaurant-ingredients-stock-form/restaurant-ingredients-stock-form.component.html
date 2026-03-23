@@ -1,0 +1,140 @@
+<div class="modal fade show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ mode === 'add' ? 'Add Stock' : 'Edit Stock' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="onClose()"></button>
+      </div>
+
+      <form [formGroup]="stockForm" (ngSubmit)="submit()">
+        <div class="modal-body">
+
+          <!-- Restaurant -->
+          <div class="mb-3">
+            <label class="form-label">Restaurant</label>
+            <ng-select
+              formControlName="restaurantId"
+              [items]="restaurants"
+              bindValue="id"
+              bindLabel="restaurantName"
+              [loading]="isLoadingRestaurants"
+              [searchFn]="disableClientFilter"
+              (search)="onRestaurantSearch($event)"
+              (open)="onRestaurantOpen()"
+              (scrollToEnd)="onRestaurantScrollEnd()"
+              placeholder="Search restaurant..."
+              [clearable]="true"
+              notFoundText="No restaurants found">
+
+              <ng-template ng-option-tmp let-item="item">
+                <span>{{ item.restaurantName }}</span>
+                <small class="text-muted ms-1">({{ item.restaurantType }})</small>
+              </ng-template>
+
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.restaurantName }}
+              </ng-template>
+
+            </ng-select>
+            <small class="text-danger"
+              *ngIf="f['restaurantId'].touched && f['restaurantId'].invalid">
+              Restaurant is required
+            </small>
+          </div>
+
+          <!-- Ingredient -->
+          <div class="mb-3">
+            <label class="form-label">Ingredient</label>
+            <ng-select
+              formControlName="ingredientId"
+              [items]="ingredients"
+              bindValue="_id"
+              bindLabel="name"
+              [loading]="isLoadingIngredients"
+              [searchFn]="disableClientFilter"
+              (search)="onIngredientSearch($event)"
+              (open)="onIngredientOpen()"
+              (scrollToEnd)="onIngredientScrollEnd()"
+              placeholder="Search ingredient..."
+              [clearable]="true"
+              notFoundText="No ingredients found">
+
+              <ng-template ng-option-tmp let-item="item">
+                <span>{{ item.name }}</span>
+                <small class="text-muted ms-1">
+                  <span class="badge bg-light text-secondary">{{ item.unit }}</span>
+                </small>
+              </ng-template>
+
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.name }}
+                <small class="text-muted ms-1">({{ item.unit }})</small>
+              </ng-template>
+
+            </ng-select>
+            <small class="text-danger"
+              *ngIf="f['ingredientId'].touched && f['ingredientId'].invalid">
+              Ingredient is required
+            </small>
+          </div>
+
+          <!-- Available Qty -->
+          <div class="mb-3">
+            <label class="form-label">Available Quantity</label>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="e.g. 200"
+              formControlName="availableQty"
+              min="0"
+            />
+            <small class="text-danger"
+              *ngIf="f['availableQty'].touched && f['availableQty'].hasError('required')">
+              Available quantity is required
+            </small>
+            <small class="text-danger"
+              *ngIf="f['availableQty'].touched && f['availableQty'].hasError('min')">
+              Quantity cannot be negative
+            </small>
+          </div>
+
+          <!-- Alert Level -->
+          <div class="mb-3">
+            <label class="form-label">Alert Level</label>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="e.g. 30"
+              formControlName="alertLevel"
+              min="0"
+            />
+            <small class="text-danger"
+              *ngIf="f['alertLevel'].touched && f['alertLevel'].hasError('required')">
+              Alert level is required
+            </small>
+            <small class="text-danger"
+              *ngIf="f['alertLevel'].touched && f['alertLevel'].hasError('min')">
+              Alert level cannot be negative
+            </small>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="onClose()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Saving...' : (mode === 'add' ? 'Add Stock' : 'Update Stock') }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show"></div>

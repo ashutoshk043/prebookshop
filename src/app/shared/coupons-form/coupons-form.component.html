@@ -1,0 +1,186 @@
+<div class="modal fade show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ mode === 'add' ? 'Add Coupon' : 'Edit Coupon' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="onClose()"></button>
+      </div>
+
+      <form [formGroup]="couponForm" (ngSubmit)="submit()">
+        <div class="modal-body">
+
+          <!-- Restaurant -->
+          <div class="mb-3">
+            <label class="form-label">Restaurant</label>
+            <ng-select
+              formControlName="restaurantId"
+              [items]="restaurants"
+              bindValue="id"
+              bindLabel="restaurantName"
+              [loading]="isLoadingRestaurants"
+              [searchFn]="disableClientFilter"
+              (search)="onRestaurantSearch($event)"
+              (open)="onRestaurantOpen()"
+              (scrollToEnd)="onRestaurantScrollEnd()"
+              placeholder="Search restaurant..."
+              [clearable]="true"
+              notFoundText="No restaurants found">
+
+              <ng-template ng-option-tmp let-item="item">
+                <span>{{ item.restaurantName }}</span>
+                <small class="text-muted ms-1">({{ item.restaurantType }})</small>
+              </ng-template>
+
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.restaurantName }}
+              </ng-template>
+
+            </ng-select>
+            <small class="text-danger"
+              *ngIf="f['restaurantId'].touched && f['restaurantId'].invalid">
+              Restaurant is required
+            </small>
+          </div>
+
+          <!-- Coupon Code -->
+          <div class="mb-3">
+            <label class="form-label">Coupon Code</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="e.g. SAVE50"
+              formControlName="code"
+              style="text-transform:uppercase; font-family:monospace; letter-spacing:2px"
+            />
+            <small class="text-danger"
+              *ngIf="f['code'].touched && f['code'].hasError('required')">
+              Coupon code is required
+            </small>
+            <small class="text-danger"
+              *ngIf="f['code'].touched && f['code'].hasError('minlength')">
+              Code must be at least 3 characters
+            </small>
+          </div>
+
+          <!-- Discount Type + Value in row -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Discount Type</label>
+              <select class="form-select" formControlName="discountType">
+                <option value="">— Select —</option>
+                <option *ngFor="let d of discountTypes" [value]="d">{{ d }}</option>
+              </select>
+              <small class="text-danger"
+                *ngIf="f['discountType'].touched && f['discountType'].invalid">
+                Discount type is required
+              </small>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                Discount Value
+                <small class="text-muted">
+                  ({{ f['discountType'].value === 'PERCENT' ? '%' : '₹' }})
+                </small>
+              </label>
+              <input
+                type="number"
+                class="form-control"
+                placeholder="e.g. 50"
+                formControlName="discountValue"
+                min="1"
+              />
+              <small class="text-danger"
+                *ngIf="f['discountValue'].touched && f['discountValue'].hasError('required')">
+                Discount value is required
+              </small>
+              <small class="text-danger"
+                *ngIf="f['discountValue'].touched && f['discountValue'].hasError('min')">
+                Must be greater than 0
+              </small>
+            </div>
+          </div>
+
+          <!-- Min Order + Usage Limit in row -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Min Order Value (₹)</label>
+              <input
+                type="number"
+                class="form-control"
+                placeholder="e.g. 300"
+                formControlName="minOrderValue"
+                min="0"
+              />
+              <small class="text-danger"
+                *ngIf="f['minOrderValue'].touched && f['minOrderValue'].hasError('min')">
+                Cannot be negative
+              </small>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Usage Limit / User</label>
+              <input
+                type="number"
+                class="form-control"
+                placeholder="e.g. 1"
+                formControlName="usageLimitPerUser"
+                min="1"
+              />
+              <small class="text-danger"
+                *ngIf="f['usageLimitPerUser'].touched && f['usageLimitPerUser'].hasError('required')">
+                Usage limit is required
+              </small>
+              <small class="text-danger"
+                *ngIf="f['usageLimitPerUser'].touched && f['usageLimitPerUser'].hasError('min')">
+                Must be at least 1
+              </small>
+            </div>
+          </div>
+
+          <!-- Expiry Date -->
+          <div class="mb-3">
+            <label class="form-label">Expiry Date</label>
+            <input
+              type="date"
+              class="form-control"
+              formControlName="expiryDate"
+            />
+            <small class="text-danger"
+              *ngIf="f['expiryDate'].touched && f['expiryDate'].invalid">
+              Expiry date is required
+            </small>
+          </div>
+
+          <!-- Active Toggle -->
+          <div class="mb-3 d-flex align-items-center gap-3">
+            <label class="form-label mb-0">Active</label>
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                formControlName="isActive"
+              />
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="onClose()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Saving...' : (mode === 'add' ? 'Add Coupon' : 'Update Coupon') }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show"></div>

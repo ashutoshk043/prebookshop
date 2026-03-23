@@ -38,6 +38,10 @@ export const routes: Routes = [
     path: 'restaurant-variant-price',
     loadChildren: () => import('./restaurent-varient-price/restaurent-varient-price.module').then(m => m.RestaurentVarientPriceModule)
   },
+    {
+    path: 'restaurant-ingredient-stock',
+    loadChildren: () => import('./restaurant-ingredients-stock/restaurant-ingredients-stock.module').then(m => m.RestaurantIngredientsStockModule)
+  },
   {
     path: 'product-variants',
     loadChildren: () => import('./globalproductvarients/globalproductvarients.module').then(m => m.GlobalproductvarientsModule)
@@ -63,6 +67,16 @@ export const routes: Routes = [
     path: 'products',
     loadChildren: () => import('./productmanagement/productmanagement.module')
       .then(m => m.ProductmanagementModule)
+  },
+    {
+    path: 'coupons',
+    loadChildren: () => import('./coupons/coupons.module')
+      .then(m => m.CouponsModule)
+  },
+      {
+    path: 'offers',
+    loadChildren: () => import('./offers/offers.module')
+      .then(m => m.OffersModule)
   },
 
 ];

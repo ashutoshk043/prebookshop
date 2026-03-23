@@ -1,4 +1,7 @@
-.rc-page { padding: 24px; }
+.rc-page {
+  padding: 24px;
+  /* max-width: 900px; */
+}
 
 .rc-topbar {
   display: flex;
@@ -35,6 +38,7 @@
 
 .rc-add-btn:hover { background: #1f2937; }
 
+/* Search */
 .rc-search-row { margin-bottom: 16px; }
 
 .rc-search {
@@ -75,6 +79,7 @@
 
 .rc-search button:hover { color: #6b7280; }
 
+/* Card */
 .rc-card {
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -82,6 +87,7 @@
   overflow: hidden;
 }
 
+/* Table */
 .rc-table-wrap { overflow-x: auto; }
 
 table { width: 100%; border-collapse: collapse; }
@@ -119,6 +125,13 @@ td {
 
 .rc-num { color: #d1d5db; font-size: 12px; }
 
+.rc-mono {
+  font-family: monospace;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ✅ Loading — flex andar wrapper mein */
 .rc-loading-inner {
   display: flex;
   align-items: center;
@@ -140,6 +153,7 @@ td {
 
 @keyframes rc-spin { to { transform: rotate(360deg); } }
 
+/* Empty */
 .rc-empty {
   text-align: center;
   padding: 40px;
@@ -147,6 +161,7 @@ td {
   font-size: 14px;
 }
 
+/* Badge */
 .rc-badge {
   display: inline-block;
   padding: 2px 9px;
@@ -157,8 +172,8 @@ td {
 }
 
 .rc-badge-blue { background: #dbeafe; color: #1d4ed8; }
-.rc-badge-gray { background: #f3f4f6; color: #374151; }
 
+/* Actions */
 .rc-actions { display: flex; gap: 6px; justify-content: flex-end; }
 
 .rc-btn-edit,
@@ -179,6 +194,7 @@ td {
 .rc-btn-del { background: #fff; color: #dc2626; border-color: #fecaca; }
 .rc-btn-del:hover { background: #fef2f2; }
 
+/* Pagination */
 .rc-footer {
   display: flex;
   align-items: center;
@@ -224,61 +240,7 @@ td {
   cursor: not-allowed;
 }
 
-/* ── POS Modal Overlay ─────────── */
-.pos-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 1050;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  animation: fadeIn 0.18s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-.pos-modal-box {
-  width: 100%;
-  max-width: 1300px;
-  height: 95vh;
-  max-height: 920px;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-  animation: slideUp 0.22s ease;
-}
-
-@keyframes slideUp {
-  from { transform: translateY(40px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-@media (max-width: 1024px) {
-  .pos-modal-box {
-    max-width: 100%;
-    height: 95vh;
-    border-radius: 14px;
-  }
-}
-
-@media (max-width: 768px) {
-  .pos-modal-overlay {
-    padding: 0;
-    align-items: flex-end;
-  }
-
-  .pos-modal-box {
-    max-width: 100%;
-    height: 97vh;
-    border-radius: 20px 20px 0 0;
-  }
-}
-
 @media (max-width: 576px) {
   .rc-page { padding: 16px; }
+  th:nth-child(3), td:nth-child(3) { display: none; }
 }

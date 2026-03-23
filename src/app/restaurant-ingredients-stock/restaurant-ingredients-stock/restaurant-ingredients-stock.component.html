@@ -8,10 +8,10 @@
 
       <div class="rc-topbar">
         <div>
-          <h4 class="rc-title">Orders</h4>
-          <p class="rc-sub">{{ total }} orders found</p>
+          <h4 class="rc-title">Ingredients Stock</h4>
+          <p class="rc-sub">{{ total }} entries found</p>
         </div>
-        <button class="rc-add-btn" (click)="openForm('add')">+ New Order</button>
+        <button class="rc-add-btn" (click)="openForm('add')">+ Add Stock</button>
       </div>
 
       <div class="rc-search-row">
@@ -22,7 +22,7 @@
           </svg>
           <input
             type="text"
-            placeholder="Search by status, type, restaurant..."
+            placeholder="Search by restaurant, ingredient..."
             [(ngModel)]="searchTerm"
             (ngModelChange)="onSearchChange($event)"
           />
@@ -37,20 +37,19 @@
               <tr>
                 <th style="width:48px">#</th>
                 <th>Restaurant</th>
-                <th>Type</th>
-                <th>Sub Total</th>
-                <th>Discount</th>
-                <th>Grand Total</th>
-                <th>Payment</th>
+                <th>Ingredient</th>
+                <th>Unit</th>
+                <th>Available Qty</th>
+                <th>Alert Level</th>
                 <th>Status</th>
-                <th>Date</th>
                 <th style="text-align:right">Actions</th>
               </tr>
             </thead>
+
             <tbody>
 
               <tr *ngIf="isLoading">
-                <td colspan="10" style="text-align:center; padding:40px">
+                <td colspan="8" style="text-align:center; padding:40px">
                   <div class="rc-loading-inner">
                     <div class="rc-spin"></div>
                     <span>Loading...</span>
@@ -59,47 +58,44 @@
               </tr>
 
               <ng-container *ngIf="!isLoading">
-                <tr *ngFor="let item of orders; let i = index">
+
+                <tr *ngFor="let item of stocks; let i = index">
                   <td class="rc-num">{{ getSerial(i) }}</td>
                   <td>{{ item.restaurant?.name || '—' }}</td>
+                  <td>{{ item.ingredient?.name || '—' }}</td>
                   <td>
-                    <span class="rc-badge rc-badge-blue">{{ item.orderType }}</span>
-                  </td>
-                  <td>₹ {{ item.subTotal }}</td>
-                  <td>
-                    <span [style.color]="item.discount > 0 ? '#16a34a' : ''">
-                      {{ item.discount > 0 ? '- ₹' + item.discount : '—' }}
+                    <span class="rc-badge rc-badge-gray">
+                      {{ item.ingredient?.unit || '—' }}
                     </span>
                   </td>
-                  <td><strong>₹ {{ item.grandTotal }}</strong></td>
-                  <td>
-                    <span class="rc-badge rc-badge-gray">{{ item.paymentMode }}</span>
-                  </td>
+                  <td>{{ item.availableQty }}</td>
+                  <td>{{ item.alertLevel }}</td>
+
+                  <!-- ✅ Red if stock below alert level -->
                   <td>
                     <span
-                      [style.background-color]="getStatusStyle(item.status).bg"
-                      [style.color]="getStatusStyle(item.status).color"
+                      [style.background-color]="item.availableQty <= item.alertLevel ? '#fee2e2' : '#dcfce7'"
+                      [style.color]="item.availableQty <= item.alertLevel ? '#dc2626' : '#16a34a'"
                       [style.padding]="'3px 10px'"
                       [style.border-radius]="'20px'"
                       [style.font-size]="'12px'"
                       [style.font-weight]="'500'">
-                      {{ item.status }}
+                      {{ item.availableQty <= item.alertLevel ? 'Low Stock' : 'Sufficient' }}
                     </span>
                   </td>
-                  <td>
-                    <small>{{ item.createdAt | date:'dd MMM yy, hh:mm a' }}</small>
-                  </td>
+
                   <td style="text-align:right">
                     <div class="rc-actions">
                       <button class="rc-btn-edit" (click)="openForm('edit', item)">Edit</button>
-                      <button class="rc-btn-del"  (click)="deleteOrder(item._id)">Delete</button>
+                      <button class="rc-btn-del"  (click)="deleteStock(item._id)">Delete</button>
                     </div>
                   </td>
                 </tr>
 
-                <tr *ngIf="orders.length === 0">
-                  <td colspan="10" class="rc-empty">No orders found.</td>
+                <tr *ngIf="stocks.length === 0">
+                  <td colspan="8" class="rc-empty">No stock entries found.</td>
                 </tr>
+
               </ng-container>
 
             </tbody>
@@ -108,7 +104,7 @@
 
         <div class="rc-footer" *ngIf="!isLoading && totalPages > 0">
           <span class="rc-pg-info">
-            {{ getSerial(0) }}–{{ getSerial(orders.length - 1) }} of {{ total }}
+            {{ getSerial(0) }}–{{ getSerial(stocks.length - 1) }} of {{ total }}
           </span>
           <div class="rc-pg-nav">
             <button [disabled]="!hasPrevPage" (click)="goToPage(currentPage - 1)">‹</button>
@@ -127,18 +123,7 @@
   </div>
 </div>
 
-<!-- ✅ POS Modal -->
-<div class="pos-modal-overlay" *ngIf="showForm" (click)="onOverlayClick($event)">
-  <div class="pos-modal-box">
-    <app-order-form (close)="closeForm()"></app-order-form>
-  </div>
-</div>
-
-
-
-<!-- ✅ NEW: Edit Order Modal -->
-<app-order-edit-form
-  *ngIf="showEditForm"
-  (close)="closeEditForm()"
-  (saved)="closeEditForm()">
-</app-order-edit-form>
+<app-restaurant-ingredients-stock-form
+  *ngIf="showForm"
+  (close)="closeForm()">
+</app-restaurant-ingredients-stock-form>

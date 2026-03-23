@@ -1,0 +1,125 @@
+<div class="edit-overlay" (click)="onClose()">
+  <div class="edit-modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="edit-head">
+      <div>
+        <h3>Edit Order</h3>
+        <span class="order-id">#{{ order?._id?.slice(-8)?.toUpperCase() }}</span>
+      </div>
+      <button class="close-btn" (click)="onClose()">✕</button>
+    </div>
+
+    <div class="edit-body" *ngIf="order">
+
+      <!-- ── Order Summary (read-only) ── -->
+      <div class="section-label">Order Items</div>
+      <div class="items-list">
+        <div class="item-row" *ngFor="let item of order.items">
+          <span class="item-name">
+            {{ item.productId?.name || 'Item' }}
+            <small *ngIf="item.variantId?.name">— {{ item.variantId?.name }}</small>
+          </span>
+          <span class="item-qty">× {{ item.quantity }}</span>
+          <span class="item-price">₹{{ item.price * item.quantity }}</span>
+        </div>
+        <div class="no-items" *ngIf="!order.items?.length">No items found</div>
+      </div>
+
+      <!-- ── Status ── -->
+      <div class="section-label">Order Status</div>
+
+      <!-- Cancel warning -->
+      <div class="warning-box" *ngIf="isCancelling">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+            stroke="#c2410c" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>Cancelling will <strong>restore inventory</strong> for all items in this order.</span>
+      </div>
+
+      <!-- Reactivate info -->
+      <div class="info-box" *ngIf="isReactivating">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#1d4ed8" stroke-width="1.5"/>
+          <path d="M12 8v4m0 4h.01" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>Re-activating will <strong>re-deduct inventory</strong> for all items.</span>
+      </div>
+
+      <div class="status-grid">
+        <button
+          *ngFor="let s of statuses"
+          [class.active]="selectedStatus === s.value"
+          [style.border-color]="selectedStatus === s.value ? s.color : ''"
+          [style.background]="selectedStatus === s.value ? s.bg : ''"
+          [style.color]="selectedStatus === s.value ? s.color : ''"
+          (click)="selectedStatus = s.value"
+          class="status-btn">
+          {{ s.label }}
+        </button>
+      </div>
+
+      <!-- ── Payment Mode ── -->
+      <div class="section-label">Payment Mode</div>
+      <div class="pay-grid">
+        <button
+          *ngFor="let m of payModes"
+          [class.active]="selectedPayMode === m"
+          (click)="selectedPayMode = m"
+          class="pay-btn">
+          {{ m === 'CASH'   ? '💵 Cash'   :
+             m === 'CARD'   ? '💳 Card'   :
+             m === 'UPI'    ? '📱 UPI'    : '🌐 Online' }}
+        </button>
+      </div>
+
+      <!-- ── Discount ── -->
+      <div class="section-label">Discount (₹)</div>
+      <input
+        type="number"
+        class="discount-input"
+        [(ngModel)]="discountValue"
+        min="0"
+        placeholder="Enter discount amount"
+      />
+
+      <!-- ── Price Summary ── -->
+      <div class="price-summary">
+        <div class="price-row">
+          <span>Subtotal</span>
+          <span>₹{{ subTotal }}</span>
+        </div>
+        <div class="price-row disc" *ngIf="discountValue > 0">
+          <span>Discount</span>
+          <span>−₹{{ discountValue }}</span>
+        </div>
+        <div class="price-row">
+          <span>Tax (5%)</span>
+          <span>₹{{ tax }}</span>
+        </div>
+        <div class="price-row total">
+          <span>Grand Total</span>
+          <span>₹{{ grandTotal }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="edit-foot">
+      <button class="cancel-btn" (click)="onClose()">Cancel</button>
+      <button
+        class="save-btn"
+        [class.danger]="isCancelling"
+        [disabled]="isSubmitting"
+        (click)="submit()">
+        {{ isSubmitting ? 'Saving...' :
+           isCancelling    ? 'Cancel Order' :
+           isReactivating  ? 'Re-activate Order' :
+                             'Save Changes' }}
+      </button>
+    </div>
+
+  </div>
+</div>
