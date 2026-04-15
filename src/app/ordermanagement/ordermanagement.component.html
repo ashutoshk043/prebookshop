@@ -37,6 +37,7 @@
               <tr>
                 <th style="width:48px">#</th>
                 <th>Restaurant</th>
+                <th>Order Number</th>
                 <th>Type</th>
                 <th>Sub Total</th>
                 <th>Discount</th>
@@ -62,6 +63,7 @@
                 <tr *ngFor="let item of orders; let i = index">
                   <td class="rc-num">{{ getSerial(i) }}</td>
                   <td>{{ item.restaurant?.name || '—' }}</td>
+                  <td>{{ item.orderNumber || '—' }}</td>
                   <td>
                     <span class="rc-badge rc-badge-blue">{{ item.orderType }}</span>
                   </td>

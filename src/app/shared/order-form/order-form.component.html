@@ -9,14 +9,23 @@
         <button class="close-pos-btn" (click)="onClose()">✕</button>
 
         <!-- Restaurant ✅ -->
-        <select formControlName="restaurantId" class="rest-select">
-          <option value="" disabled>
-            {{ isLoadingRestaurants ? 'Loading...' : 'Select Restaurant' }}
-          </option>
-          <option *ngFor="let r of restaurants" [value]="r.id">
-            {{ r.restaurantName }}
-          </option>
-        </select>
+<select
+  formControlName="restaurantId"
+  class="rest-select"
+  (change)="onRestaurantChange($event)"
+>
+  <option value="">
+    All Restaurants
+  </option>
+
+  <option value="" disabled>
+    {{ isLoadingRestaurants ? 'Loading...' : 'Select Restaurant' }}
+  </option>
+
+  <option *ngFor="let r of restaurants" [value]="r.id">
+    {{ r.restaurantName }}
+  </option>
+</select>
 
         <!-- Table ✅ patchValue into form -->
         <div class="table-tabs">
@@ -149,16 +158,42 @@
     <div class="cart-foot">
 
       <!-- Coupon ✅ -->
-      <div class="coupon-row">
-        <input
-          type="text"
-          formControlName="couponCode"
-          placeholder="Coupon code..."
-          class="coupon-input"
-          style="text-transform:uppercase"
-        />
-        <button class="coupon-btn" (click)="applyCoupon()">Apply</button>
-      </div>
+<div class="coupon-row">
+
+  <!-- ── Input + Apply (shown when no coupon applied) ──── -->
+  <ng-container *ngIf="!posForm.get('couponApplied')?.value">
+    <input
+      type="text"
+      formControlName="couponCode"
+      placeholder="Coupon code..."
+      class="coupon-input"
+      style="text-transform:uppercase"
+      (keyup.enter)="applyCoupon()"
+    />
+    <button
+      class="coupon-btn"
+      (click)="applyCoupon()"
+      [disabled]="!posForm.get('couponCode')?.value?.trim()">
+      Apply
+    </button>
+  </ng-container>
+
+  <!-- ── Applied state (shown after successful apply) ─── -->
+  <ng-container *ngIf="posForm.get('couponApplied')?.value">
+    <div class="coupon-applied-tag">
+      <span class="coupon-tick">✓</span>
+      <span class="coupon-label">{{ posForm.get('couponLabel')?.value }}</span>
+      <button class="coupon-remove-btn" (click)="clearCoupon()">✕</button>
+    </div>
+  </ng-container>
+
+</div>
+
+<!-- ── Discount line in totals ───────────────────────── -->
+<div class="total-row discount-row" *ngIf="posForm.get('couponApplied')?.value">
+  <span>Coupon Discount</span>
+  <span class="discount-amount">− ₹{{ posForm.get('couponDiscount')?.value }}</span>
+</div>
 
       <!-- Applied coupon badge ✅ from form -->
       <div class="coupon-applied" *ngIf="posForm.get('couponApplied')?.value">

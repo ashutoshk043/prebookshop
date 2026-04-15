@@ -1,0 +1,131 @@
+<div class="form-body" [formGroup]="form">
+
+  <!-- ── EDIT MODE ── -->
+  <ng-container *ngIf="isEditMode">
+    <div class="edit-preview">
+      <img [src]="editData?.url" [alt]="editData?.imageName" class="edit-img" />
+    </div>
+    <p class="edit-name">{{ editData?.imageName }}</p>
+  </ng-container>
+
+  <!-- ── UPLOAD MODE ── -->
+  <ng-container *ngIf="!isEditMode">
+
+    <!-- Drop Zone -->
+    <div
+      class="drop-zone"
+      [class.drag-over]="isDragOver"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+    >
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <p class="drop-title">Drag & drop images here</p>
+      <label class="browse-btn">
+        Browse Files
+        <input type="file" multiple accept="image/*" (change)="onFileSelected($event)" hidden />
+      </label>
+      <p class="drop-hint">JPEG, PNG, WebP · Max {{ MAX_MB }}MB each</p>
+    </div>
+
+    <!-- Validation Error: no images added yet and form was submitted -->
+    <p class="field-error" *ngIf="imagesArray.invalid && imagesArray.touched">
+      Please add at least one image before uploading.
+    </p>
+
+    <!-- Preview Grid — bound to the FormArray -->
+    <div class="preview-section" *ngIf="imagesArray.length > 0">
+
+      <div class="preview-bar">
+        <span class="preview-count">
+          {{ imagesArray.length }} file{{ imagesArray.length > 1 ? 's' : '' }} selected
+        </span>
+        <button class="clear-link" *ngIf="!isUploading" (click)="clearAll()">
+          Clear all
+        </button>
+      </div>
+
+      <!-- One card per FormGroup in the FormArray -->
+      <div class="thumb-grid" formArrayName="images">
+        <div
+          class="thumb-card"
+          *ngFor="let imgGroup of imageControls; let i = index"
+          [formGroupName]="i"
+          [ngClass]="imgGroup.value.status"
+        >
+          <div class="thumb-wrap">
+            <img
+              [src]="imgGroup.value.preview"
+              [alt]="imgGroup.value.name"
+              class="thumb-img"
+            />
+
+            <!-- Status overlays -->
+            <div class="thumb-overlay success-ov" *ngIf="imgGroup.value.status === 'success'">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div class="thumb-overlay error-ov" *ngIf="imgGroup.value.status === 'error'">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </div>
+            <div class="thumb-overlay uploading-ov" *ngIf="imgGroup.value.status === 'uploading'">
+              <div class="mini-spinner"></div>
+            </div>
+
+            <!-- Remove button (only while pending) -->
+            <button
+              class="rm-btn"
+              *ngIf="imgGroup.value.status === 'pending'"
+              (click)="removeImage(i)"
+            >✕</button>
+          </div>
+
+          <!-- Progress bar (only while uploading) -->
+          <div class="progress-track" *ngIf="imgGroup.value.status === 'uploading'">
+            <div class="progress-fill" [style.width.%]="imgGroup.value.progress"></div>
+          </div>
+
+          <!-- File info -->
+          <div class="thumb-info">
+            <p class="thumb-name" [title]="imgGroup.value.name">{{ imgGroup.value.name }}</p>
+            <p class="thumb-size">{{ imgGroup.value.size }}</p>
+            <p class="thumb-error" *ngIf="imgGroup.value.error">{{ imgGroup.value.error }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Summary -->
+    <div class="summary-row" *ngIf="!isUploading && (successCount > 0 || errorCount > 0)">
+      <span class="s-success" *ngIf="successCount > 0">✓ {{ successCount }} uploaded</span>
+      <span class="s-error"   *ngIf="errorCount > 0">✕ {{ errorCount }} failed</span>
+    </div>
+
+    <!-- Upload Button -->
+    <button
+      class="upload-btn"
+      [disabled]="pendingImages.length === 0 || isUploading"
+      (click)="uploadAll()"
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      {{
+        isUploading
+          ? 'Uploading...'
+          : 'Upload ' + pendingImages.length + ' Image' + (pendingImages.length !== 1 ? 's' : '')
+      }}
+    </button>
+
+  </ng-container>
+</div>

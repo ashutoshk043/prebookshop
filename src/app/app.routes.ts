@@ -38,7 +38,7 @@ export const routes: Routes = [
     path: 'restaurant-variant-price',
     loadChildren: () => import('./restaurent-varient-price/restaurent-varient-price.module').then(m => m.RestaurentVarientPriceModule)
   },
-    {
+  {
     path: 'restaurant-ingredient-stock',
     loadChildren: () => import('./restaurant-ingredients-stock/restaurant-ingredients-stock.module').then(m => m.RestaurantIngredientsStockModule)
   },
@@ -68,15 +68,24 @@ export const routes: Routes = [
     loadChildren: () => import('./productmanagement/productmanagement.module')
       .then(m => m.ProductmanagementModule)
   },
-    {
+  {
     path: 'coupons',
     loadChildren: () => import('./coupons/coupons.module')
       .then(m => m.CouponsModule)
   },
-      {
+  {
     path: 'offers',
     loadChildren: () => import('./offers/offers.module')
       .then(m => m.OffersModule)
   },
+  {
+    path: 'stock-logs',
+    loadChildren: () => import('./stock-logs/stock-logs.module')
+      .then(m => m.StockLogsModule)
+  },
+  {
+    path:'images',
+    loadChildren:()=> import('./images/images.module').then(m=>m.ImagesModule)
+  }
 
 ];

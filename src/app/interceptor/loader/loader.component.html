@@ -1,0 +1,12 @@
+<div class="overlay" *ngIf="loader$ | async">
+  <div class="progress-bar"></div>
+
+  <div class="spinner-wrapper">
+    <div class="ring ring-outer"></div>
+    <div class="ring ring-mid"></div>
+    <div class="ring ring-inner"></div>
+    <div class="center-dot"></div>
+  </div>
+
+  <span class="loader-label">Loading…</span>
+</div>

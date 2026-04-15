@@ -74,15 +74,12 @@ export class SidebarComponent {
       title: 'INVENTORY',
       items: [
         { order: 1, label: 'Stock Logs', route: '/stock-logs' },
-        { order: 2, label: 'Low Stock Alerts', route: '/low-stock' }
       ]
     },
     {
       title: 'ORDER OPERATIONS',
       items: [
         { order: 1, label: 'Orders', route: '/orders' },
-        // { order: 2, label: 'Tables (Dine-In)', route: '/tables' },
-        // { order: 3, label: 'Reports', route: '/reports' }
       ]
     },
     {
@@ -109,9 +106,10 @@ export class SidebarComponent {
       ]
     },
     {
-      title: 'SYSTEM',
+      title: 'Images',
       items: [
-        { order: 1, label: 'Settings', route: '/settings' }
+        { order: 1, label: 'Logo Banner', route: '/images' },
+        { order: 2, label: 'Product Images', route: '/images/products' }
       ]
     }
   ];

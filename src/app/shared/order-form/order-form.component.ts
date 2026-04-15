@@ -9,6 +9,7 @@ import { ToastrService } from 'ngx-toastr';
 import { CREATE_ORDER } from '../../graphql/orders/mutation';
 import { GET_RESTAURANTS } from '../../graphql/restraurentmanagement/restraurent-query';
 import { GET_RESTAURANT_VARIANT_PRICES } from '../../graphql/restaurant-variant-price/query';
+import { GET_COUPONS } from '../../graphql/coupons/query';
 
 @Component({
   selector: 'app-order-form',
@@ -24,20 +25,22 @@ export class OrderFormComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   showPayModal = false;
   orderSuccess = false;
+  changedRestaurantId:any = null;
 
   // ── Dropdown options ─────────────────────────────────────
-  tables   = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'];
-  types    = ['Dine In', 'Takeaway', 'Delivery'];
+  tables = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'];
+  types = ['Dine In', 'Takeaway', 'Delivery'];
   payModes = ['CASH', 'CARD', 'UPI', 'ONLINE'];
+  coupons: any[] = [];
 
   // ── Menu ─────────────────────────────────────────────────
-  allItems: any[]      = [];
+  allItems: any[] = [];
   filteredItems: any[] = [];
   categories: string[] = [];
-  isLoadingMenu        = false;
+  isLoadingMenu = false;
 
   // ── Restaurants ──────────────────────────────────────────
-  restaurants: any[]   = [];
+  restaurants: any[] = [];
   isLoadingRestaurants = false;
   private restaurantLimit = 20;
 
@@ -48,18 +51,19 @@ export class OrderFormComponent implements OnInit, OnDestroy {
   posForm!: FormGroup;
 
   private menuSearchSubject = new Subject<string>();
-  private destroy$          = new Subject<void>();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private apollo: Apollo,
     private toastr: ToastrService,
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.buildForm();
     this.watchComputedFields();
     this.loadRestaurants();
+    this.loadCoupons();
 
     this.menuSearchSubject.pipe(
       debounceTime(300),
@@ -84,6 +88,29 @@ export class OrderFormComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  onRestaurantChange(event: any) {
+  this.changedRestaurantId = event.target.value;
+  this.loadMenu();
+}
+
+  loadCoupons() {
+
+    this.apollo.watchQuery({
+      query: GET_COUPONS,
+      variables: { page: 1, limit: 50, search: "" },
+      fetchPolicy: 'network-only',
+    })
+      .valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          const result = res.data.getCoupons;
+          this.coupons = result.data;
+        },
+        error: () => (""),
+      });
+  }
+
   // ══════════════════════════════════════════════════════════
   // BUILD FORM — every field stored in FormGroup
   // ══════════════════════════════════════════════════════════
@@ -91,30 +118,30 @@ export class OrderFormComponent implements OnInit, OnDestroy {
     this.posForm = this.fb.group({
 
       // ── Order meta ───────────────────────────────────────
-      restaurantId:   ['', Validators.required],
-      table:          ['T1', Validators.required],
-      orderType:      ['Dine In', Validators.required],
-      paymentMode:    ['CASH', Validators.required],
+      restaurantId: ['', Validators.required],
+      table: ['T1', Validators.required],
+      orderType: ['Dine In', Validators.required],
+      paymentMode: ['CASH', Validators.required],
 
       // ── Menu search (UI only) ────────────────────────────
-      menuSearch:     [''],
+      menuSearch: [''],
       activeCategory: ['All'],
 
       // ── Coupon ───────────────────────────────────────────
-      couponCode:     [''],
-      couponApplied:  [false],
-      couponLabel:    [''],
+      couponCode: [''],
+      couponApplied: [false],
+      couponLabel: [''],
       couponDiscount: [0],
 
       // ── Cart items (FormArray) ───────────────────────────
       cartItems: this.fb.array([]),
 
       // ── Computed totals (auto-calculated) ───────────────
-      subTotal:    [{ value: 0, disabled: true }],
-      taxRate:     [{ value: 5, disabled: true }],   // 5%
-      taxAmount:   [{ value: 0, disabled: true }],
-      grandTotal:  [{ value: 0, disabled: true }],
-      itemCount:   [{ value: 0, disabled: true }],
+      subTotal: [{ value: 0, disabled: true }],
+      taxRate: [{ value: 5, disabled: true }],   // 5%
+      taxAmount: [{ value: 0, disabled: true }],
+      grandTotal: [{ value: 0, disabled: true }],
+      itemCount: [{ value: 0, disabled: true }],
     });
   }
 
@@ -129,12 +156,12 @@ export class OrderFormComponent implements OnInit, OnDestroy {
   }
 
   recalculate() {
-    const subTotal      = this.cartEntries.reduce((s, e) => s + e.price * e.qty, 0);
+    const subTotal = this.cartEntries.reduce((s, e) => s + e.price * e.qty, 0);
     const couponDiscount = this.posForm.get('couponDiscount')?.value || 0;
-    const taxRate        = this.posForm.get('taxRate')?.value || 5;
-    const taxAmount      = Math.round(subTotal * (taxRate / 100));
-    const grandTotal     = Math.max(0, subTotal - couponDiscount + taxAmount);
-    const itemCount      = this.cartEntries.reduce((s, e) => s + e.qty, 0);
+    const taxRate = this.posForm.get('taxRate')?.value || 5;
+    const taxAmount = Math.round(subTotal * (taxRate / 100));
+    const grandTotal = Math.max(0, subTotal - couponDiscount + taxAmount);
+    const itemCount = this.cartEntries.reduce((s, e) => s + e.qty, 0);
 
     // ✅ All computed values stored in form
     this.posForm.patchValue({
@@ -169,14 +196,14 @@ export class OrderFormComponent implements OnInit, OnDestroy {
     } else {
       // ── Add new row ──────────────────────────────────────
       this.cartItems.push(this.fb.group({
-        priceId:   [item._id],
+        priceId: [item._id],
         productId: [item.productId],
         variantId: [item.variantId],
-        name:      [item.name],
-        variant:   [item.variant],
-        category:  [item.category],
-        price:     [item.price],
-        qty:       [1,           [Validators.required, Validators.min(1)]],
+        name: [item.name],
+        variant: [item.variant],
+        category: [item.category],
+        price: [item.price],
+        qty: [1, [Validators.required, Validators.min(1)]],
         lineTotal: [item.price],  // price × qty
       }));
     }
@@ -185,7 +212,7 @@ export class OrderFormComponent implements OnInit, OnDestroy {
   }
 
   changeQty(index: number, delta: number) {
-    const ctrl   = this.cartItems.at(index);
+    const ctrl = this.cartItems.at(index);
     const newQty = (ctrl.get('qty')?.value || 0) + delta;
 
     if (newQty <= 0) {
@@ -204,19 +231,19 @@ export class OrderFormComponent implements OnInit, OnDestroy {
   }
 
   // ── Getters for template ─────────────────────────────────
-  get f()               { return this.posForm.controls; }
-  get selectedRestaurantId() { return this.posForm.get('restaurantId')?.value  || ''; }
-  get selectedTable()        { return this.posForm.get('table')?.value          || 'T1'; }
-  get selectedType()         { return this.posForm.get('orderType')?.value      || 'Dine In'; }
-  get selectedPayMode()      { return this.posForm.get('paymentMode')?.value    || 'CASH'; }
-  get menuSearch()           { return this.posForm.get('menuSearch')?.value     || ''; }
-  get subTotal()             { return this.posForm.get('subTotal')?.value       || 0; }
-  get taxAmount()            { return this.posForm.get('taxAmount')?.value      || 0; }
-  get grandTotal()           { return this.posForm.get('grandTotal')?.value     || 0; }
-  get itemCount()            { return this.posForm.get('itemCount')?.value      || 0; }
-  get couponDiscount()       { return this.posForm.get('couponDiscount')?.value || 0; }
-  get discountLabel()        { return this.posForm.get('couponLabel')?.value    || ''; }
-  get couponApplied()        { return this.posForm.get('couponApplied')?.value  || false; }
+  get f() { return this.posForm.controls; }
+  get selectedRestaurantId() { return this.posForm.get('restaurantId')?.value || ''; }
+  get selectedTable() { return this.posForm.get('table')?.value || 'T1'; }
+  get selectedType() { return this.posForm.get('orderType')?.value || 'Dine In'; }
+  get selectedPayMode() { return this.posForm.get('paymentMode')?.value || 'CASH'; }
+  get menuSearch() { return this.posForm.get('menuSearch')?.value || ''; }
+  get subTotal() { return this.posForm.get('subTotal')?.value || 0; }
+  get taxAmount() { return this.posForm.get('taxAmount')?.value || 0; }
+  get grandTotal() { return this.posForm.get('grandTotal')?.value || 0; }
+  get itemCount() { return this.posForm.get('itemCount')?.value || 0; }
+  get couponDiscount() { return this.posForm.get('couponDiscount')?.value || 0; }
+  get discountLabel() { return this.posForm.get('couponLabel')?.value || ''; }
+  get couponApplied() { return this.posForm.get('couponApplied')?.value || false; }
 
   // ── Load Restaurants ─────────────────────────────────────
   loadRestaurants() {
@@ -227,20 +254,20 @@ export class OrderFormComponent implements OnInit, OnDestroy {
       variables: { page: 1, limit: this.restaurantLimit, search: null },
       fetchPolicy: 'network-only',
     })
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (res: any) => {
-        this.restaurants          = res?.data?.restaurants?.data || [];
-        this.isLoadingRestaurants = false;
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.restaurants = res?.data?.restaurants?.data || [];
+          this.isLoadingRestaurants = false;
 
-        if (!this.selectedRestaurantId && this.restaurants.length) {
-          this.posForm.patchValue({ restaurantId: this.restaurants[0].id });
-        }
+          if (!this.selectedRestaurantId && this.restaurants.length) {
+            this.posForm.patchValue({ restaurantId: this.restaurants[0].id });
+          }
 
-        if (this.selectedRestaurantId) this.loadMenu();
-      },
-      error: () => (this.isLoadingRestaurants = false),
-    });
+          if (this.selectedRestaurantId) this.loadMenu();
+        },
+        error: () => (this.isLoadingRestaurants = false),
+      });
   }
 
   // ── Load Menu ────────────────────────────────────────────
@@ -250,40 +277,40 @@ export class OrderFormComponent implements OnInit, OnDestroy {
 
     this.apollo.query({
       query: GET_RESTAURANT_VARIANT_PRICES,
-      variables: { page: 1, limit: 100, search: '' },
+      variables: { page: 1, limit: 100, search: '' , restId: this.changedRestaurantId},
       fetchPolicy: 'network-only',
     })
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (res: any) => {
-        const data = res?.data?.getRestaurantVariantPrices?.data || [];
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          const data = res?.data?.getRestaurantVariantPrices?.data || [];
 
-        this.allItems = data
-          .map((d: any) => ({
-            _id:         d._id,
-            variantId:   d.variant?._id,
-            productId:   d.product?._id,
-            name:        d.product?.name  || 'Item',
-            variant:     d.variant?.name  || '',
-            price:       d.actualSellingPrice || d.mrp || 0,
-            category:    d.product?.category  || 'Menu',
-            isAvailable: d.isAvailable,
-          }))
-          .filter((i: any) => i.isAvailable);
+          this.allItems = data
+            .map((d: any) => ({
+              _id: d._id,
+              variantId: d.variant?._id,
+              productId: d.product?._id,
+              name: d.product?.name || 'Item',
+              variant: d.variant?.name || '',
+              price: d.price || d.mrp || 0,
+              category: d.product?.category || 'Menu',
+              isAvailable: d.isAvailable,
+            }))
+            .filter((i: any) => i.isAvailable);
 
-        const cats = [...new Set(this.allItems.map((i: any) => i.category))] as string[];
-        this.categories = ['All', ...cats];
+          const cats = [...new Set(this.allItems.map((i: any) => i.category))] as string[];
+          this.categories = ['All', ...cats];
 
-        if (!this.categories.includes(this.activeCategory)) {
-          this.activeCategory = 'All';
-          this.posForm.patchValue({ activeCategory: 'All' }, { emitEvent: false });
-        }
+          if (!this.categories.includes(this.activeCategory)) {
+            this.activeCategory = 'All';
+            this.posForm.patchValue({ activeCategory: 'All' }, { emitEvent: false });
+          }
 
-        this.applyFilter();
-        this.isLoadingMenu = false;
-      },
-      error: () => (this.isLoadingMenu = false),
-    });
+          this.applyFilter();
+          this.isLoadingMenu = false;
+        },
+        error: () => (this.isLoadingMenu = false),
+      });
   }
 
   // ── Category ─────────────────────────────────────────────
@@ -296,7 +323,7 @@ export class OrderFormComponent implements OnInit, OnDestroy {
   applyFilter() {
     const term = this.menuSearch.toLowerCase();
     this.filteredItems = this.allItems.filter(i => {
-      const catOk  = this.activeCategory === 'All' || i.category === this.activeCategory;
+      const catOk = this.activeCategory === 'All' || i.category === this.activeCategory;
       const termOk = !term ||
         i.name.toLowerCase().includes(term) ||
         i.variant.toLowerCase().includes(term);
@@ -316,26 +343,74 @@ export class OrderFormComponent implements OnInit, OnDestroy {
 
   // ── Coupon ───────────────────────────────────────────────
   applyCoupon() {
-    const code = (this.posForm.get('couponCode')?.value || '').toUpperCase().trim();
+    const code = this.posForm.get('couponCode')?.value?.trim().toUpperCase();
 
-    if (code === 'SAVE50') {
-      this.posForm.patchValue({ couponDiscount: 50,  couponLabel: 'SAVE50', couponApplied: true });
-      this.toastr.success('₹50 off applied!');
-    } else if (code === 'FLAT20') {
-      this.posForm.patchValue({ couponDiscount: 20,  couponLabel: 'FLAT20', couponApplied: true });
-      this.toastr.success('₹20 off applied!');
-    } else {
-      this.posForm.patchValue({ couponDiscount: 0, couponLabel: '', couponApplied: false });
-      this.toastr.error('Invalid coupon');
+    if (!code) {
+      this.toastr.warning('Enter a coupon code');
+      return;
     }
+
+    // ── Match against loaded coupons ─────────────────────────
+    const coupon = this.coupons.find(c => c.code === code);
+
+    if (!coupon) {
+      this.toastr.error('Invalid coupon code');
+      this.clearCoupon();
+      return;
+    }
+
+    if (!coupon.isActive) {
+      this.toastr.error('This coupon is no longer active');
+      this.clearCoupon();
+      return;
+    }
+
+    if (new Date(coupon.expiryDate) < new Date()) {
+      this.toastr.error('This coupon has expired');
+      this.clearCoupon();
+      return;
+    }
+
+    const subTotal = this.posForm.get('subTotal')?.value ?? 0;
+
+    if (subTotal < coupon.minOrderValue) {
+      this.toastr.warning(`Minimum order value ₹${coupon.minOrderValue} required`);
+      this.clearCoupon();
+      return;
+    }
+
+    // ── Calculate discount ───────────────────────────────────
+    const discount = coupon.discountType === 'PERCENT'
+      ? Math.min((subTotal * coupon.discountValue) / 100, coupon.maxDiscount ?? Infinity)
+      : coupon.discountValue;
+
+    // ── Patch form ───────────────────────────────────────────
+    this.posForm.patchValue({
+      couponApplied: true,
+      couponLabel: `${coupon.code} — ${coupon.discountType === 'PERCENT' ? coupon.discountValue + '%' : '₹' + coupon.discountValue} off`,
+      couponDiscount: discount,
+    });
+
+    this.recalculate();
+    this.toastr.success(`Coupon applied! You save ₹${discount}`);
+  }
+
+  clearCoupon() {
+    this.posForm.patchValue({
+      couponCode: '',
+      couponApplied: false,
+      couponLabel: '',
+      couponDiscount: 0,
+    });
+    this.recalculate();
   }
 
   removeCoupon() {
     this.posForm.patchValue({
-      couponCode:     '',
+      couponCode: '',
       couponDiscount: 0,
-      couponLabel:    '',
-      couponApplied:  false,
+      couponLabel: '',
+      couponApplied: false,
     });
   }
 
@@ -369,29 +444,26 @@ export class OrderFormComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
 
     // ✅ Read everything from form
-    const fv        = this.posForm.getRawValue(); // getRawValue includes disabled fields
-    const rawType   = fv.orderType;
-    const orderType = rawType === 'Dine In'  ? 'POS'      :
-                      rawType === 'Takeaway'  ? 'TAKEAWAY' : 'DELIVERY';
+    const fv = this.posForm.getRawValue(); // getRawValue includes disabled fields
+    const rawType = fv.orderType;
+    const orderType = rawType === 'Dine In' ? 'POS' :
+      rawType === 'Takeaway' ? 'TAKEAWAY' : 'DELIVERY';
 
     const items = fv.cartItems.map((i: any) => ({
       productId: i.productId,
       variantId: i.variantId,
-      price:     i.price,
-      quantity:  i.qty,
+      price: i.price,
+      quantity: i.qty,
     }));
 
     const input = {
       restaurantId: fv.restaurantId,
       orderType,
-      status:       'ACCEPTED',
+      status: 'ACCEPTED',
       items,
-      discount:     fv.couponDiscount,
-      paymentMode:  fv.paymentMode,
+      discount: fv.couponDiscount,
+      paymentMode: fv.paymentMode,
     };
-
-    console.log('📤 Full form value:', JSON.stringify(fv, null, 2));
-    console.log('📤 Order input:', JSON.stringify(input, null, 2));
 
     this.apollo.mutate({ mutation: CREATE_ORDER, variables: { input } })
       .pipe(takeUntil(this.destroy$))
@@ -403,7 +475,7 @@ export class OrderFormComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('❌ Order failed:', err);
-          this.toastr.error('Order failed. Please try again.');
+          this.toastr.error(err.message);
           this.isSubmitting = false;
         },
       });
@@ -417,17 +489,17 @@ export class OrderFormComponent implements OnInit, OnDestroy {
     this.activeCategory = 'All';
 
     this.posForm.patchValue({
-      couponCode:     '',
+      couponCode: '',
       couponDiscount: 0,
-      couponLabel:    '',
-      couponApplied:  false,
-      paymentMode:    'CASH',
-      menuSearch:     '',
+      couponLabel: '',
+      couponApplied: false,
+      paymentMode: 'CASH',
+      menuSearch: '',
       activeCategory: 'All',
-      subTotal:       0,
-      taxAmount:      0,
-      grandTotal:     0,
-      itemCount:      0,
+      subTotal: 0,
+      taxAmount: 0,
+      grandTotal: 0,
+      itemCount: 0,
     }, { emitEvent: false });
 
     this.applyFilter();
@@ -437,7 +509,7 @@ export class OrderFormComponent implements OnInit, OnDestroy {
   openFormFromParent(mode: 'add' | 'edit', data?: any) {
     if (mode === 'edit' && data) {
       this.posForm.patchValue({
-        orderType:   data.orderType,
+        orderType: data.orderType,
         paymentMode: data.paymentMode,
       });
     }
@@ -445,11 +517,11 @@ export class OrderFormComponent implements OnInit, OnDestroy {
 
   getEmoji(category: string): string {
     const map: Record<string, string> = {
-      'Drinks':      '🥤',
-      'Desserts':    '🍰',
-      'Pizza':       '🍕',
-      'Burgers':     '🍔',
-      'Sides':       '🍟',
+      'Drinks': '🥤',
+      'Desserts': '🍰',
+      'Pizza': '🍕',
+      'Burgers': '🍔',
+      'Sides': '🍟',
       'Main Course': '🍛',
     };
     return map[category] || '🍽️';

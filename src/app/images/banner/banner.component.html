@@ -1,0 +1,350 @@
+<div class="d-flex flex-column flex-md-row">
+  <app-sidebar #sidebar></app-sidebar>
+
+  <div class="main-content flex-grow-1">
+    <app-header></app-header>
+
+    <div class="content-area">
+
+      <!-- ── PAGE HEADER ── -->
+      <div class="page-header">
+        <div class="page-header-text">
+          <span class="page-eyebrow">Media Library</span>
+          <h1 class="page-title">Image Management</h1>
+        </div>
+        <button class="add-btn" (click)="openModal()">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round">
+            <path d="M8 1v14M1 8h14" />
+          </svg>
+          Add Image
+        </button>
+      </div>
+
+      <!-- ── STATS ── -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon logo-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </svg>
+          </div>
+          <div>
+            <div class="stat-label">Logos</div>
+            <div class="stat-value">{{ logos.length }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon banner-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="6" width="20" height="12" rx="2" />
+              <path d="M2 10h20" />
+            </svg>
+          </div>
+          <div>
+            <div class="stat-label">Banners</div>
+            <div class="stat-value">{{ banners.length }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon all-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+          </div>
+          <div>
+            <div class="stat-label">All Assets</div>
+            <div class="stat-value">{{ logos.length + banners.length }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LOADING ── -->
+      <div class="loading-wrap" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <span>Loading assets…</span>
+      </div>
+
+      <ng-container *ngIf="!isLoading">
+
+        <!-- ── BULK ACTION BAR ──────────────────────────────────────────────
+             Slides in from the top whenever at least one checkbox is ticked.
+             Shows how many items are selected and exposes the Approve button.
+        ──────────────────────────────────────────────────────────────────── -->
+        <div class="bulk-bar" *ngIf="selectedCount > 0">
+          <!-- Selection count badge -->
+          <span class="bulk-info">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            {{ selectedCount }} item{{ selectedCount > 1 ? 's' : '' }} selected
+          </span>
+
+          <!-- Approve selected -->
+          <button class="bulk-approve-btn" (click)="bulkApprove()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Approve Selected
+          </button>
+
+          <!-- Clear selection -->
+          <button class="bulk-clear-btn" (click)="clearSelection()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            Clear
+          </button>
+        </div>
+
+        <!-- ── LOGOS SECTION ── -->
+        <div class="section" *ngIf="logos.length > 0 || true">
+
+          <!-- Section header with Select-All checkbox -->
+          <div class="section-head">
+            <div class="section-title">
+              <span class="section-dot logo-dot"></span>
+              Logo Collection
+              <span class="section-count">{{ logos.length }}</span>
+            </div>
+
+            <!-- Select-All toggle for logos (only shown when there are items) -->
+            <label class="select-all-label" *ngIf="logos.length > 0">
+              <input type="checkbox" [checked]="isAllSelected(logos)" [indeterminate]="isSomeSelected(logos)"
+                (change)="selectAll(logos)">
+              Select All
+            </label>
+          </div>
+
+          <div class="gallery-grid logo-grid" *ngIf="logos.length > 0; else emptyLogos">
+            <div class="gallery-card" *ngFor="let item of paginate(logos)"
+              [class.card-selected]="isSelected(item._id || item.id)">
+
+              <!-- IMAGE AREA -->
+              <div class="card-img-wrap logo-img-wrap">
+
+                <!-- ── Per-card checkbox ──────────────────────────────────
+                     Positioned top-left, always visible (not just on hover)
+                     so users can tick multiple items without hovering each.
+                     stopPropagation prevents the card click from firing too.
+                ─────────────────────────────────────────────────────────── -->
+                <input type="checkbox" class="card-checkbox" [checked]="isSelected(item._id || item.id)"
+                  (change)="toggleSelect(item._id || item.id)" (click)="$event.stopPropagation()">
+
+                <img [placeholder]="'assets/logo/logo.png'" [appLazyImage]="item.url" [src]="item.url"
+                  [alt]="item.imageName" loading="lazy" class="card-img">
+
+                <!-- HOVER OVERLAY -->
+                <div class="card-overlay">
+                  <button class="ov-btn" (click)="copy(item.url)" title="Copy URL">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <button class="ov-btn edit-btn" (click)="openModal(item)" title="Edit">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z" />
+                    </svg>
+                  </button>
+                  <!-- Single-item approve — does NOT use the selection set -->
+                  <!-- ✅ Approved -->
+                  <button *ngIf="item.isVerified" class="ov-btn approve-btn approved" title="Approved">
+
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </button>
+
+                  <!-- ❌ Not Approved -->
+                  <button *ngIf="!item.isVerified" class="ov-btn not-approved" title="Not Approved">
+
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                  <button class="ov-btn ov-danger" (click)="delete(item,'logo')" title="Delete">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                    </svg>
+                  </button>
+                  <button class="ov-btn view-btn" (click)="viewImage(item.url)" title="View">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+
+                </div>
+              </div>
+
+              <!-- CARD FOOTER -->
+              <div class="card-footer">
+                <span class="card-name" [title]="item.imageName">{{ item.imageName }}</span>
+                <span class="verify-pill" [class.is-verified]="item.isVerified" [class.is-unverified]="!item.isVerified"
+                  (click)="toggleVerify(item)">
+                  {{ item.isVerified ? '✓' : '○' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #emptyLogos>
+            <div class="empty-section">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <rect x="3" y="3" width="18" height="18" rx="3" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              <span>No logos uploaded yet</span>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- ── BANNERS SECTION ── -->
+        <div class="section">
+
+          <!-- Section header with Select-All checkbox -->
+          <div class="section-head">
+            <div class="section-title">
+              <span class="section-dot banner-dot"></span>
+              Banner Collection
+              <span class="section-count">{{ banners.length }}</span>
+            </div>
+
+            <!-- Select-All toggle for banners (only shown when there are items) -->
+            <label class="select-all-label" *ngIf="banners.length > 0">
+              <input type="checkbox" [checked]="isAllSelected(banners)" [indeterminate]="isSomeSelected(banners)"
+                (change)="selectAll(banners)">
+              Select All
+            </label>
+          </div>
+
+          <div class="gallery-grid banner-grid" *ngIf="banners.length > 0; else emptyBanners">
+            <div class="gallery-card" *ngFor="let item of paginate(banners)"
+              [class.card-selected]="isSelected(item._id || item.id)">
+
+              <div class="card-img-wrap banner-img-wrap">
+
+                <!-- ── Per-card checkbox (same pattern as logos) ── -->
+                <input type="checkbox" class="card-checkbox" [checked]="isSelected(item._id || item.id)"
+                  (change)="toggleSelect(item._id || item.id)" (click)="$event.stopPropagation()">
+
+                <img [placeholder]="'assets/logo/logo.png'" [appLazyImage]="item.url" [src]="item.url"
+                  [alt]="item.imageName" loading="lazy" class="card-img">
+
+                <div class="card-overlay">
+                  <button class="ov-btn" (click)="copy(item.url)" title="Copy URL">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <button class="ov-btn edit-btn" (click)="openModal(item)" title="Edit">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z" />
+                    </svg>
+                  </button>
+                  <!-- Single-item approve — does NOT use the selection set -->
+                  <button *ngIf="item.isVerified" class="ov-btn approve-btn approved" title="Approved">
+
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </button>
+
+                  <!-- ❌ Not Approved -->
+                  <button *ngIf="!item.isVerified" class="ov-btn not-approved" title="Not Approved">
+
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                  <button class="ov-btn ov-danger" (click)="delete(item,'banner')" title="Delete">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                    </svg>
+                  </button>
+                  <button class="ov-btn view-btn" (click)="viewImage(item.url)" title="View">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <span class="card-name" [title]="item.imageName">{{ item.imageName }}</span>
+                <span class="verify-pill" [class.is-verified]="item.isVerified" [class.is-unverified]="!item.isVerified"
+                  (click)="toggleVerify(item)">
+                  {{ item.isVerified ? '✓' : '○' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #emptyBanners>
+            <div class="empty-section">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <rect x="2" y="6" width="20" height="12" rx="2" />
+                <path d="M2 10h20" />
+              </svg>
+              <span>No banners uploaded yet</span>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- ── PAGINATION ── -->
+        <div class="pagination-bar" *ngIf="totalPages > 1">
+          <button class="pg-btn" (click)="goToPage(page - 1)" [disabled]="page === 1">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <button *ngFor="let p of pageNumbers" class="pg-btn" [class.pg-active]="p === page" (click)="goToPage(p)">{{ p
+            }}</button>
+          <button class="pg-btn" (click)="goToPage(page + 1)" [disabled]="page === totalPages">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- ── BACKDROP ── -->
+<div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+
+<!-- ── MODAL ── -->
+<div class="modal-panel" *ngIf="showModal">
+  <div class="modal-head">
+    <div>
+      <span class="modal-eyebrow">{{ editData ? 'Editing Asset' : 'New Upload' }}</span>
+      <h3 class="modal-title">{{ editData ? 'Edit Image' : 'Add Image' }}</h3>
+    </div>
+    <button class="modal-close" (click)="closeModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+  </div>
+  <app-logo-banner-form [editData]="editData" (save)="handleSave($event)"></app-logo-banner-form>
+</div>

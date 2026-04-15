@@ -656,3 +656,28 @@
   .pay-mode-btn   { padding: 11px 6px; font-size: 12px; }
   .pay-amount-box strong { font-size: 22px; }
 }
+
+.coupon-applied-tag {
+  display:      flex;
+  align-items:  center;
+  gap:          8px;
+  background:   #f0fdf4;
+  border:       1px dashed #16a34a;
+  border-radius: 8px;
+  padding:      6px 12px;
+  width:        100%;
+}
+
+.coupon-tick  { color: #16a34a; font-weight: 700; }
+.coupon-label { flex: 1; font-size: 13px; color: #15803d; font-weight: 500; }
+
+.coupon-remove-btn {
+  background:  none;
+  border:      none;
+  color:       #dc2626;
+  cursor:      pointer;
+  font-size:   13px;
+  padding:     0 4px;
+}
+
+.discount-amount { color: #16a34a; font-weight: 600; }

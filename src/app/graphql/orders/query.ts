@@ -12,9 +12,17 @@ export const GET_ORDERS = gql`
         grandTotal
         paymentMode
         createdAt
+        orderNumber
         restaurant {
           _id
           name
+        }
+        items {
+          _id
+          productId
+          variantId
+          quantity
+          price
         }
       }
       total
