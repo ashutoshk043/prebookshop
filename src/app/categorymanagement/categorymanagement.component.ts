@@ -12,6 +12,7 @@ import { GET_INCLUDED_CATEGORIES_PAGINATED } from '../graphql/categoryManagement
 import { subscribe } from 'graphql';
 import { ToastrService } from 'ngx-toastr';
 import { DELETE_CATEGORY } from '../graphql/categoryManagement/mutation';
+import { LazyImageDirective } from '../directives/lazy-image.directive';
 
 @Component({
   selector: 'app-categorymanagement',
@@ -21,7 +22,8 @@ import { DELETE_CATEGORY } from '../graphql/categoryManagement/mutation';
     FormsModule,
     LayoutsModule,
     HeaderComponent,
-    CategoryFormComponent
+    CategoryFormComponent,
+    LazyImageDirective
   ],
   templateUrl: './categorymanagement.component.html',
   styleUrl: './categorymanagement.component.css'
@@ -48,7 +50,7 @@ export class CategorymanagementComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
-  constructor(private apollo: Apollo, private toster:ToastrService) {}
+  constructor(private apollo: Apollo, private toster: ToastrService) { }
 
   ngOnInit(): void {
 
@@ -99,29 +101,29 @@ export class CategorymanagementComponent implements OnInit, OnDestroy {
       },
       fetchPolicy: 'network-only'
     })
-    .subscribe({
-      next: (res) => {
+      .subscribe({
+        next: (res) => {
 
-        const result = res.data?.includedCategoriesPaginated;
+          const result = res.data?.includedCategoriesPaginated;
 
-        if (result) {
-          this.categories = result.data;
+          if (result) {
+            this.categories = result.data;
 
-          console.log('Fetched categories:', this.categories);
-          this.total = result.total;
-          this.totalPages = result.totalPages;
-          this.currentPage = result.currentPage;
-        } else {
-          this.categories = [];
+            console.log('Fetched categories:', this.categories);
+            this.total = result.total;
+            this.totalPages = result.totalPages;
+            this.currentPage = result.currentPage;
+          } else {
+            this.categories = [];
+          }
+
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error loading categories:', err);
+          this.isLoading = false;
         }
-
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading categories:', err);
-        this.isLoading = false;
-      }
-    });
+      });
 
   }
 
@@ -192,28 +194,28 @@ export class CategorymanagementComponent implements OnInit, OnDestroy {
     return item._id;
   }
 
-deleteCategory(categoryId: string): void {
+  deleteCategory(categoryId: string): void {
 
-  if (confirm('Are you sure you want to delete this category?')) {
+    if (confirm('Are you sure you want to delete this category?')) {
 
-    console.log('Deleting category with ID:', categoryId);
+      console.log('Deleting category with ID:', categoryId);
 
-    this.apollo.mutate({
-      mutation: DELETE_CATEGORY,
-      variables: { id: categoryId }
-    }).subscribe({
-      next: () => {
-        this.toster.success('Category deleted successfully');
-        this.closeCategoryForm()
-      },
-      error: (err) => {
-        this.toster.error('Failed to delete category');
-        console.error('Error:', err);
-      }
-    });
+      this.apollo.mutate({
+        mutation: DELETE_CATEGORY,
+        variables: { id: categoryId }
+      }).subscribe({
+        next: () => {
+          this.toster.success('Category deleted successfully');
+          this.closeCategoryForm()
+        },
+        error: (err) => {
+          this.toster.error('Failed to delete category');
+          console.error('Error:', err);
+        }
+      });
+
+    }
 
   }
-
-}
 
 }

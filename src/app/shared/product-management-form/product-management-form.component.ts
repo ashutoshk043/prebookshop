@@ -174,13 +174,18 @@ export class ProductManagementFormComponent implements OnInit, AfterViewInit {
 
     if (mode === 'edit' && data) {
 
+      console.log(data, "edit isisisiis")
+
       const categoryId = data.category?.id || '';
 
       if (categoryId && !this.categories.find(c => c._id === categoryId)) {
-        this.categories.push({
-          _id: categoryId,
-          name: data.category?.name || 'Unknown'
-        });
+        this.categories = [
+          ...this.categories,
+          {
+            _id: categoryId,
+            name: data.category?.name || 'Unknown'
+          }
+        ];
       }
 
       this.editProductId = data._id;
@@ -213,17 +218,19 @@ export class ProductManagementFormComponent implements OnInit, AfterViewInit {
   /* ---------------- VARIANT TOGGLE ---------------- */
 
   toggleVariant(id: string) {
-
     const control = this.productForm.get('varients');
-    let variants: string[] = control?.value || [];
+    const current: string[] = control?.value || [];
 
-    if (variants.includes(id)) {
-      variants = variants.filter(v => v !== id);
+    let updated: string[];
+
+    if (current.includes(id)) {
+      updated = current.filter(v => v !== id);
     } else {
-      variants.push(id);
+      updated = [...current, id]; // ✅ NEW ARRAY
     }
 
-    control?.setValue(variants);
+    control?.setValue(updated);
+    control?.markAsDirty();
   }
 
   /* ---------------- SUBMIT ---------------- */

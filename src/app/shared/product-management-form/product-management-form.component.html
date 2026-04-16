@@ -35,12 +35,7 @@
                 Product Name *
               </label>
 
-              <input
-                type="text"
-                class="form-control"
-                formControlName="name"
-                (input)="updateSlug($event)"
-              />
+              <input type="text" class="form-control" formControlName="name" (input)="updateSlug($event)" />
 
             </div>
 
@@ -53,12 +48,7 @@
                 Slug
               </label>
 
-              <input
-                type="text"
-                class="form-control"
-                formControlName="slug"
-                readonly
-              />
+              <input type="text" class="form-control" formControlName="slug" readonly />
 
             </div>
 
@@ -71,15 +61,8 @@
                 Category *
               </label>
 
-              <ng-select
-                [items]="categories"
-                bindLabel="name"
-                bindValue="_id"
-                formControlName="categoryId"
-                placeholder="Search category"
-                [searchable]="true"
-                (search)="onSearch($event)"
-              >
+              <ng-select [items]="categories" bindLabel="name" bindValue="_id" formControlName="categoryId"
+                placeholder="Search category" [searchable]="true" (search)="onSearch($event)">
               </ng-select>
 
             </div>
@@ -93,11 +76,7 @@
                 Image URL
               </label>
 
-              <input
-                type="text"
-                class="form-control"
-                formControlName="imageUrl"
-              />
+              <input type="text" class="form-control" formControlName="imageUrl" />
 
             </div>
 
@@ -112,11 +91,7 @@
 
               <div class="border rounded p-3 text-center bg-light">
 
-                <img
-                  [src]="previewImage"
-                  class="img-fluid rounded"
-                  style="max-height:180px"
-                />
+                <img [src]="previewImage" class="img-fluid rounded" style="max-height:180px" />
 
               </div>
 
@@ -131,11 +106,7 @@
                 Description
               </label>
 
-              <textarea
-                rows="3"
-                class="form-control"
-                formControlName="description"
-              >
+              <textarea rows="3" class="form-control" formControlName="description">
               </textarea>
 
             </div>
@@ -144,32 +115,22 @@
             <!-- VARIANTS -->
 
             <div class="col-12">
-
               <label class="form-label fw-semibold">
                 Variants *
               </label>
 
               <div class="variant-grid">
 
-                <div
-                  class="variant-item"
-                  *ngFor="let size of sizes"
-                >
+                <div class="variant-item" *ngFor="let size of sizes" (click)="toggleVariant(size.id)"
+                  [class.active]="productForm.get('varients')?.value?.includes(size.id)">
 
-                  <input
-                    type="checkbox"
-                    [checked]="productForm.value.varients?.includes(size.id)"
-                    (change)="toggleVariant(size.id)"
-                  />
+                  <input type="checkbox" [checked]="productForm.get('varients')?.value?.includes(size.id)" readonly />
 
-                  <span>
-                    {{ size.name }}
-                  </span>
+                  <span>{{ size.name }}</span>
 
                 </div>
 
               </div>
-
             </div>
 
 
@@ -187,11 +148,7 @@
 
                   <div class="form-check form-switch">
 
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      formControlName="isVeg"
-                    />
+                    <input class="form-check-input" type="checkbox" formControlName="isVeg" />
 
                     <label class="form-check-label">
                       Vegetarian
@@ -206,11 +163,7 @@
 
                   <div class="form-check form-switch">
 
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      formControlName="isActive"
-                    />
+                    <input class="form-check-input" type="checkbox" formControlName="isActive" />
 
                     <label class="form-check-label">
                       Active
@@ -225,11 +178,7 @@
 
                   <div class="form-check form-switch">
 
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      formControlName="isOnlineVisible"
-                    />
+                    <input class="form-check-input" type="checkbox" formControlName="isOnlineVisible" />
 
                     <label class="form-check-label">
                       Online Visible
@@ -254,18 +203,11 @@
 
       <div class="modal-footer">
 
-        <button
-          class="btn btn-outline-secondary"
-          (click)="closeModal()"
-        >
+        <button class="btn btn-outline-secondary" (click)="closeModal()">
           Cancel
         </button>
 
-        <button
-          class="btn btn-primary px-4"
-          (click)="submit()"
-          [disabled]="productForm.invalid"
-        >
+        <button class="btn btn-primary px-4" (click)="submit()" [disabled]="productForm.invalid">
           {{ formMode === 'add' ? 'Add Product' : 'Update Product' }}
         </button>
 

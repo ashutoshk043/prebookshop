@@ -12,3 +12,25 @@
   display: inline-block;
   width: 16px; /* prevents layout jump */
 }
+
+.category-img-wrapper {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.category-img-wrapper:hover .category-img {
+  transform: scale(1.1);
+}
