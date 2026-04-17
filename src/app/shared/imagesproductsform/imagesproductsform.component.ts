@@ -246,11 +246,11 @@ async uploadAll(): Promise<void> {
           }>;
         };
 
-        console.log('──────────────────────────────────────');
-        console.log('Bulk upload response received');
-        console.log('Uploaded:', response.uploaded, '| Failed:', response.failed);
-        console.log('Full response:', response);
-        console.log('──────────────────────────────────────');
+        // console.log('──────────────────────────────────────');
+        // console.log('Bulk upload response received');
+        // console.log('Uploaded:', response.uploaded, '| Failed:', response.failed);
+        // console.log('Full response:', response);
+        // console.log('──────────────────────────────────────');
 
         // ── Map each result back to its FormGroup ────────────────────────
         response.results.forEach(result => {

@@ -13,6 +13,7 @@ import { subscribe } from 'graphql';
 import { ToastrService } from 'ngx-toastr';
 import { DELETE_CATEGORY } from '../graphql/categoryManagement/mutation';
 import { LazyImageDirective } from '../directives/lazy-image.directive';
+import { LoaderService } from '../interceptor/loader.service';
 
 @Component({
   selector: 'app-categorymanagement',
@@ -23,7 +24,7 @@ import { LazyImageDirective } from '../directives/lazy-image.directive';
     LayoutsModule,
     HeaderComponent,
     CategoryFormComponent,
-    LazyImageDirective
+    LazyImageDirective,
   ],
   templateUrl: './categorymanagement.component.html',
   styleUrl: './categorymanagement.component.css'
@@ -50,7 +51,7 @@ export class CategorymanagementComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
-  constructor(private apollo: Apollo, private toster: ToastrService) { }
+  constructor(private apollo: Apollo, private toster: ToastrService, private loaderService: LoaderService) { }
 
   ngOnInit(): void {
 

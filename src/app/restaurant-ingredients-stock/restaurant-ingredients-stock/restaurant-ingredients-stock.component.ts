@@ -144,4 +144,8 @@ export class RestaurantIngredientsStockComponent implements OnInit, OnDestroy {
   getSerial(index: number): number {
     return (this.currentPage - 1) * this.limit + index + 1;
   }
+
+  min100(value: number): number {
+  return Math.min(value, 100);
+}
 }

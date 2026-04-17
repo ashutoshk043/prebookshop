@@ -1,5 +1,6 @@
 .rc-page { padding: 24px; }
 
+/* ── Top Bar ─────────────────────────────── */
 .rc-topbar {
   display: flex;
   align-items: flex-start;
@@ -31,10 +32,12 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .rc-add-btn:hover { background: #1f2937; }
 
+/* ── Search ──────────────────────────────── */
 .rc-search-row { margin-bottom: 16px; }
 
 .rc-search {
@@ -75,54 +78,16 @@
 
 .rc-search button:hover { color: #6b7280; }
 
-.rc-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  overflow: hidden;
+/* ── Loading & Empty ─────────────────────── */
+.rc-loading-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
 }
-
-.rc-table-wrap { overflow-x: auto; }
-
-table { width: 100%; border-collapse: collapse; }
-
-thead tr {
-  background: #f9fafb;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-th {
-  padding: 11px 16px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: #9ca3af;
-  text-align: left;
-  white-space: nowrap;
-}
-
-tbody tr {
-  border-bottom: 1px solid #f3f4f6;
-  transition: background .1s;
-}
-
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: #f9fafb; }
-
-td {
-  padding: 13px 16px;
-  font-size: 14px;
-  color: #111827;
-  vertical-align: middle;
-}
-
-.rc-num { color: #d1d5db; font-size: 12px; }
 
 .rc-loading-inner {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
   color: #9ca3af;
   font-size: 14px;
@@ -140,13 +105,111 @@ td {
 
 @keyframes rc-spin { to { transform: rotate(360deg); } }
 
+.rc-empty-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
 .rc-empty {
-  text-align: center;
-  padding: 40px;
+  font-size: 14px;
   color: #9ca3af;
+}
+
+/* ── Cards Grid ──────────────────────────── */
+.rc-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* ── Order Card ──────────────────────────── */
+.rc-order-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.rc-order-card:hover {
+  border-color: #9ca3af;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.rc-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rc-card-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.rc-card-rest {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.rc-card-date {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 3px;
+}
+
+.rc-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.rc-card-divider {
+  height: 1px;
+  background: #f3f4f6;
+  margin: 0 0 10px;
+}
+
+.rc-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+}
+
+.rc-card-row:last-of-type { margin-bottom: 0; }
+
+.rc-card-label {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.rc-card-val {
+  font-size: 13px;
+  color: #111827;
+}
+
+.rc-card-val-grand {
+  font-weight: 600;
   font-size: 14px;
 }
 
+.rc-card-val-disc {
+  color: #16a34a;
+}
+
+/* ── Badges ──────────────────────────────── */
 .rc-badge {
   display: inline-block;
   padding: 2px 9px;
@@ -159,11 +222,17 @@ td {
 .rc-badge-blue { background: #dbeafe; color: #1d4ed8; }
 .rc-badge-gray { background: #f3f4f6; color: #374151; }
 
-.rc-actions { display: flex; gap: 6px; justify-content: flex-end; }
+/* ── Card Footer Actions ─────────────────── */
+.rc-card-footer {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
 
 .rc-btn-edit,
 .rc-btn-del {
-  padding: 5px 12px;
+  flex: 1;
+  padding: 7px 0;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
@@ -171,6 +240,7 @@ td {
   border: 1px solid;
   font-family: inherit;
   transition: background .12s;
+  text-align: center;
 }
 
 .rc-btn-edit { background: #fff; color: #374151; border-color: #e5e7eb; }
@@ -179,13 +249,12 @@ td {
 .rc-btn-del { background: #fff; color: #dc2626; border-color: #fecaca; }
 .rc-btn-del:hover { background: #fef2f2; }
 
+/* ── Pagination ──────────────────────────── */
 .rc-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-top: 1px solid #f3f4f6;
-  background: #f9fafb;
+  padding: 4px 0 8px;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -224,7 +293,7 @@ td {
   cursor: not-allowed;
 }
 
-/* ── POS Modal Overlay ─────────── */
+/* ── POS Modal ───────────────────────────── */
 .pos-modal-overlay {
   position: fixed;
   inset: 0;
@@ -258,6 +327,33 @@ td {
   to   { transform: translateY(0);    opacity: 1; }
 }
 
+/* ── Responsive ──────────────────────────── */
+
+/* Large desktop → 4 columns */
+@media (min-width: 1400px) {
+  .rc-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Desktop → 3 columns (default via auto-fill) */
+
+/* Tablet → 2 columns */
+@media (max-width: 768px) {
+  .rc-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile → 1 column */
+@media (max-width: 500px) {
+  .rc-page { padding: 16px; }
+
+  .rc-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 1024px) {
   .pos-modal-box {
     max-width: 100%;
@@ -277,8 +373,4 @@ td {
     height: 97vh;
     border-radius: 20px 20px 0 0;
   }
-}
-
-@media (max-width: 576px) {
-  .rc-page { padding: 16px; }
 }

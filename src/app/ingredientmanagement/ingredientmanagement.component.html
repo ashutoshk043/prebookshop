@@ -34,95 +34,65 @@
       <div class="card shadow-sm border-0">
         <div class="card-body p-0">
 
-          <!-- Loading State -->
-          <div *ngIf="isLoading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Loading ingredients...</p>
-          </div>
+<!-- Loading State -->
+<div *ngIf="isLoading" class="text-center py-5">
+  <div class="spinner-border text-primary" role="status"></div>
+  <p class="mt-2 text-muted">Loading ingredients...</p>
+</div>
 
-          <!-- Table -->
-          <div class="table-responsive" *ngIf="!isLoading">
-            <table class="table table-hover align-middle mb-0">
+<!-- Ingredient Card Grid -->
+<div class="ingredient-grid" *ngIf="!isLoading">
 
-              <thead class="table-light">
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Unit</th>
-                  <!-- <th>Ingredient ID</th> -->
-                  <th class="text-end">Action</th>
-                </tr>
-              </thead>
+  <!-- Empty State -->
+  <div class="ingr-empty" *ngIf="ingredients.length === 0">
+    <i class="bi bi-inbox ingr-empty-icon"></i>
+    <p class="mt-2 text-muted">No ingredients found.</p>
+  </div>
 
-              <tbody>
+  <!-- Card -->
+  <div class="ingr-card" *ngFor="let item of ingredients; let i = index">
+    <div class="ingr-card-top">
+      <div class="ingr-icon">
+        <i class="bi bi-basket2-fill"></i>
+      </div>
+      <span class="ingr-serial">#{{ getSerial(i) }}</span>
+    </div>
+    <div class="ingr-card-body">
+      <div class="ingr-name">{{ item.name }}</div>
+      <span class="ingr-unit-badge">{{ item.unit }}</span>
+    </div>
+    <div class="ingr-card-footer">
+      <button class="ingr-btn ingr-edit" (click)="openIngredientForm('edit', item)">
+        <i class="bi bi-pencil-fill"></i> Edit
+      </button>
+      <button class="ingr-btn ingr-delete" (click)="deleteIngredient(item._id)">
+        <i class="bi bi-trash-fill"></i> Delete
+      </button>
+    </div>
+  </div>
 
-                <!-- Empty State -->
-                <tr *ngIf="ingredients.length === 0">
-                  <td colspan="5" class="text-center py-4 text-muted">
-                    No ingredients found.
-                  </td>
-                </tr>
+</div>
 
-                <tr *ngFor="let item of ingredients; let i = index">
-                  <td>{{ getSerial(i) }}</td>
-
-                  <td class="fw-medium">{{ item.name }}</td>
-
-                  <td>
-                    <span class="badge bg-info">{{ item.unit }}</span>
-                  </td>
-
-                  <!-- <td>
-                    <small class="text-muted font-monospace">{{ item._id }}</small>
-                  </td> -->
-
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-warning me-2" (click)="openIngredientForm('edit', item)">
-                      <i class="bi bi-pencil"></i> Edit
-                    </button>
-                    <button class="btn btn-sm btn-danger" (click)="deleteIngredient(item._id)">
-                      <i class="bi bi-trash"></i> Delete
-                    </button>
-                  </td>
-                </tr>
-
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Pagination Footer -->
-          <div class="d-flex justify-content-between align-items-center px-3 py-3 border-top"
-            *ngIf="!isLoading && totalPages > 0">
-
-            <!-- Info -->
-            <small class="text-muted">
-              Showing {{ getSerial(0) }}–{{ getSerial(ingredients.length - 1) }} of {{ total }} ingredients
-            </small>
-
-            <!-- Page Buttons -->
-            <nav>
-              <ul class="pagination pagination-sm mb-0">
-
-                <li class="page-item" [class.disabled]="!hasPrevPage">
-                  <a class="page-link" (click)="goToPage(currentPage - 1)">
-                    <i class="bi bi-chevron-left"></i>
-                  </a>
-                </li>
-
-                <li class="page-item" *ngFor="let p of pageNumbers" [class.active]="p === currentPage">
-                  <a class="page-link" (click)="goToPage(p)">{{ p }}</a>
-                </li>
-
-                <li class="page-item" [class.disabled]="!hasNextPage">
-                  <a class="page-link" (click)="goToPage(currentPage + 1)">
-                    <i class="bi bi-chevron-right"></i>
-                  </a>
-                </li>
-
-              </ul>
-            </nav>
-
-          </div>
+<!-- Pagination -->
+<div class="d-flex justify-content-between align-items-center px-3 py-3 border-top"
+  *ngIf="!isLoading && totalPages > 0">
+  <small class="text-muted">
+    Showing {{ getSerial(0) }}–{{ getSerial(ingredients.length - 1) }} of {{ total }} ingredients
+  </small>
+  <nav>
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item" [class.disabled]="!hasPrevPage">
+        <a class="page-link" (click)="goToPage(currentPage - 1)"><i class="bi bi-chevron-left"></i></a>
+      </li>
+      <li class="page-item" *ngFor="let p of pageNumbers" [class.active]="p === currentPage">
+        <a class="page-link" (click)="goToPage(p)">{{ p }}</a>
+      </li>
+      <li class="page-item" [class.disabled]="!hasNextPage">
+        <a class="page-link" (click)="goToPage(currentPage + 1)"><i class="bi bi-chevron-right"></i></a>
+      </li>
+    </ul>
+  </nav>
+</div>
 
         </div>
       </div>

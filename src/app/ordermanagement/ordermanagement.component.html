@@ -30,115 +30,99 @@
         </div>
       </div>
 
-      <div class="rc-card">
-        <div class="rc-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:48px">#</th>
-                <th>Restaurant</th>
-                <th>Order Number</th>
-                <th>Type</th>
-                <th>Sub Total</th>
-                <th>Discount</th>
-                <th>Grand Total</th>
-                <th>Payment</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th style="text-align:right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-
-              <tr *ngIf="isLoading">
-                <td colspan="10" style="text-align:center; padding:40px">
-                  <div class="rc-loading-inner">
-                    <div class="rc-spin"></div>
-                    <span>Loading...</span>
-                  </div>
-                </td>
-              </tr>
-
-              <ng-container *ngIf="!isLoading">
-                <tr *ngFor="let item of orders; let i = index">
-                  <td class="rc-num">{{ getSerial(i) }}</td>
-                  <td>{{ item.restaurant?.name || '—' }}</td>
-                  <td>{{ item.orderNumber || '—' }}</td>
-                  <td>
-                    <span class="rc-badge rc-badge-blue">{{ item.orderType }}</span>
-                  </td>
-                  <td>₹ {{ item.subTotal }}</td>
-                  <td>
-                    <span [style.color]="item.discount > 0 ? '#16a34a' : ''">
-                      {{ item.discount > 0 ? '- ₹' + item.discount : '—' }}
-                    </span>
-                  </td>
-                  <td><strong>₹ {{ item.grandTotal }}</strong></td>
-                  <td>
-                    <span class="rc-badge rc-badge-gray">{{ item.paymentMode }}</span>
-                  </td>
-                  <td>
-                    <span
-                      [style.background-color]="getStatusStyle(item.status).bg"
-                      [style.color]="getStatusStyle(item.status).color"
-                      [style.padding]="'3px 10px'"
-                      [style.border-radius]="'20px'"
-                      [style.font-size]="'12px'"
-                      [style.font-weight]="'500'">
-                      {{ item.status }}
-                    </span>
-                  </td>
-                  <td>
-                    <small>{{ item.createdAt | date:'dd MMM yy, hh:mm a' }}</small>
-                  </td>
-                  <td style="text-align:right">
-                    <div class="rc-actions">
-                      <button class="rc-btn-edit" (click)="openForm('edit', item)">Edit</button>
-                      <button class="rc-btn-del"  (click)="deleteOrder(item._id)">Delete</button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr *ngIf="orders.length === 0">
-                  <td colspan="10" class="rc-empty">No orders found.</td>
-                </tr>
-              </ng-container>
-
-            </tbody>
-          </table>
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="rc-loading-wrap">
+        <div class="rc-loading-inner">
+          <div class="rc-spin"></div>
+          <span>Loading...</span>
         </div>
-
-        <div class="rc-footer" *ngIf="!isLoading && totalPages > 0">
-          <span class="rc-pg-info">
-            {{ getSerial(0) }}–{{ getSerial(orders.length - 1) }} of {{ total }}
-          </span>
-          <div class="rc-pg-nav">
-            <button [disabled]="!hasPrevPage" (click)="goToPage(currentPage - 1)">‹</button>
-            <button
-              *ngFor="let p of pageNumbers"
-              [class.active]="p === currentPage"
-              (click)="goToPage(p)">
-              {{ p }}
-            </button>
-            <button [disabled]="!hasNextPage" (click)="goToPage(currentPage + 1)">›</button>
-          </div>
-        </div>
-
       </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && orders.length === 0" class="rc-empty-wrap">
+        <p class="rc-empty">No orders found.</p>
+      </div>
+
+      <!-- Cards Grid -->
+      <div *ngIf="!isLoading && orders.length > 0" class="rc-cards-grid">
+        <div class="rc-order-card" *ngFor="let item of orders; let i = index">
+
+          <div class="rc-card-header">
+            <div class="rc-card-meta">
+              <div class="rc-card-num">{{ item.orderNumber || '—' }}</div>
+              <div class="rc-card-rest">{{ item.restaurant?.name || '—' }}</div>
+              <div class="rc-card-date">{{ item.createdAt | date:'dd MMM yy, hh:mm a' }}</div>
+            </div>
+            <span
+              class="rc-status-pill"
+              [style.background-color]="getStatusStyle(item.status).bg"
+              [style.color]="getStatusStyle(item.status).color">
+              {{ item.status }}
+            </span>
+          </div>
+
+          <div class="rc-card-divider"></div>
+
+          <div class="rc-card-row">
+            <span class="rc-card-label">Type</span>
+            <span class="rc-badge rc-badge-blue">{{ item.orderType }}</span>
+          </div>
+          <div class="rc-card-row">
+            <span class="rc-card-label">Sub Total</span>
+            <span class="rc-card-val">₹ {{ item.subTotal }}</span>
+          </div>
+          <div class="rc-card-row">
+            <span class="rc-card-label">Discount</span>
+            <span class="rc-card-val" [class.rc-card-val-disc]="item.discount > 0">
+              {{ item.discount > 0 ? '– ₹' + item.discount : '—' }}
+            </span>
+          </div>
+          <div class="rc-card-row">
+            <span class="rc-card-label">Grand Total</span>
+            <span class="rc-card-val rc-card-val-grand">₹ {{ item.grandTotal }}</span>
+          </div>
+          <div class="rc-card-row">
+            <span class="rc-card-label">Payment</span>
+            <span class="rc-badge rc-badge-gray">{{ item.paymentMode }}</span>
+          </div>
+
+          <div class="rc-card-footer">
+            <button class="rc-btn-edit" (click)="openForm('edit', item)">Edit</button>
+            <button class="rc-btn-del" (click)="deleteOrder(item._id)">Delete</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="rc-footer" *ngIf="!isLoading && totalPages > 0">
+        <span class="rc-pg-info">
+          {{ getSerial(0) }}–{{ getSerial(orders.length - 1) }} of {{ total }}
+        </span>
+        <div class="rc-pg-nav">
+          <button [disabled]="!hasPrevPage" (click)="goToPage(currentPage - 1)">‹</button>
+          <button
+            *ngFor="let p of pageNumbers"
+            [class.active]="p === currentPage"
+            (click)="goToPage(p)">
+            {{ p }}
+          </button>
+          <button [disabled]="!hasNextPage" (click)="goToPage(currentPage + 1)">›</button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- ✅ POS Modal -->
+<!-- POS Modal -->
 <div class="pos-modal-overlay" *ngIf="showForm" (click)="onOverlayClick($event)">
   <div class="pos-modal-box">
     <app-order-form (close)="closeForm()"></app-order-form>
   </div>
 </div>
 
-
-
-<!-- ✅ NEW: Edit Order Modal -->
+<!-- Edit Order Modal -->
 <app-order-edit-form
   *ngIf="showEditForm"
   (close)="closeEditForm()"

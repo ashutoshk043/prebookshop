@@ -59,8 +59,8 @@ export class SidebarComponent {
     }, {
       title: 'RESTAURANT PRODUCT SETUP',
       items: [
-        { order: 1, label: 'Restaurant Variant Prices', route: '/restaurant-variant-price' },
-        { order: 2, label: 'Restaurant Ingredient (Stock)', route: '/restaurant-ingredient-stock' }
+        { order: 1, label: 'Restaurant Ingredient (Stock)', route: '/restaurant-ingredient-stock' },
+        { order: 2, label: 'Restaurant Variant Prices', route: '/restaurant-variant-price' },
       ]
     },
     {

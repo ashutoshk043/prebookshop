@@ -14,111 +14,118 @@
         <button class="rc-add-btn" (click)="openForm('add')">+ Add Stock</button>
       </div>
 
-      <div class="rc-search-row">
-        <div class="rc-search">
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-            <circle cx="6" cy="6" r="4.5" stroke="#9ca3af" stroke-width="1.4"/>
-            <path d="M10 10l3 3" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/>
-          </svg>
-          <input
-            type="text"
-            placeholder="Search by restaurant, ingredient..."
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="onSearchChange($event)"
-          />
-          <button *ngIf="searchTerm" (click)="searchTerm = ''; onSearchChange('')">✕</button>
-        </div>
+      <div class="rc-search">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <circle cx="6" cy="6" r="4.5" stroke="#9ca3af" stroke-width="1.4"/>
+          <path d="M10 10l3 3" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Search by restaurant, ingredient..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange($event)"
+        />
+        <button *ngIf="searchTerm" (click)="searchTerm = ''; onSearchChange('')">✕</button>
       </div>
 
-      <div class="rc-card">
-        <div class="rc-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:48px">#</th>
-                <th>Restaurant</th>
-                <th>Ingredient</th>
-                <th>Unit</th>
-                <th>Available Qty</th>
-                <th>Alert Level</th>
-                <th>Status</th>
-                <th style="text-align:right">Actions</th>
-              </tr>
-            </thead>
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="rc-loading-wrap">
+        <div class="rc-spin"></div>
+        <span>Loading...</span>
+      </div>
 
-            <tbody>
+      <!-- Card Grid -->
+      <div *ngIf="!isLoading" class="rc-grid">
 
-              <tr *ngIf="isLoading">
-                <td colspan="8" style="text-align:center; padding:40px">
-                  <div class="rc-loading-inner">
-                    <div class="rc-spin"></div>
-                    <span>Loading...</span>
-                  </div>
-                </td>
-              </tr>
+        <div *ngFor="let item of stocks; let i = index" class="rc-card"
+          [class.rc-card-low]="item.availableQty <= item.alertLevel">
 
-              <ng-container *ngIf="!isLoading">
-
-                <tr *ngFor="let item of stocks; let i = index">
-                  <td class="rc-num">{{ getSerial(i) }}</td>
-                  <td>{{ item.restaurant?.name || '—' }}</td>
-                  <td>{{ item.ingredient?.name || '—' }}</td>
-                  <td>
-                    <span class="rc-badge rc-badge-gray">
-                      {{ item.ingredient?.unit || '—' }}
-                    </span>
-                  </td>
-                  <td>{{ item.availableQty }}</td>
-                  <td>{{ item.alertLevel }}</td>
-
-                  <!-- ✅ Red if stock below alert level -->
-                  <td>
-                    <span
-                      [style.background-color]="item.availableQty <= item.alertLevel ? '#fee2e2' : '#dcfce7'"
-                      [style.color]="item.availableQty <= item.alertLevel ? '#dc2626' : '#16a34a'"
-                      [style.padding]="'3px 10px'"
-                      [style.border-radius]="'20px'"
-                      [style.font-size]="'12px'"
-                      [style.font-weight]="'500'">
-                      {{ item.availableQty <= item.alertLevel ? 'Low Stock' : 'Sufficient' }}
-                    </span>
-                  </td>
-
-                  <td style="text-align:right">
-                    <div class="rc-actions">
-                      <button class="rc-btn-edit" (click)="openForm('edit', item)">Edit</button>
-                      <button class="rc-btn-del"  (click)="deleteStock(item._id)">Delete</button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr *ngIf="stocks.length === 0">
-                  <td colspan="8" class="rc-empty">No stock entries found.</td>
-                </tr>
-
-              </ng-container>
-
-            </tbody>
-          </table>
-        </div>
-
-        <div class="rc-footer" *ngIf="!isLoading && totalPages > 0">
-          <span class="rc-pg-info">
-            {{ getSerial(0) }}–{{ getSerial(stocks.length - 1) }} of {{ total }}
-          </span>
-          <div class="rc-pg-nav">
-            <button [disabled]="!hasPrevPage" (click)="goToPage(currentPage - 1)">‹</button>
-            <button
-              *ngFor="let p of pageNumbers"
-              [class.active]="p === currentPage"
-              (click)="goToPage(p)">
-              {{ p }}
-            </button>
-            <button [disabled]="!hasNextPage" (click)="goToPage(currentPage + 1)">›</button>
+          <!-- Card Header -->
+          <div class="rc-card-header">
+            <div class="rc-icon">
+              {{ (item.restaurant?.name || 'R')[0].toUpperCase() }}
+            </div>
+            <div class="rc-card-meta">
+              <p class="rc-card-title">{{ item.restaurant?.name || '—' }}</p>
+              <p class="rc-card-sub">{{ item.ingredient?.name || '—' }}</p>
+            </div>
+            <span class="rc-status-badge"
+              [class.low]="item.availableQty <= item.alertLevel"
+              [class.ok]="item.availableQty > item.alertLevel">
+              {{ item.availableQty <= item.alertLevel ? 'Low Stock' : 'Sufficient' }}
+            </span>
           </div>
+
+          <hr class="rc-divider"/>
+
+          <!-- Stock Bar -->
+          <div class="rc-bar-wrap">
+            <div class="rc-bar-track">
+              <div class="rc-bar-fill"
+                [class.rc-bar-low]="item.availableQty <= item.alertLevel"
+                [class.rc-bar-ok]="item.availableQty > item.alertLevel"
+                [style.width.%]="item.alertLevel > 0
+                  ? min100((item.availableQty / (item.alertLevel * 3)) * 100)
+                  : 100">
+              </div>
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="rc-row">
+            <span>Unit</span>
+            <span class="rc-unit-badge">{{ item.ingredient?.unit || '—' }}</span>
+          </div>
+
+          <div class="rc-row">
+            <span>Available Qty</span>
+            <strong [class.rc-qty-low]="item.availableQty <= item.alertLevel">
+              {{ item.availableQty }}
+            </strong>
+          </div>
+
+          <div class="rc-row">
+            <span>Alert Level</span>
+            <strong>{{ item.alertLevel }}</strong>
+          </div>
+
+          <!-- Warning notice if low -->
+          <div class="rc-warning" *ngIf="item.availableQty <= item.alertLevel">
+            ⚠ Stock below alert level. Reorder needed.
+          </div>
+
+          <!-- Actions -->
+          <div class="rc-actions">
+            <button class="rc-btn-edit" (click)="openForm('edit', item)">Edit</button>
+            <button class="rc-btn-del" (click)="deleteStock(item._id)">Delete</button>
+          </div>
+
         </div>
 
       </div>
+
+      <!-- Empty -->
+      <div *ngIf="!isLoading && stocks.length === 0" class="rc-empty">
+        No stock entries found.
+      </div>
+
+      <!-- Pagination -->
+      <div class="rc-footer" *ngIf="!isLoading && totalPages > 0">
+        <span class="rc-pg-info">
+          {{ getSerial(0) }}–{{ getSerial(stocks.length - 1) }} of {{ total }}
+        </span>
+        <div class="rc-pg-nav">
+          <button [disabled]="!hasPrevPage" (click)="goToPage(currentPage - 1)">‹</button>
+          <button
+            *ngFor="let p of pageNumbers"
+            [class.active]="p === currentPage"
+            (click)="goToPage(p)">
+            {{ p }}
+          </button>
+          <button [disabled]="!hasNextPage" (click)="goToPage(currentPage + 1)">›</button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

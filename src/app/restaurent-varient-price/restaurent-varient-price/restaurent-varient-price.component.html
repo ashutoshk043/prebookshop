@@ -1,98 +1,90 @@
 <div class="d-flex flex-column flex-md-row">
-    <app-sidebar #sidebar></app-sidebar>
+  <app-sidebar #sidebar></app-sidebar>
 
-    <div class="main-content flex-grow-1" [class.sidebar-collapsed]="sidebar.isCollapsed">
-        <app-header></app-header>
+  <div class="main-content flex-grow-1" [class.sidebar-collapsed]="sidebar.isCollapsed">
+    <app-header></app-header>
 
-        <div class="rc-page">
+    <div class="rc-page">
 
-            <div class="rc-topbar">
-                <div>
-                    <h4 class="rc-title">Restaurant Variant Prices</h4>
-                    <p class="rc-sub">{{ total }} entries found</p>
-                </div>
-                <button class="rc-add-btn" (click)="openForm('add')">+ Add Price</button>
+      <div class="rc-topbar">
+        <div>
+          <h4 class="rc-title">Restaurant Variant Prices</h4>
+          <p class="rc-sub">{{ total }} entries found</p>
+        </div>
+        <button class="rc-add-btn" (click)="openForm('add')">+ Add Price</button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="rc-loading-wrap">
+        <div class="rc-spin"></div>
+        <span>Loading...</span>
+      </div>
+
+      <!-- Card Grid -->
+      <div *ngIf="!isLoading" class="rc-grid">
+
+        <div *ngFor="let item of prices; let i = index" class="rc-card">
+
+          <!-- Card Header -->
+          <div class="rc-card-header">
+            <div class="rc-restaurant-icon">
+              {{ (item.restaurant?.name || 'R')[0].toUpperCase() }}
             </div>
-
-            <div class="rc-card">
-                <div class="rc-table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width:48px">#</th>
-                                <th>Restaurant</th>
-                                <th>Product</th>
-                                <th>Variant</th>
-                                <th>MRP</th>
-                                <th>Selling Price</th>
-                                <th>Available</th>
-                                <th style="text-align:right">Actions</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            <tr *ngIf="isLoading">
-                                <td colspan="7" style="text-align:center; padding:40px">
-                                    <div class="rc-loading-inner">
-                                        <div class="rc-spin"></div>
-                                        <span>Loading...</span>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <ng-container *ngIf="!isLoading">
-
-                                <tr *ngFor="let item of prices; let i = index">
-                                    <td class="rc-num">{{ i + 1 }}</td>
-
-                                    <!-- ✅ Nested object — item.restaurant.name -->
-                                    <td>{{ item.restaurant?.name || '—' }}</td>
-
-                                    <!-- ✅ Nested object — item.product.name -->
-                                    <td>{{ item.product?.name || '—' }}</td>
-
-                                    <!-- ✅ Nested object — item.variant.name (mapped from size) -->
-                                    <td>
-                                        <span class="rc-badge rc-badge-blue">
-                                            {{ item.variant?.name || '—' }}
-                                        </span>
-                                    </td>
-
-                                    <td>₹ {{ item.mrp }}</td>
-
-                                    <td>₹ {{ item.price }}</td>
-
-                                    <td>
-                                        <span [style.background-color]="item.isAvailable ? '#dcfce7' : '#fee2e2'"
-                                            [style.color]="item.isAvailable ? '#16a34a' : '#dc2626'"
-                                            [style.padding]="'3px 10px'" [style.border-radius]="'20px'"
-                                            [style.font-size]="'12px'" [style.font-weight]="'500'">
-                                            {{ item.isAvailable ? 'In-Stock' : 'Out of Stock' }}
-                                        </span>
-                                    </td>
-
-                                    <td style="text-align:right">
-                                        <div class="rc-actions">
-                                            <button class="rc-btn-edit" (click)="openForm('edit', item)">Edit</button>
-                                            <button class="rc-btn-del" (click)="deletePrice(item._id)">Delete</button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr *ngIf="prices.length === 0">
-                                    <td colspan="7" class="rc-empty">No price entries found.</td>
-                                </tr>
-
-                            </ng-container>
-
-                        </tbody>
-                    </table>
-                </div>
+            <div class="rc-card-meta">
+              <p class="rc-card-title">{{ item.restaurant?.name || '—' }}</p>
+              <p class="rc-card-sub">{{ item.product?.name || '—' }}</p>
             </div>
+            <span
+              class="rc-stock-badge"
+              [class.in-stock]="item.isAvailable"
+              [class.out-stock]="!item.isAvailable">
+              {{ item.isAvailable ? 'In Stock' : 'Out of Stock' }}
+            </span>
+          </div>
+
+          <hr class="rc-divider" />
+
+          <!-- Details -->
+          <div class="rc-row">
+            <span>Variant</span>
+            <span class="rc-variant-badge">{{ item.variant?.name || '—' }}</span>
+          </div>
+
+          <div class="rc-row">
+            <span>MRP</span>
+            <strong class="rc-mrp">₹ {{ item.mrp }}</strong>
+          </div>
+
+          <div class="rc-row">
+            <span>Selling Price</span>
+            <strong class="rc-price">₹ {{ item.price }}</strong>
+          </div>
+
+          <!-- Discount pill if applicable -->
+          <div class="rc-discount" *ngIf="item.mrp > item.price">
+            <span class="rc-discount-pill">
+              {{ ((item.mrp - item.price) / item.mrp * 100).toFixed(0) }}% off
+            </span>
+            <span class="rc-discount-label">You save ₹{{ item.mrp - item.price }}</span>
+          </div>
+
+          <!-- Actions -->
+          <div class="rc-actions">
+            <button class="rc-btn-edit" (click)="openForm('edit', item)">Edit</button>
+            <button class="rc-btn-del" (click)="deletePrice(item._id)">Delete</button>
+          </div>
 
         </div>
+
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!isLoading && prices.length === 0" class="rc-empty">
+        No price entries found.
+      </div>
+
     </div>
+  </div>
 </div>
 
 <app-rastaurent-varient-price-form *ngIf="showForm" (close)="closeForm()">

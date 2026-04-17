@@ -41,104 +41,46 @@
           </div>
 
           <!-- TABLE -->
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>#</th>
-                  <th>Image</th>
-                  <th>Name</th>
-                  <th>Category</th>
-                  <th>Varients</th>
-                  <th>Veg</th>
-                  <th>Status</th>
-                  <th>Online</th>
-                  <th class="text-end">Action</th>
-                </tr>
-              </thead>
+<!-- replace the TABLE block with this -->
+<div class="product-grid p-3">
+  <div class="product-card" *ngFor="let product of products; let i = index; trackBy: trackByProductId">
+    <div class="product-img-wrap">
+      <img [src]="product.imageUrl || '/assets/images/no-image.png'" class="product-cover-img" />
+      <span class="product-serial">{{ (currentPage - 1) * limit + i + 1 }}</span>
+      <span class="product-online-badge" [ngClass]="product.isOnlineVisible ? 'online-yes' : 'online-no'">
+        {{ product.isOnlineVisible ? 'Online' : 'Offline' }}
+      </span>
+    </div>
+    <div class="product-card-body">
+      <div class="product-card-name">{{ product.name }}</div>
+      <div class="product-card-category">{{ product.category?.name || 'Unknown' }}</div>
+      <div class="product-variants-row">
+        <span *ngFor="let tag of product.varients" class="variant-tag">{{ tag }}</span>
+      </div>
+      <div class="product-card-footer">
+        <span class="pcard-badge" [ngClass]="product.isVeg ? 'badge-veg' : 'badge-nonveg'">
+          {{ product.isVeg ? 'Veg' : 'Non-Veg' }}
+        </span>
+        <span class="pcard-badge" [ngClass]="product.isActive ? 'badge-active' : 'badge-inactive'">
+          {{ product.isActive ? 'Active' : 'Inactive' }}
+        </span>
+        <div class="pcard-actions">
+          <button class="pcard-btn pcard-edit" (click)="openAddForm('edit', product)">
+            <i class="bi bi-pencil-fill"></i>
+          </button>
+          <button class="pcard-btn pcard-delete" (click)="deleteProduct(product._id)">
+            <i class="bi bi-trash-fill"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-              <tbody>
-
-                <tr *ngFor="let product of products; let i = index; trackBy: trackByProductId">
-
-                  <td>{{ (currentPage - 1) * limit + i + 1 }}</td>
-
-                  <td>
-                    <img
-                      [src]="product.imageUrl || '/assets/images/no-image.png'"
-                      width="45"
-                      height="45"
-                      class="rounded"
-                    />
-                  </td>
-
-                  <td class="fw-medium">{{ product.name }}</td>
-
-                  <td>{{ product.category?.name || 'Unknown' }}</td>
-
-                  <td>
-                    <span
-                      *ngFor="let tag of product.varients"
-                      class="badge bg-secondary me-1"
-                    >
-                      {{ tag }}
-                    </span>
-                  </td>
-
-                  <td>
-                    <span
-                      class="badge"
-                      [ngClass]="product.isVeg ? 'bg-success' : 'bg-danger'"
-                    >
-                      {{ product.isVeg ? 'Veg' : 'Non-Veg' }}
-                    </span>
-                  </td>
-
-                  <td>
-                    <span
-                      class="badge"
-                      [ngClass]="product.isActive ? 'bg-success' : 'bg-danger'"
-                    >
-                      {{ product.isActive ? 'Active' : 'Inactive' }}
-                    </span>
-                  </td>
-
-                  <td>
-                    <span
-                      class="badge"
-                      [ngClass]="product.isOnlineVisible ? 'bg-success' : 'bg-secondary'"
-                    >
-                      {{ product.isOnlineVisible ? 'Yes' : 'No' }}
-                    </span>
-                  </td>
-
-                  <td class="text-end">
-                    <button
-                      class="btn btn-sm btn-warning me-2"
-                      (click)="openAddForm('edit', product)"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      class="btn btn-sm btn-danger"
-                      (click)="deleteProduct(product._id)"
-                    >
-                      Delete
-                    </button>
-                  </td>
-
-                </tr>
-
-                <tr *ngIf="!productsLoading && products?.length === 0">
-                  <td colspan="9" class="text-center py-4 text-muted">
-                    {{ searchName ? 'No products match your search' : 'No products found' }}
-                  </td>
-                </tr>
-
-              </tbody>
-            </table>
-          </div>
+  <div class="product-empty" *ngIf="!productsLoading && products?.length === 0">
+    <i class="bi bi-inbox" style="font-size:40px;"></i>
+    <p class="mt-2 text-muted">{{ searchName ? 'No products match your search' : 'No products found' }}</p>
+  </div>
+</div>
 
           <!-- PAGINATION -->
           <div class="card-footer d-flex justify-content-between">

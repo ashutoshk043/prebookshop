@@ -1,4 +1,3 @@
-<!-- stock-logs.component.html -->
 <div class="d-flex flex-column flex-md-row">
   <app-sidebar #sidebar></app-sidebar>
 
@@ -7,22 +6,19 @@
 
     <div class="page-wrapper">
 
-      <!-- ── Page Header ───────────────────────────── -->
+      <!-- Page Header -->
       <div class="page-header">
         <div>
           <h1 class="page-title">Stock Logs</h1>
           <p class="page-subtitle">Track every inventory movement across your kitchen</p>
         </div>
-        <div class="header-badge" *ngIf="meta">
-          {{ meta.total }} total records
-        </div>
+        <div class="header-badge" *ngIf="meta">{{ meta.total }} total records</div>
       </div>
 
-      <!-- ── Filters ───────────────────────────────── -->
+      <!-- Filters -->
       <div class="filters-card">
         <div class="filters-grid">
 
-          <!-- Search -->
           <div class="filter-group search-group">
             <label class="filter-label">Search</label>
             <div class="input-icon-wrap">
@@ -39,7 +35,6 @@
             </div>
           </div>
 
-          <!-- Reason -->
           <div class="filter-group">
             <label class="filter-label">Reason</label>
             <select class="filter-input" [(ngModel)]="reason" (change)="onFilterChange()">
@@ -52,29 +47,16 @@
             </select>
           </div>
 
-          <!-- From Date -->
           <div class="filter-group">
             <label class="filter-label">From Date</label>
-            <input
-              type="date"
-              class="filter-input"
-              [(ngModel)]="fromDate"
-              (change)="onFilterChange()"
-            />
+            <input type="date" class="filter-input" [(ngModel)]="fromDate" (change)="onFilterChange()" />
           </div>
 
-          <!-- To Date -->
           <div class="filter-group">
             <label class="filter-label">To Date</label>
-            <input
-              type="date"
-              class="filter-input"
-              [(ngModel)]="toDate"
-              (change)="onFilterChange()"
-            />
+            <input type="date" class="filter-input" [(ngModel)]="toDate" (change)="onFilterChange()" />
           </div>
 
-          <!-- Reset -->
           <div class="filter-group reset-group">
             <label class="filter-label">&nbsp;</label>
             <button class="btn-reset" (click)="resetFilters()">
@@ -89,25 +71,27 @@
         </div>
       </div>
 
-      <!-- ── Loading ────────────────────────────────── -->
+      <!-- Loading -->
       <div class="state-box" *ngIf="loading">
         <div class="spinner"></div>
         <p>Loading stock logs...</p>
       </div>
 
-      <!-- ── Error ──────────────────────────────────── -->
+      <!-- Error -->
       <div class="state-box error-box" *ngIf="!loading && error">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="40" height="40">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
         <p>{{ error }}</p>
         <button class="btn-reset" (click)="fetchLogs()">Try Again</button>
       </div>
 
-      <!-- ── Table ──────────────────────────────────── -->
-      <div class="table-card" *ngIf="!loading && !error">
+      <!-- Card Grid -->
+      <ng-container *ngIf="!loading && !error">
 
-        <!-- Empty state -->
+        <!-- Empty -->
         <div class="state-box" *ngIf="logs.length === 0">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
@@ -115,113 +99,91 @@
           <p>No stock logs found</p>
         </div>
 
-        <div class="table-scroll" *ngIf="logs.length > 0">
-          <table class="stock-table">
-            <thead>
-             <tr>
-  <th>Order No.</th>
-  <th>Ingredient</th>
-  <th>Change</th>
-  <th>Reason</th>
-  <th>Note</th>
-  <th>Restaurant</th>
-  <th>Date & Time</th>
-</tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let log of logs" class="table-row">
+        <div class="sl-grid" *ngIf="logs.length > 0">
+          <div class="sl-card" *ngFor="let log of logs">
 
-                <!-- Order Number -->
-                <td>
-                  <span class="order-num" *ngIf="log.orderNumber">{{ log.orderNumber }}</span>
-                  <span class="text-muted" *ngIf="!log.orderNumber">—</span>
-                </td>
+            <!-- Card Top: ingredient + change badge -->
+            <div class="sl-card-head">
+              <div class="sl-ingredient">
+                <span class="sl-ingredient-name">{{ log.ingredient?.name }}</span>
+                <span class="sl-ingredient-unit">{{ log.ingredient?.unit }}</span>
+              </div>
+              <span
+                class="sl-change-badge"
+                [class.deduction]="isDeduction(log.changeQty)"
+                [class.addition]="!isDeduction(log.changeQty)">
+                {{ log.changeLabel }}
+              </span>
+            </div>
 
-                <!-- Ingredient -->
-                <td>
-                  <div class="ingredient-cell">
-                    <span class="ingredient-name">{{ log.ingredient?.name }}</span>
-                    <span class="ingredient-unit">{{ log.ingredient?.unit }}</span>
-                  </div>
-                </td>
+            <hr class="sl-divider">
 
-                <!-- Change Qty -->
-                <td>
-                  <span
-                    class="change-badge"
-                    [class.deduction]="isDeduction(log.changeQty)"
-                    [class.addition]="!isDeduction(log.changeQty)"
-                  >
-                    {{ log.changeLabel }}
-                  </span>
-                </td>
+            <!-- Info Grid -->
+            <div class="sl-info-grid">
 
-                <!-- Reason -->
-                <td>
+              <div class="sl-info-item">
+                <label>Reason</label>
+                <span>
                   <span class="reason-badge reason-{{ log.reason | lowercase }}">
                     {{ log.reason }}
                   </span>
-                </td>
+                </span>
+              </div>
 
-                <!-- Note -->
-                <td>
-                  <span class="note-text" [title]="log.note">{{ log.note || '—' }}</span>
-                </td>
+              <div class="sl-info-item">
+                <label>Order No.</label>
+                <span>
+                  <span class="order-num" *ngIf="log.orderNumber">{{ log.orderNumber }}</span>
+                  <span class="sl-muted" *ngIf="!log.orderNumber">—</span>
+                </span>
+              </div>
 
-                 <td>
-    <span class="restaurant-name">
-      {{ log.restaurant?.name || '—' }}
-    </span>
-  </td>
+              <div class="sl-info-item">
+                <label>Restaurant</label>
+                <span>{{ log.restaurant?.name || '—' }}</span>
+              </div>
 
-                <!-- Date -->
-                <td>
-                  <span class="date-text">{{ formatDate(log.createdAt) }}</span>
-                </td>
+              <div class="sl-info-item">
+                <label>Date & Time</label>
+                <span class="sl-date">{{ formatDate(log.createdAt) }}</span>
+              </div>
 
-              </tr>
-            </tbody>
-          </table>
+            </div>
+
+            <!-- Note -->
+            <div class="sl-note" *ngIf="log.note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              {{ log.note }}
+            </div>
+
+          </div>
         </div>
 
-        <!-- ── Pagination ─────────────────────────── -->
+        <!-- Pagination -->
         <div class="pagination" *ngIf="meta && meta.totalPages > 1">
           <span class="page-info">
             Page {{ meta.page }} of {{ meta.totalPages }} &nbsp;·&nbsp; {{ meta.total }} records
           </span>
-
           <div class="page-controls">
-            <button
-              class="page-btn"
-              [disabled]="!meta.hasPrevPage"
-              (click)="onPageChange(page - 1)"
-            >
-              ‹ Prev
-            </button>
-
+            <button class="page-btn" [disabled]="!meta.hasPrevPage" (click)="onPageChange(page - 1)">‹ Prev</button>
             <ng-container *ngFor="let p of pages">
               <button
                 class="page-btn"
                 [class.active]="p === meta.page"
                 (click)="onPageChange(p)"
-                *ngIf="p === 1 || p === meta.totalPages || (p >= meta.page - 2 && p <= meta.page + 2)"
-              >
+                *ngIf="p === 1 || p === meta.totalPages || (p >= meta.page - 2 && p <= meta.page + 2)">
                 {{ p }}
               </button>
               <span *ngIf="p === meta.page - 3 || p === meta.page + 3" class="page-ellipsis">…</span>
             </ng-container>
-
-            <button
-              class="page-btn"
-              [disabled]="!meta.hasNextPage"
-              (click)="onPageChange(page + 1)"
-            >
-              Next ›
-            </button>
+            <button class="page-btn" [disabled]="!meta.hasNextPage" (click)="onPageChange(page + 1)">Next ›</button>
           </div>
         </div>
 
-      </div>
+      </ng-container>
+
     </div>
   </div>
 </div>

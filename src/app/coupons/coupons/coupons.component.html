@@ -30,123 +30,92 @@
         </div>
       </div>
 
-      <div class="rc-card">
-        <div class="rc-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:48px">#</th>
-                <th>Restaurant</th>
-                <th>Code</th>
-                <th>Discount</th>
-                <th>Min Order</th>
-                <th>Usage / User</th>
-                <th>Expiry</th>
-                <th>Status</th>
-                <th style="text-align:right">Actions</th>
-              </tr>
-            </thead>
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="rc-loading-wrap">
+        <div class="rc-spin"></div>
+        <span>Loading...</span>
+      </div>
 
-            <tbody>
+      <!-- Card Grid -->
+      <div class="rc-grid" *ngIf="!isLoading">
 
-              <tr *ngIf="isLoading">
-                <td colspan="9" style="text-align:center; padding:40px">
-                  <div class="rc-loading-inner">
-                    <div class="rc-spin"></div>
-                    <span>Loading...</span>
-                  </div>
-                </td>
-              </tr>
+        <div class="rc-coupon-card" *ngFor="let item of coupons">
 
-              <ng-container *ngIf="!isLoading">
+          <div class="rc-card-head">
+            <div>
+              <div class="rc-restaurant-name">{{ item.restaurant?.name || '—' }}</div>
+              <div class="rc-coupon-code">{{ item.code }}</div>
+            </div>
+            <span
+              class="rc-status-badge"
+              [class.active]="item.isActive && !isExpired(item.expiryDate)"
+              [class.expired]="isExpired(item.expiryDate)"
+              [class.inactive]="!item.isActive && !isExpired(item.expiryDate)">
+              {{ isExpired(item.expiryDate) ? 'Expired' : item.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
 
-                <tr *ngFor="let item of coupons; let i = index">
-                  <td class="rc-num">{{ getSerial(i) }}</td>
+          <hr class="rc-divider">
 
-                  <td>{{ item.restaurant?.name || '—' }}</td>
+          <div class="rc-info-grid">
+            <div class="rc-info-item">
+              <label>Discount</label>
+              <span>
+                {{ item.discountType === 'PERCENT'
+                    ? item.discountValue + '%'
+                    : '₹' + item.discountValue }}
+              </span>
+              <small>{{ item.discountType }}</small>
+            </div>
+            <div class="rc-info-item">
+              <label>Min Order</label>
+              <span>₹{{ item.minOrderValue || 0 }}</span>
+            </div>
+            <div class="rc-info-item">
+              <label>Usage / User</label>
+              <span>{{ item.usageLimitPerUser }}</span>
+            </div>
+            <div class="rc-info-item">
+              <label>Expiry</label>
+              <span [class.rc-expired-text]="isExpired(item.expiryDate)"
+                    [class.rc-active-text]="!isExpired(item.expiryDate)">
+                {{ item.expiryDate | date:'dd MMM yyyy' }}
+              </span>
+            </div>
+          </div>
 
-                  <!-- Code badge -->
-                  <td>
-                    <span class="rc-badge rc-badge-blue"
-                      style="font-family:monospace; letter-spacing:1px">
-                      {{ item.code }}
-                    </span>
-                  </td>
+          <div class="rc-card-actions">
+            <button class="rc-btn-edit" (click)="openForm('edit', item)">Edit</button>
+            <button class="rc-btn-del"  (click)="deleteCoupon(item._id)">Delete</button>
+          </div>
 
-                  <!-- Discount -->
-                  <td>
-                    {{ item.discountType === 'PERCENT'
-                        ? item.discountValue + '%'
-                        : '₹' + item.discountValue }}
-                    <small class="text-muted">({{ item.discountType }})</small>
-                  </td>
-
-                  <td>₹ {{ item.minOrderValue || 0 }}</td>
-
-                  <td style="text-align:center">{{ item.usageLimitPerUser }}</td>
-
-                  <!-- Expiry -->
-                  <td>
-                    <span
-                      [style.color]="isExpired(item.expiryDate) ? '#dc2626' : '#16a34a'"
-                      [style.font-weight]="'500'">
-                      {{ item.expiryDate | date:'dd MMM yyyy' }}
-                    </span>
-                  </td>
-
-                  <!-- Status -->
-                  <td>
-                    <span
-                      [style.background-color]="item.isActive && !isExpired(item.expiryDate) ? '#dcfce7' : '#fee2e2'"
-                      [style.color]="item.isActive && !isExpired(item.expiryDate) ? '#16a34a' : '#dc2626'"
-                      [style.padding]="'3px 10px'"
-                      [style.border-radius]="'20px'"
-                      [style.font-size]="'12px'"
-                      [style.font-weight]="'500'">
-                      {{ isExpired(item.expiryDate) ? 'Expired' : item.isActive ? 'Active' : 'Inactive' }}
-                    </span>
-                  </td>
-
-                  <td style="text-align:right">
-                    <div class="rc-actions">
-                      <button class="rc-btn-edit" (click)="openForm('edit', item)">Edit</button>
-                      <button class="rc-btn-del"  (click)="deleteCoupon(item._id)">Delete</button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr *ngIf="coupons.length === 0">
-                  <td colspan="9" class="rc-empty">No coupons found.</td>
-                </tr>
-
-              </ng-container>
-
-            </tbody>
-          </table>
         </div>
 
-        <div class="rc-footer" *ngIf="!isLoading && totalPages > 0">
-          <span class="rc-pg-info">
-            {{ getSerial(0) }}–{{ getSerial(coupons.length - 1) }} of {{ total }}
-          </span>
-          <div class="rc-pg-nav">
-            <button [disabled]="!hasPrevPage" (click)="goToPage(currentPage - 1)">‹</button>
-            <button
-              *ngFor="let p of pageNumbers"
-              [class.active]="p === currentPage"
-              (click)="goToPage(p)">
-              {{ p }}
-            </button>
-            <button [disabled]="!hasNextPage" (click)="goToPage(currentPage + 1)">›</button>
-          </div>
+        <div class="rc-empty" *ngIf="coupons.length === 0">
+          No coupons found.
         </div>
 
       </div>
+
+      <!-- Pagination -->
+      <div class="rc-footer" *ngIf="!isLoading && totalPages > 0">
+        <span class="rc-pg-info">
+          {{ getSerial(0) }}–{{ getSerial(coupons.length - 1) }} of {{ total }}
+        </span>
+        <div class="rc-pg-nav">
+          <button [disabled]="!hasPrevPage" (click)="goToPage(currentPage - 1)">‹</button>
+          <button
+            *ngFor="let p of pageNumbers"
+            [class.active]="p === currentPage"
+            (click)="goToPage(p)">
+            {{ p }}
+          </button>
+          <button [disabled]="!hasNextPage" (click)="goToPage(currentPage + 1)">›</button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
 
-<app-coupons-form
-  *ngIf="showForm"
-  (close)="closeForm()">
-</app-coupons-form>
+<app-coupons-form *ngIf="showForm" (close)="closeForm()"></app-coupons-form>
